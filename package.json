@@ -13,7 +13,7 @@
     "dev:deploy": "wait-on tcp:127.0.0.1:8545 && cd blockchain && npx hardhat run scripts/deploy.js --network localhost",
     "dev:backend": "cd backend && npx prisma db push --accept-data-loss && npm run dev",
     "dev:frontend": "cd frontend && npm run dev",
-    "dev": "npm run install:all && concurrently \"npm run dev:node\" \"npm run dev:deploy\" \"npm run dev:backend\" \"npm run dev:frontend\""
+    "dev": "concurrently \"npm run dev:node\" \"npm run dev:deploy\" \"npm run dev:backend\" \"npm run dev:frontend\""
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

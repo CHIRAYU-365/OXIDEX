@@ -74,22 +74,15 @@ export default function Login() {
     setRegError(null);
 
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://oxidex-api.onrender.com";
-      const res = await fetch(`${backendUrl}/api/auth/mock-register`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ address: account, referrerAddress: referrer })
-      });
-      const data = await res.json();
-      
-      if (!data.success) {
-        throw new Error(data.error || "Mock registration failed");
+      const success = await executeRegistration(referrer);
+      if (success) {
+        alert("Registration successful! Welcome to OxideX.");
+        setTimeout(async () => {
+          await fetchUserProfile(account);
+        }, 1000);
+      } else {
+        throw new Error("Transaction failed or was rejected.");
       }
-
-      alert("Mock Registration successful! Welcome to OxideX.");
-      setTimeout(async () => {
-        await fetchUserProfile();
-      }, 1000);
     } catch (err) {
       console.error(err);
       setRegError(err.message || "Registration failed. Verify your balance and sponsor address.");
