@@ -7,7 +7,7 @@ export default function Partners() {
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://oxidex-api.onrender.com";
 
   useEffect(() => {
     const fetchPartners = async () => {

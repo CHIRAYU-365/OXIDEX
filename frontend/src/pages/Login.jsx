@@ -43,7 +43,7 @@ export default function Login() {
   const [platformStats, setPlatformStats] = useState({ totalUsers: 0, totalVolume: 0, volume24h: 0, users24h: 0 });
   const [copied, setCopied] = useState(false);
 
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://oxidex-api.onrender.com";
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -74,7 +74,7 @@ export default function Login() {
     setRegError(null);
 
     try {
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:5000";
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://oxidex-api.onrender.com";
       const res = await fetch(`${backendUrl}/api/auth/mock-register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

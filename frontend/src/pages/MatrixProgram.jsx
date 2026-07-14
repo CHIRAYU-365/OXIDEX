@@ -9,7 +9,7 @@ export default function MatrixProgram() {
   const [matrixData, setMatrixData] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://oxidex-api.onrender.com";
 
   const fetchMatrixState = async () => {
     try {

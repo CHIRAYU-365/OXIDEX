@@ -20,7 +20,7 @@ export const Web3Provider = ({ children }) => {
   const activeAccount = isViewOnly ? previewAccount : account;
   const activeUser = isViewOnly ? previewUser : user;
 
-  const backendUrl = "http://localhost:5000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://oxidex-api.onrender.com";
 
   useEffect(() => {
     if (window.ethereum) {
