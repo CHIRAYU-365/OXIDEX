@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "devDependencies": {
-    "@nomicfoundation/hardhat-toolbox": "^4.0.0",
-    "hardhat": "^2.19.4"
+    "@nomicfoundation/hardhat-toolbox": "^7.0.0",
+    "hardhat": "^3.9.1"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.5",
