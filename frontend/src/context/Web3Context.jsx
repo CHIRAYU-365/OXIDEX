@@ -86,28 +86,17 @@ export const Web3Provider = ({ children }) => {
 
   const fetchUserProfile = async (address) => {
     if (!address) return;
-    const mockUser = {
-      walletAddress: address,
-      onChainId: 999,
-      referrerAddress: "0x0000000000000000000000000000000000000000",
-      partnersCount: 5,
-      activeLevelsX2: [1, 2, 3],
-      activeLevelsX3: [1, 2],
-      activeLevelsX4: [1],
-      totalEarnings: 1.5,
-      registered: true
-    };
     try {
       const response = await fetch(`${backendUrl}/api/users/${address}`);
       const result = await response.json();
       if (result.success) {
         setUser(result.data);
       } else {
-        setUser(mockUser);
+        setUser({ walletAddress: address, registered: false });
       }
     } catch (err) {
       console.error("Error fetching user profile:", err);
-      setUser(mockUser);
+      setUser({ walletAddress: address, registered: false });
     }
   };
 

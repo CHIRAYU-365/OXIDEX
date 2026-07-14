@@ -1,4 +1,4 @@
-export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
+export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0xF79A892eaF3D1085c1a4Da364881DF2240D29F4d";
 
 export const CONTRACT_ABI = [
   "event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId)",
