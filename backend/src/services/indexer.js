@@ -114,6 +114,12 @@ const startIndexer = (io) => {
           create: { userAddress: userLower, program: "x4", level: 1, isActive: true },
         });
 
+        await tx.matrixState.upsert({
+          where: { userAddress_program_level: { userAddress: userLower, program: "x2", level: 1 } },
+          update: { isActive: true },
+          create: { userAddress: userLower, program: "x2", level: 1, isActive: true },
+        });
+
         await tx.transaction.create({
           data: {
             txHash,
@@ -121,7 +127,7 @@ const startIndexer = (io) => {
             eventType: "Registration",
             program: null,
             level: 1,
-            amount: 0.05,
+            amount: 0.075,
             blockNumber: event.log.blockNumber,
             blockTimestamp: new Date(),
           },
@@ -149,7 +155,7 @@ const startIndexer = (io) => {
     const release = await mutex.acquire([user, referrer]);
     try {
       const txHash = event.log.transactionHash;
-      const prog = matrix === 1 ? "x3" : "x4";
+      const prog = matrix === 1 ? "x3" : (matrix === 2 ? "x4" : "x2");
       const lvl = Number(level);
 
       const userLower = user.toLowerCase();
@@ -196,7 +202,7 @@ const startIndexer = (io) => {
     const release = await mutex.acquire([user, currentReferrer]);
     try {
       const txHash = event.log.transactionHash;
-      const prog = matrix === 1 ? "x3" : "x4";
+      const prog = matrix === 1 ? "x3" : (matrix === 2 ? "x4" : "x2");
       const lvl = Number(level);
 
       const userLower = user.toLowerCase();
@@ -246,7 +252,7 @@ const startIndexer = (io) => {
   const handleNewUserPlace = async (user, referrer, matrix, level, place, event) => {
     const release = await mutex.acquire([user, referrer]);
     try {
-      const prog = matrix === 1 ? "x3" : "x4";
+      const prog = matrix === 1 ? "x3" : (matrix === 2 ? "x4" : "x2");
       const lvl = Number(level);
       const plc = Number(place);
       const userLower = user.toLowerCase();
@@ -257,7 +263,7 @@ const startIndexer = (io) => {
       });
 
       if (state) {
-        if (prog === "x3") {
+        if (prog === "x3" || prog === "x2") {
           const refs = [...state.referrals];
           if (!refs.includes(userLower)) {
             refs.push(userLower);
@@ -311,7 +317,7 @@ const startIndexer = (io) => {
     const release = await mutex.acquire([from, receiver]);
     try {
       const txHash = event.log.transactionHash;
-      const prog = matrix === 1 ? "x3" : "x4";
+      const prog = matrix === 1 ? "x3" : (matrix === 2 ? "x4" : "x2");
       const lvl = Number(level);
       const fromLower = from.toLowerCase();
       const receiverLower = receiver.toLowerCase();
@@ -357,7 +363,7 @@ const startIndexer = (io) => {
   const handleMissedEthReceive = async (receiver, from, matrix, level, event) => {
     const release = await mutex.acquire([receiver, from]);
     try {
-      const prog = matrix === 1 ? "x3" : "x4";
+      const prog = matrix === 1 ? "x3" : (matrix === 2 ? "x4" : "x2");
       const lvl = Number(level);
       const receiverLower = receiver.toLowerCase();
       const fromLower = from.toLowerCase();

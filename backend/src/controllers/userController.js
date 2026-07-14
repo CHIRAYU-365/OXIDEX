@@ -28,6 +28,7 @@ const getUserProfile = async (req, res) => {
 
     const activeLevelsX3 = activeLevels.filter(m => m.program === "x3").map(m => m.level);
     const activeLevelsX4 = activeLevels.filter(m => m.program === "x4").map(m => m.level);
+    const activeLevelsX2 = activeLevels.filter(m => m.program === "x2").map(m => m.level);
 
     const earnings = await prisma.earning.findMany({
       where: { userAddress: user.walletAddress },
@@ -47,6 +48,7 @@ const getUserProfile = async (req, res) => {
         registeredAt: user.registeredAt,
         activeLevelsX3,
         activeLevelsX4,
+        activeLevelsX2,
         totalEarnings,
       },
     });
@@ -104,7 +106,7 @@ const getMatrixState = async (req, res) => {
     const { userAddress, program, level } = req.params;
     const lvl = parseInt(level, 10);
 
-    if (!userAddress.startsWith("0x") || (program !== "x3" && program !== "x4") || isNaN(lvl)) {
+    if (!userAddress.startsWith("0x") || (program !== "x3" && program !== "x4" && program !== "x2") || isNaN(lvl)) {
       return res.status(400).json({ success: false, error: "Invalid query parameters" });
     }
 

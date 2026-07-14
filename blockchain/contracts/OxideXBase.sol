@@ -24,8 +24,15 @@ contract OxideXBase {
         address closedPart;
     }
 
+    struct X2 {
+        address currentReferrer;
+        address[] referrals;
+        bool blocked;
+        uint256 reinvestCount;
+    }
+
     uint8 public constant LAST_LEVEL = 12;
-    uint256 public constant REGISTRATION_COST = 0.05 ether;
+    uint256 public constant REGISTRATION_COST = 0.075 ether;
 
     address public owner;
     uint256 public lastUserId;
@@ -36,9 +43,11 @@ contract OxideXBase {
 
     mapping(address => mapping(uint8 => bool)) public activeLevels_x3;
     mapping(address => mapping(uint8 => bool)) public activeLevels_x4;
+    mapping(address => mapping(uint8 => bool)) public activeLevels_x2;
 
     mapping(address => mapping(uint8 => X3)) public x3Matrix;
     mapping(address => mapping(uint8 => X4)) public x4Matrix;
+    mapping(address => mapping(uint8 => X2)) public x2Matrix;
 
     event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId);
     event Upgrade(address indexed user, address indexed referrer, uint8 matrix, uint8 level);
@@ -66,6 +75,7 @@ contract OxideXBase {
         for (uint8 i = 1; i <= LAST_LEVEL; i++) {
             activeLevels_x3[_owner][i] = true;
             activeLevels_x4[_owner][i] = true;
+            activeLevels_x2[_owner][i] = true;
         }
     }
 
@@ -87,7 +97,7 @@ contract OxideXBase {
 
     function buyNewLevel(uint8 matrix, uint8 level) external payable {
         require(isUserExists(msg.sender), "user does not exist. Register first.");
-        require(matrix == 1 || matrix == 2, "invalid matrix");
+        require(matrix == 1 || matrix == 2 || matrix == 3, "invalid matrix");
         require(msg.value == levelPrice[level], "invalid price");
         require(level > 1 && level <= LAST_LEVEL, "invalid level");
 
@@ -105,7 +115,7 @@ contract OxideXBase {
             updateX3Referrer(msg.sender, freeReferrer, level);
 
             emit Upgrade(msg.sender, freeReferrer, 1, level);
-        } else {
+        } else if (matrix == 2) {
             require(activeLevels_x4[msg.sender][level - 1], "buy previous level first");
             require(!activeLevels_x4[msg.sender][level], "level already active");
 
@@ -119,11 +129,25 @@ contract OxideXBase {
             updateX4Referrer(msg.sender, freeReferrer, level);
 
             emit Upgrade(msg.sender, freeReferrer, 2, level);
+        } else {
+            require(activeLevels_x2[msg.sender][level - 1], "buy previous level first");
+            require(!activeLevels_x2[msg.sender][level], "level already active");
+
+            if (x2Matrix[msg.sender][level - 1].blocked) {
+                x2Matrix[msg.sender][level - 1].blocked = false;
+            }
+
+            address freeReferrer = findFreeReferrerX2(msg.sender, level);
+            x2Matrix[msg.sender][level].currentReferrer = freeReferrer;
+            activeLevels_x2[msg.sender][level] = true;
+            updateX2Referrer(msg.sender, freeReferrer, level);
+
+            emit Upgrade(msg.sender, freeReferrer, 3, level);
         }
     }
 
     function registration(address userAddress, address referrerAddress) private {
-        require(msg.value == REGISTRATION_COST, "registration cost is 0.05 ETH");
+        require(msg.value == REGISTRATION_COST, "registration cost is 0.075 ETH");
         require(!isUserExists(userAddress), "user already exists");
         require(isUserExists(referrerAddress), "referrer does not exist");
         require(msg.sender == tx.origin, "cannot be a contract");
@@ -138,6 +162,7 @@ contract OxideXBase {
 
         activeLevels_x3[userAddress][1] = true;
         activeLevels_x4[userAddress][1] = true;
+        activeLevels_x2[userAddress][1] = true;
 
         users[referrerAddress].partnersCount++;
 
@@ -148,6 +173,10 @@ contract OxideXBase {
         address freeX4Referrer = findFreeReferrerX4(userAddress, 1);
         x4Matrix[userAddress][1].currentReferrer = freeX4Referrer;
         updateX4Referrer(userAddress, freeX4Referrer, 1);
+
+        address freeX2Referrer = findFreeReferrerX2(userAddress, 1);
+        x2Matrix[userAddress][1].currentReferrer = freeX2Referrer;
+        updateX2Referrer(userAddress, freeX2Referrer, 1);
 
         emit Registration(userAddress, referrerAddress, lastUserId, users[referrerAddress].id);
     }
@@ -177,6 +206,34 @@ contract OxideXBase {
             sendETHDividends(owner, userAddress, 1, level);
             x3Matrix[owner][level].reinvestCount++;
             emit Reinvest(owner, address(0), userAddress, 1, level);
+        }
+    }
+
+    function updateX2Referrer(address userAddress, address referrerAddress, uint8 level) private {
+        x2Matrix[referrerAddress][level].referrals.push(userAddress);
+
+        if (x2Matrix[referrerAddress][level].referrals.length < 2) {
+            emit NewUserPlace(userAddress, referrerAddress, 3, level, uint8(x2Matrix[referrerAddress][level].referrals.length));
+            return sendETHDividends(referrerAddress, userAddress, 3, level);
+        }
+
+        emit NewUserPlace(userAddress, referrerAddress, 3, level, 2);
+
+        x2Matrix[referrerAddress][level].referrals = new address[](0);
+
+        if (referrerAddress != owner) {
+            address freeReferrer = findFreeReferrerX2(referrerAddress, level);
+            if (x2Matrix[referrerAddress][level].currentReferrer != freeReferrer) {
+                x2Matrix[referrerAddress][level].currentReferrer = freeReferrer;
+            }
+
+            x2Matrix[referrerAddress][level].reinvestCount++;
+            emit Reinvest(referrerAddress, freeReferrer, userAddress, 3, level);
+            updateX2Referrer(referrerAddress, freeReferrer, level);
+        } else {
+            sendETHDividends(owner, userAddress, 3, level);
+            x2Matrix[owner][level].reinvestCount++;
+            emit Reinvest(owner, address(0), userAddress, 3, level);
         }
     }
 
@@ -277,6 +334,19 @@ contract OxideXBase {
         return owner;
     }
 
+    function findFreeReferrerX2(address userAddress, uint8 level) public view returns(address) {
+        uint256 depth = 0;
+        while (depth < 30) {
+            address referrer = users[userAddress].referrer;
+            if (activeLevels_x2[referrer][level]) {
+                return referrer;
+            }
+            userAddress = referrer;
+            depth++;
+        }
+        return owner;
+    }
+
     function isUserExists(address user) public view returns (bool) {
         return (users[user].id != 0);
     }
@@ -293,6 +363,11 @@ contract OxideXBase {
 
     function usersX3Matrix(address userAddress, uint8 level) public view returns(address, address[] memory, bool, uint256) {
         X3 memory matrix = x3Matrix[userAddress][level];
+        return (matrix.currentReferrer, matrix.referrals, matrix.blocked, matrix.reinvestCount);
+    }
+
+    function usersX2Matrix(address userAddress, uint8 level) public view returns(address, address[] memory, bool, uint256) {
+        X2 memory matrix = x2Matrix[userAddress][level];
         return (matrix.currentReferrer, matrix.referrals, matrix.blocked, matrix.reinvestCount);
     }
 

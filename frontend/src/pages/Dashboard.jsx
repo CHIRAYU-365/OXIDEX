@@ -89,7 +89,7 @@ export default function Dashboard() {
     setBuyingStatus((prev) => ({ ...prev, [key]: true }));
     try {
       await executeBuyNewLevel(matrix, level);
-      alert(`Level ${level} in ${matrix === 1 ? "x3" : "x4"} activated successfully!`);
+      alert(`Level ${level} in ${matrix === 1 ? "x3" : (matrix === 2 ? "x4" : "x2")} activated successfully!`);
       setTimeout(fetchUserProfile, 5000);
     } catch (err) {
       console.error(err);
@@ -227,6 +227,82 @@ export default function Dashboard() {
         </div>
 
         <div className="lg:col-span-3 space-y-10">
+          <div>
+            <div className="flex items-center space-x-2.5 mb-6">
+              <Layers className="w-5 h-5 text-fuchsia-500" />
+              <h2 className="text-xl font-extrabold tracking-tight text-fuchsia-400">
+                x2 Matrix Program Levels
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {Array.from({ length: 12 }, (_, i) => {
+                const lvl = i + 1;
+                const cost = calculateCost(lvl);
+                const isActive = activeUser?.activeLevelsX2?.includes(lvl);
+                const isBuyable = activeUser?.activeLevelsX2?.includes(lvl - 1) && !isActive;
+
+                return (
+                  <div
+                    key={`x2-${lvl}`}
+                    className={`glass-panel p-5 rounded-2xl flex flex-col justify-between border-slate-900 text-center relative transition duration-300 ${
+                      isActive ? "border-fuchsia-500/20 bg-fuchsia-950/5 shadow-glow" : "hover:border-slate-800"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Lvl {lvl}</span>
+                      {isActive ? (
+                        <Unlock className="w-3.5 h-3.5 text-fuchsia-400" />
+                      ) : (
+                        <Lock className="w-3.5 h-3.5 text-slate-700" />
+                      )}
+                    </div>
+                    <div className="my-3">
+                      <span className="text-xl font-black block text-slate-100">{cost.toFixed(3)}</span>
+                      <span className="text-[9px] text-slate-400 font-bold uppercase tracking-wider">ETH</span>
+                    </div>
+
+                    <div className="flex justify-center space-x-1.5 my-3">
+                      {[0, 1].map(slotIdx => {
+                        return (
+                          <div 
+                            key={slotIdx} 
+                            className={`w-2.5 h-2.5 rounded-full ${isActive ? 'bg-fuchsia-550 border border-fuchsia-500' : 'bg-slate-900 opacity-50'}`}
+                          />
+                        );
+                      })}
+                    </div>
+
+                    {isActive ? (
+                      <Link
+                        to={`/matrix/x2/${lvl}`}
+                        className="mt-3 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-850 border border-slate-800 text-[10px] font-bold text-fuchsia-400 hover:text-fuchsia-300 transition flex items-center justify-center gap-1 group"
+                      >
+                        <span>View Structure</span>
+                        <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      </Link>
+                    ) : isBuyable ? (
+                      <button
+                        onClick={() => handleBuy(3, lvl)}
+                        disabled={isViewOnly || buyingStatus[`3-${lvl}`]}
+                        className={`mt-3 py-2 px-3 rounded-xl text-[10px] font-bold shadow-glow transition ${
+                          isViewOnly 
+                            ? "bg-slate-900 border border-slate-800 text-slate-500 cursor-not-allowed"
+                            : "bg-fuchsia-500 hover:bg-fuchsia-600 text-white disabled:opacity-50"
+                        }`}
+                      >
+                        {isViewOnly ? "Locked (Preview)" : buyingStatus[`3-${lvl}`] ? "Purchasing..." : "Unlock"}
+                      </button>
+                    ) : (
+                      <span className="mt-3 py-2 text-[10px] text-slate-700 font-bold uppercase tracking-widest">
+                        Locked
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
           <div>
             <div className="flex items-center space-x-2.5 mb-6">
               <Layers className="w-5 h-5 text-brand-400" />

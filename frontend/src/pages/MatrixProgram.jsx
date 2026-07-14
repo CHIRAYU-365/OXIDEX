@@ -91,7 +91,29 @@ export default function MatrixProgram() {
             <div className="absolute top-20 w-0.5 h-16 bg-slate-800 -z-10" />
           </div>
 
-          {program === "x3" ? (
+          {program === "x2" ? (
+            <div className="flex justify-center space-x-16 w-full max-w-sm">
+              {Array.from({ length: 2 }).map((_, idx) => {
+                const partner = matrixData?.referrals?.[idx];
+                return (
+                  <div key={idx} className="flex flex-col items-center relative">
+                    <div
+                      className={`w-14 h-14 rounded-full flex items-center justify-center transition duration-300 border-2 ${
+                        partner
+                          ? "bg-fuchsia-500/20 border-fuchsia-500 text-fuchsia-300 shadow-glow animate-pulse"
+                          : "border-dashed border-slate-700 bg-slate-950 text-slate-600"
+                      }`}
+                    >
+                      <User className="w-6 h-6" />
+                    </div>
+                    <span className="mt-2 text-[10px] font-mono font-semibold text-slate-400">
+                      {partner ? shortAddress(partner) : `Slot ${idx + 1}`}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : program === "x3" ? (
             <div className="flex justify-center space-x-12 w-full max-w-lg">
               {Array.from({ length: 3 }).map((_, idx) => {
                 const partner = matrixData?.referrals?.[idx];

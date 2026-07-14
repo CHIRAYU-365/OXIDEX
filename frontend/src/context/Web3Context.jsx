@@ -224,7 +224,7 @@ export const Web3Provider = ({ children }) => {
   const executeRegistration = async (referrerAddress) => {
     try {
       const contract = await getContractInstance();
-      const regCost = ethers.parseEther("0.05");
+      const regCost = ethers.parseEther("0.075");
       const tx = await contract.registrationExt(referrerAddress, { value: regCost });
       return await tx.wait();
     } catch (err) {

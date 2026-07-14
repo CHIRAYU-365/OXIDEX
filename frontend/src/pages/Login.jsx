@@ -229,7 +229,7 @@ export default function Login() {
                           Unregistered Address
                         </span>
                         <p className="text-[11px] text-slate-400 mt-1">
-                          Activate Level 1 for both x3 and x4 programs (Total 0.05 ETH cost).
+                          Activate Level 1 for x2, x3, and x4 programs (Total 0.075 ETH cost).
                         </p>
                       </div>
 
@@ -259,7 +259,7 @@ export default function Login() {
                         {isRegistering ? (
                           <span>Activating Account...</span>
                         ) : (
-                          <span>Register & Pay 0.05 ETH</span>
+                          <span>Register & Pay 0.075 ETH</span>
                         )}
                       </button>
                     </form>
@@ -354,11 +354,39 @@ export default function Login() {
             How OXIDEX Matrices Work
           </h2>
           <p className="text-slate-500 text-xs uppercase tracking-widest mt-2 font-bold">
-            Two dynamic spillover programs designed for scaling
+            Three dynamic matrix programs designed for scaling
           </p>
         </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="glass-panel p-8 rounded-3xl border-slate-900 shadow-glow relative overflow-hidden group">
+            <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-fuchsia-500/5 rounded-full blur-xl group-hover:bg-fuchsia-500/10 transition-all duration-500" />
+            <div className="flex items-center space-x-3 mb-4">
+              <div className="p-3 bg-fuchsia-500/10 rounded-2xl text-fuchsia-400 border border-fuchsia-500/20">
+                <Layers className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-extrabold text-slate-100">
+                OXIDEX x2 Matrix
+              </h3>
+            </div>
+            <p className="text-xs text-slate-400 leading-relaxed mb-6">
+              A ultra-fast 1-row matrix containing only 2 slots. Perfect for quick recycling and entry. The 1st referral pays 100% directly to your wallet. The 2nd referral automatically reinvests to clear your board, sending payment to your upline.
+            </p>
+            <div className="flex items-center justify-center space-x-6 bg-slate-950/60 p-6 rounded-2xl border border-slate-900">
+              <div className="w-12 h-12 rounded-full bg-fuchsia-500/20 border-2 border-fuchsia-500 flex items-center justify-center text-[10px] font-bold text-fuchsia-300">
+                Lvl 1
+              </div>
+              <span className="text-slate-700">→</span>
+              <div className="flex space-x-3">
+                <div className="w-8 h-8 rounded-full bg-fuchsia-500/10 border-2 border-fuchsia-500 flex items-center justify-center text-[8px] font-bold text-fuchsia-300">
+                  P1
+                </div>
+                <div className="w-8 h-8 rounded-full border-2 border-dashed border-slate-700 flex items-center justify-center text-[8px] font-bold text-slate-500">
+                  Rec
+                </div>
+              </div>
+            </div>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="glass-panel p-8 rounded-3xl border-slate-900 shadow-glow relative overflow-hidden group">
             <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-brand-500/5 rounded-full blur-xl group-hover:bg-brand-500/10 transition-all duration-500" />
             <div className="flex items-center space-x-3 mb-4">
@@ -419,13 +447,13 @@ export default function Login() {
                   </div>
                 </div>
                 <div className="flex justify-center space-x-2">
-                  <div className="w-6 h-6 rounded-full bg-amber-500/10 border border-amber-500 flex items-center justify-center text-[7px] text-amber-300">
+                  <div className="w-6 h-6 rounded-full bg-amber-500/10 border-2 border-amber-500 flex items-center justify-center text-[7px] text-amber-300">
                     S1
                   </div>
-                  <div className="w-6 h-6 rounded-full bg-amber-500/10 border border-amber-500 flex items-center justify-center text-[7px] text-amber-300">
+                  <div className="w-6 h-6 rounded-full bg-amber-500/10 border-2 border-amber-500 flex items-center justify-center text-[7px] text-amber-300">
                     S2
                   </div>
-                  <div className="w-6 h-6 rounded-full bg-amber-500/10 border border-amber-500 flex items-center justify-center text-[7px] text-amber-300">
+                  <div className="w-6 h-6 rounded-full bg-amber-500/10 border-2 border-amber-500 flex items-center justify-center text-[7px] text-amber-300">
                     S3
                   </div>
                   <div className="w-6 h-6 rounded-full border border-dashed border-slate-700 flex items-center justify-center text-[7px] text-slate-600">

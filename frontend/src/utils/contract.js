@@ -9,6 +9,7 @@ export const CONTRACT_ABI = [
   "event SentExtraEthDividends(address indexed from, address indexed receiver, uint8 matrix, uint8 level)",
   "function users(address) view returns (uint256 id, address referrer, uint256 partnersCount)",
   "function usersX3Matrix(address, uint8) view returns (address currentReferrer, address[] referrals, bool blocked, uint256 reinvestCount)",
+  "function usersX2Matrix(address, uint8) view returns (address currentReferrer, address[] referrals, bool blocked, uint256 reinvestCount)",
   "function usersX4Matrix(address, uint8) view returns (address currentReferrer, address[] firstLevel, address[] secondLevel, bool blocked, uint256 reinvestCount, address closedPart)",
   "function levelPrice(uint8) view returns (uint256)",
   "function isUserExists(address) view returns (bool)",

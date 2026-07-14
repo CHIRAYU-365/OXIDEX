@@ -17,14 +17,21 @@ const app = express();
 app.use(helmet());
 
 const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",").map(o => o.trim())
+  ? process.env.CORS_ORIGIN.split(",").map(o => {
+      try {
+        const url = new URL(o.trim());
+        return `${url.protocol}//${url.host}`;
+      } catch (_) {
+        return o.trim().replace(/\/$/, "");
+      }
+    })
   : [];
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      callback(null, false);
     }
   },
   methods: ["GET", "POST"],

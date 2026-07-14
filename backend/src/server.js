@@ -9,7 +9,14 @@ const PORT = process.env.PORT || 5000;
 const server = http.createServer(app);
 
 const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",").map(o => o.trim())
+  ? process.env.CORS_ORIGIN.split(",").map(o => {
+      try {
+        const url = new URL(o.trim());
+        return `${url.protocol}//${url.host}`;
+      } catch (_) {
+        return o.trim().replace(/\/$/, "");
+      }
+    })
   : [];
 const io = new Server(server, {
   cors: {
@@ -17,7 +24,7 @@ const io = new Server(server, {
       if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(null, false);
       }
     },
     methods: ["GET", "POST"],
