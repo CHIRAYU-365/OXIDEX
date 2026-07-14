@@ -1,57 +1,90 @@
-# OXIDEX Decentralized Matrix Platform
+# OXIDEX — Decentralized Matrix Platform
 
-OXIDEX is a 100% decentralized, fully autonomous smart contract matrix platform running on EVM-compatible networks. 
+OXIDEX is a 100% decentralized, fully autonomous smart contract matrix marketing platform running on EVM-compatible networks. Built with complete transparency, peer-to-peer automatic payment routing, and zero administrative intervention.
 
-## Features
+---
 
-- **Immutable Smart Contract**: Fully verifiable on-chain logic. No admin controls, no backdoors.
-- **P2P Payments**: 100% of all matrix slot buys and registrations go directly to user wallets peer-to-peer.
-- **x3 & x4 Matrix Programs**: Dual dynamic structures. x3 focuses on direct sales, while x4 incorporates team spillovers and passive network mechanics.
-- **SIWE Authentication**: Cryptographic "Sign In With Ethereum" ensures true Web3 native authentication without passwords.
-- **Real-time Event Indexer**: A robust custom indexing service that processes real-time blockchain logs via WebSockets to instantly update UI state and send notifications without delay.
+## 📊 Platform Architecture & Data Flow
 
-## Architecture
+OXIDEX is structured as a robust, hybrid dApp that combines on-chain smart contract execution with a high-performance database caching indexer to provide a lag-free user experience.
 
-1. **Smart Contracts (`/blockchain`)**: Solidity contracts (Hardhat) utilizing custom recursive algorithms for upline discovery and dividend distribution.
-2. **Backend Engine (`/backend`)**: Node.js + Express API wrapping Prisma ORM and PostgreSQL. Serves SIWE nonces, off-chain caching for real-time leaderboards, and handles WebSocket connections.
-3. **Frontend Dashboard (`/frontend`)**: React frontend styled with TailwindCSS, interacting dynamically with both on-chain logic (ethers.js) and off-chain cached state (REST/Socket.io).
-
-## Installation
-
-### 1. Blockchain (Hardhat)
-```bash
-cd blockchain
-npm install
-npx hardhat compile
-npx hardhat node
+```mermaid
+graph TD
+    User([User Web3 Wallet]) <-->|Send Transactions / Read State| EVM[EVM Blockchain - OxideXBase]
+    User <-->|HTTP Requests / WebSockets| API[Express API Server]
+    EVM -->|Emit Events| Indexer[Background Indexer Node]
+    Indexer -->|Write Real-time State| DB[(PostgreSQL Database - Neon)]
+    API <-->|Prisma Queries| DB
+    Indexer -->|Websocket Triggers| API
 ```
 
-### 2. Backend API
-```bash
-cd backend
-npm install
-# Set up .env with DATABASE_URL, JWT_SECRET, CONTRACT_ADDRESS
-npx prisma generate
-npx prisma db push
-npm run dev
+---
+
+## 🛠 Project Components
+
+The monorepo contains three core directories:
+
+1.  **`/blockchain`**: Hardhat project hosting the `OxideXBase.sol` smart contract, deploy scripts, and automated unit tests.
+2.  **`/backend`**: Node.js, Express, and Prisma setup running the background blockchain indexer and providing the statistics API.
+3.  **`/frontend`**: Vite & React dashboard using Tailwind CSS style configurations and `ethers.js` to interact with both the blockchain and the indexer.
+
+---
+
+## 🔄 Matrix Programs Deep-Dive
+
+OXIDEX operates three independent matrix structures simultaneously. When a user registers (0.075 ETH cost), Level 1 of all three programs is automatically activated.
+
+| Matrix Program | Structure | Revenue Model | Ideal For |
+| :--- | :--- | :--- | :--- |
+| **X2 Matrix** | 1 Row, 2 Slots | Slot 1: 100% Direct Pay<br>Slot 2: Reinvests (Pays Upline) | High-speed cycles & quick entry |
+| **X3 Matrix** | 1 Row, 3 Slots | Slots 1-2: 100% Direct Pay<br>Slot 3: Reinvests (Pays Upline) | Active builders & sponsors |
+| **X4 Matrix** | 2 Rows, 6 Slots | Row 1: Pays Upline<br>Row 2 (Slots 1-3): 100% Direct Pay<br>Slot 4: Reinvests (Pays Upline) | Passive spillover & team structures |
+
+### 1. X2 Program Mechanics (2 Slots)
+```
+     [ YOU ]
+     /     \
+  [P1]     [Recycle]
+(100% Pay) (To Upline)
 ```
 
-### 3. Frontend App
-```bash
-cd frontend
-npm install
-# Set up .env with VITE_CONTRACT_ADDRESS
-npm run dev
+### 2. X3 Program Mechanics (3 Slots)
+```
+        [ YOU ]
+      /    |    \
+   [P1]   [P2]   [Recycle]
+   (100% Payments) (To Upline)
 ```
 
-## Security Posture
+### 3. X4 Program Mechanics (6 Slots)
+```
+          [ YOU ]
+         /       \
+      [F1]       [F2]      <--- Row 1 (Payments go to Upline)
+     /   \       /   \
+  [S1]   [S2]  [S3]  [Recycle] <--- Row 2 (Slots 1-3 pay YOU, Slot 4 recycles)
+```
 
-- Prevented infinite recursion in upline search by bounding the depth.
-- Mitigated flash loan / contract-based exploits by validating `tx.origin`.
-- Fully strict linted and comments stripped for production deployment.
-- JWT nonce-based session validation properly handled to avoid replay and memory leak attacks.
-- Robust concurrent event processing with custom Mutex patterns in the indexing engine to prevent matrix state corruption on race conditions.
+---
 
-## License
+## 🛡 Security Protections
 
-MIT License. See `LICENSE` for details.
+*   **DoS Bounded Lookup**: On-chain referrer searching has a hardbound limit of 30 parent elements to prevent contract execution from failing due to out-of-gas errors.
+*   **Anti-Contract Register Check**: Only Externally Owned Accounts (EOA) can register (`msg.sender == tx.origin`).
+*   **Strict CORS Policy**: CORS limits browser origins strictly to the specified whitelist (supporting automatic trailing slash sanitization).
+*   **API Rate Limiters**: Built-in rate limiters restrict global request counts to 100 per 15 minutes, and authentication actions to 20 per 15 minutes.
+*   **Nonce Expiry & Storage TTL**: Login nonces expire after 10 minutes to prevent memory leaks and protect against replay attacks.
+
+---
+
+## ⚙ Setup & Installation
+
+### Prerequites
+*   Node.js v18+
+*   PostgreSQL Database instance
+
+### Sub-project Configurations
+Follow the setup instructions in each directory's readme files:
+1.  Verify `/blockchain` configuration, run `npx hardhat compile` and deploy your smart contracts.
+2.  Setup `/backend/.env` with your Neon database credentials, run `npx prisma db push` to generate client mappings, and launch your API.
+3.  Deploy `/frontend` to GitHub Pages or static host platforms pointing to your API URL.

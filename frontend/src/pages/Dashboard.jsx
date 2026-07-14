@@ -239,7 +239,7 @@ export default function Dashboard() {
                 const lvl = i + 1;
                 const cost = calculateCost(lvl);
                 const isActive = activeUser?.activeLevelsX2?.includes(lvl);
-                const isBuyable = activeUser?.activeLevelsX2?.includes(lvl - 1) && !isActive;
+                const isBuyable = (lvl === 1 ? activeUser?.onChainId && !isActive : activeUser?.activeLevelsX2?.includes(lvl - 1) && !isActive);
 
                 return (
                   <div
@@ -266,7 +266,7 @@ export default function Dashboard() {
                         return (
                           <div 
                             key={slotIdx} 
-                            className={`w-2.5 h-2.5 rounded-full ${isActive ? 'bg-fuchsia-550 border border-fuchsia-500' : 'bg-slate-900 opacity-50'}`}
+                            className={`w-2.5 h-2.5 rounded-full ${isActive ? 'bg-fuchsia-500 border border-fuchsia-500' : 'bg-slate-900 opacity-50'}`}
                           />
                         );
                       })}
@@ -315,7 +315,7 @@ export default function Dashboard() {
                 const lvl = i + 1;
                 const cost = calculateCost(lvl);
                 const isActive = activeUser?.activeLevelsX3?.includes(lvl);
-                const isBuyable = activeUser?.activeLevelsX3?.includes(lvl - 1) && !isActive;
+                const isBuyable = (lvl === 1 ? activeUser?.onChainId && !isActive : activeUser?.activeLevelsX3?.includes(lvl - 1) && !isActive);
 
                 return (
                   <div
@@ -391,7 +391,7 @@ export default function Dashboard() {
                 const lvl = i + 1;
                 const cost = calculateCost(lvl);
                 const isActive = activeUser?.activeLevelsX4?.includes(lvl);
-                const isBuyable = activeUser?.activeLevelsX4?.includes(lvl - 1) && !isActive;
+                const isBuyable = (lvl === 1 ? activeUser?.onChainId && !isActive : activeUser?.activeLevelsX4?.includes(lvl - 1) && !isActive);
 
                 return (
                   <div
