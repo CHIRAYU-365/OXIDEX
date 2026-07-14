@@ -116,7 +116,7 @@ export const Web3Provider = ({ children }) => {
               {
                 chainId: "0xaa36a7",
                 chainName: "Sepolia Testnet",
-                rpcUrls: ["https://ethereum-sepolia-rpc.publicnode.com"],
+                rpcUrls: ["https://sepolia.drpc.org"],
                 nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
                 blockExplorerUrls: ["https://sepolia.etherscan.io"],
               },

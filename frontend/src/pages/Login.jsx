@@ -33,7 +33,7 @@ export default function Login() {
     enterPreviewMode 
   } = useWeb3();
 
-  const [referrer, setReferrer] = useState("0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266");
+  const [referrer, setReferrer] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [regError, setRegError] = useState(null);
   
