@@ -3,7 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "homepage": "https://chirayu-365.github.io/OXIDEX",
   "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
