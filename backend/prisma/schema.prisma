@@ -1,0 +1,79 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id              Int      @id @default(autoincrement())
+  walletAddress   String   @unique
+  onChainId       Int      @unique
+  referrerAddress String?
+  partnersCount   Int      @default(0)
+  registeredAt    DateTime @default(now())
+  lastSeenAt      DateTime @default(now())
+}
+
+model MatrixState {
+  id              Int      @id @default(autoincrement())
+  userAddress     String
+  program         String
+  level           Int
+  isActive        Boolean  @default(false)
+  reinvestCount   Int      @default(0)
+  currentReferrer String?
+  referrals       String[]
+  firstLevel      String[]
+  secondLevel     String[]
+  activatedAt     DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userAddress, program, level])
+}
+
+model Transaction {
+  id             Int      @id @default(autoincrement())
+  txHash         String   @unique
+  userAddress    String
+  eventType      String
+  program        String?
+  level          Int?
+  amount         Decimal?
+  blockNumber    Int
+  blockTimestamp DateTime
+  rawData        Json?
+}
+
+model Earning {
+  id            Int      @id @default(autoincrement())
+  userAddress   String
+  sourceType    String
+  program       String
+  level         Int
+  amount        Decimal
+  fromAddress   String
+  txHash        String
+  earnedAt      DateTime @default(now())
+}
+
+model Notification {
+  id          Int      @id @default(autoincrement())
+  userAddress String
+  type        String
+  title       String
+  body        String
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model PlatformStats {
+  id         Int      @id @default(autoincrement())
+  totalUsers Int      @default(0)
+  totalVolume Decimal  @default(0)
+  volume24h  Decimal  @default(0)
+  users24h   Int      @default(0)
+  updatedAt  DateTime @updatedAt
+}
