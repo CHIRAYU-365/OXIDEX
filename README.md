@@ -75,16 +75,29 @@ OXIDEX operates three independent matrix structures simultaneously. When a user 
 *   **API Rate Limiters**: Built-in rate limiters restrict global request counts to 100 per 15 minutes, and authentication actions to 20 per 15 minutes.
 *   **Nonce Expiry & Storage TTL**: Login nonces expire after 10 minutes to prevent memory leaks and protect against replay attacks.
 
+## 🚀 Live Deployment
+The smart contract has been successfully deployed to the **Sepolia Testnet**.
+- **Contract Address:** `0xF79A892eaF3D1085c1a4Da364881DF2240D29F4d`
+- **Frontend URL:** Hosted on GitHub Pages
+- **Backend API:** Hosted on Render (`https://oxidex-api.onrender.com`)
+
 ---
 
 ## ⚙ Setup & Installation
 
-### Prerequites
+### Prerequisites
 *   Node.js v18+
 *   PostgreSQL Database instance
+*   MetaMask Wallet with Sepolia Testnet ETH
 
 ### Sub-project Configurations
-Follow the setup instructions in each directory's readme files:
-1.  Verify `/blockchain` configuration, run `npx hardhat compile` and deploy your smart contracts.
-2.  Setup `/backend/.env` with your Neon database credentials, run `npx prisma db push` to generate client mappings, and launch your API.
-3.  Deploy `/frontend` to GitHub Pages or static host platforms pointing to your API URL.
+Follow the setup instructions in each directory:
+1.  **Blockchain (`/blockchain`)**:
+    - Create a `.env` file and add your `PRIVATE_KEY=your_metamask_key` (Make sure your wallet has Sepolia ETH).
+    - Run `npx hardhat compile` and `npx hardhat run scripts/deploy.js --network sepolia` to deploy.
+2.  **Backend (`/backend`)**:
+    - Setup `/backend/.env` with your Neon database credentials, `RPC_URL`, and the new `CONTRACT_ADDRESS`.
+    - Run `npx prisma db push` to generate client mappings, and launch your API.
+3.  **Frontend (`/frontend`)**:
+    - Update the contract address in `src/utils/contract.js`.
+    - Run `npm run build` and `npm run deploy` to publish to GitHub Pages.

@@ -20,6 +20,13 @@ OxideXBase.sol     --->    Node.js Indexer     --->   React Frontend
 
 ---
 
+## 🔑 Key & Environment Management
+*   **Never commit `.env` files**: All environment variables, particularly `PRIVATE_KEY` for contract deployments, must remain strictly local.
+*   **Use Test Accounts**: Never use your main Ethereum wallet or a wallet containing real funds (Mainnet ETH) for development or testnet deployments.
+*   **Database Credentials**: The `DATABASE_URL` in the backend must be kept secret to prevent unauthorized database wipes or data injection.
+
+---
+
 ## 📊 Severity Classification Matrix
 
 We evaluate security vulnerabilities based on their impact on fund security, server availability, and user data privacy:

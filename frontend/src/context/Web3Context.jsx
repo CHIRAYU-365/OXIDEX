@@ -105,7 +105,7 @@ export const Web3Provider = ({ children }) => {
     try {
       await window.ethereum.request({
         method: "wallet_switchEthereumChain",
-        params: [{ chainId: "0x7a69" }],
+        params: [{ chainId: "0xaa36a7" }],
       });
     } catch (switchError) {
       if (switchError.code === 4902) {
@@ -114,10 +114,11 @@ export const Web3Provider = ({ children }) => {
             method: "wallet_addEthereumChain",
             params: [
               {
-                chainId: "0x7a69",
-                chainName: "Hardhat Local Network",
-                rpcUrls: ["http://127.0.0.1:8545"],
-                nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+                chainId: "0xaa36a7",
+                chainName: "Sepolia Testnet",
+                rpcUrls: ["https://ethereum-sepolia-rpc.publicnode.com"],
+                nativeCurrency: { name: "SepoliaETH", symbol: "ETH", decimals: 18 },
+                blockExplorerUrls: ["https://sepolia.etherscan.io"],
               },
             ],
           });
@@ -140,7 +141,7 @@ export const Web3Provider = ({ children }) => {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const network = await provider.getNetwork();
-      if (network.chainId.toString() !== "31337") {
+      if (network.chainId.toString() !== "11155111") {
         await switchNetwork();
       }
 
