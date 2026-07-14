@@ -25,7 +25,7 @@ const allowedOrigins = process.env.CORS_ORIGIN
         return o.trim().replace(/\/$/, "");
       }
     })
-  : [];
+  : ["*"];
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {

@@ -17,7 +17,7 @@ const allowedOrigins = process.env.CORS_ORIGIN
         return o.trim().replace(/\/$/, "");
       }
     })
-  : [];
+  : ["*"];
 const io = new Server(server, {
   cors: {
     origin: function (origin, callback) {
