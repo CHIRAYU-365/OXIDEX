@@ -156,7 +156,30 @@ OXIDEX/
 
 <br>
 
-## ⚡ Step-by-Step Installation
+## 🚀 Quick Start (All-in-One Command)
+
+We have configured a unified one-line command that handles concurrency across all 3 workspaces automatically.
+
+### For Local Development
+Run the following at the root of the project to boot the local blockchain, deploy contracts, start the backend server, and spin up the Vite frontend all at once:
+```bash
+npm install
+npm start
+```
+
+### For Production / Deployment
+If you are deploying, set the `NODE_ENV` to `production`. This will automatically build the frontend, start the backend in production mode, and serve the optimized static files (skipping local blockchain nodes).
+```bash
+# On Linux / macOS
+NODE_ENV=production npm start
+
+# On Windows (PowerShell)
+$env:NODE_ENV="production"; npm start
+```
+
+<br>
+
+## ⚡ Step-by-Step Installation (Manual)
 
 ### Prerequisites
 - [Node.js v18+](https://nodejs.org/)
