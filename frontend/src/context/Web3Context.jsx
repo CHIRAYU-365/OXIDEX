@@ -145,6 +145,12 @@ export const Web3Provider = ({ children }) => {
         await switchNetwork();
       }
 
+      // Force fresh wallet connection by requesting permissions
+      await window.ethereum.request({
+        method: "wallet_requestPermissions",
+        params: [{ eth_accounts: {} }]
+      });
+
       const accounts = await window.ethereum.request({
         method: "eth_requestAccounts",
       });

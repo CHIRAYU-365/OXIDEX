@@ -19,7 +19,8 @@ function AuthenticatedRoutes() {
       return <Login />;
     }
 
-    if (user && !user.onChainId) {
+    // Verify if the user is sponsored (registered on-chain)
+    if (!user || !user.onChainId) {
       return <Login />;
     }
   }

@@ -60,17 +60,23 @@ const getUserProfile = async (req, res) => {
 
 const getUserPartners = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { idOrAddress } = req.params;
     const page = parseInt(req.query.page, 10) || 1;
     const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 100);
     const skip = (page - 1) * limit;
 
-    const parsedId = parseInt(id, 10);
-    if (isNaN(parsedId)) {
-      return res.status(400).json({ success: false, error: "Invalid user ID" });
+    let query = {};
+    if (idOrAddress.startsWith("0x")) {
+      query = { walletAddress: idOrAddress.toLowerCase() };
+    } else {
+      const id = parseInt(idOrAddress, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ success: false, error: "Invalid user ID or wallet address" });
+      }
+      query = { onChainId: id };
     }
 
-    const user = await prisma.user.findUnique({ where: { onChainId: parsedId } });
+    const user = await prisma.user.findUnique({ where: query });
     if (!user) {
       return res.status(404).json({ success: false, error: "User not found" });
     }

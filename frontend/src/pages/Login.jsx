@@ -222,7 +222,14 @@ export default function Login() {
                 </div>
               ) : (
                 <div className="space-y-5">
-                  {user && !user.onChainId ? (
+                  {!user ? (
+                    <div className="flex flex-col items-center justify-center py-10 space-y-4">
+                      <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin shadow-glow"></div>
+                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">
+                        Verifying Web3 Identity...
+                      </p>
+                    </div>
+                  ) : !user.onChainId ? (
                     <form onSubmit={handleRegister} className="space-y-4">
                       <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3.5 text-center">
                         <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">
@@ -263,25 +270,7 @@ export default function Login() {
                         )}
                       </button>
                     </form>
-                  ) : (
-                    <div className="space-y-4 text-center">
-                      <div className="p-4 bg-emerald-950/20 border border-emerald-500/20 rounded-2xl">
-                        <span className="text-emerald-400 text-sm font-semibold flex items-center justify-center gap-1.5">
-                          <ShieldCheck className="w-4 h-4" /> Wallet Verified
-                        </span>
-                        <p className="text-[10px] text-slate-500 font-mono mt-1">
-                          {account.slice(0, 14)}...{account.slice(-12)}
-                        </p>
-                      </div>
-                      <button
-                        onClick={() => window.location.reload()}
-                        className="w-full py-3.5 rounded-xl font-bold bg-brand-500 hover:bg-brand-600 text-white text-xs transition shadow-glow flex items-center justify-center space-x-2"
-                      >
-                        <span>Go to Dashboard</span>
-                        <ArrowRight className="w-4 h-4" />
-                      </button>
-                    </div>
-                  )}
+                  ) : null}
                 </div>
               )}
             </div>
