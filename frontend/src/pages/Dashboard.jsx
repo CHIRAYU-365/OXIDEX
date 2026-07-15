@@ -15,6 +15,7 @@ import {
   TrendingDown,
   ChevronRight,
   HelpCircle,
+  Zap,
 } from "lucide-react";
 
 export default function Dashboard() {
@@ -103,31 +104,49 @@ export default function Dashboard() {
     return 0.025 * Math.pow(2, level - 1);
   };
 
-  return (
-    <div className="space-y-8">
-      {activeUser?.onChainId && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-900/80 border border-slate-800 p-5 rounded-2xl shadow-glow">
-          <div>
-            <h2 className="text-lg font-extrabold text-slate-100">Personal Affiliate Link</h2>
-            <p className="text-sm text-slate-400">Share this link to grow your team</p>
+    return (
+      <div className="space-y-8 animate-fade-in">
+        {activeUser?.onChainId && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-[#050b14] border border-sky-500/20 p-6 rounded-2xl shadow-[0_0_15px_rgba(14,165,233,0.1)]">
+              <div>
+                <h2 className="text-lg font-extrabold text-white">Personal Affiliate Link</h2>
+                <p className="text-sm text-sky-200/60">Share this link to grow your team</p>
+              </div>
+              <div className="mt-4 sm:mt-0 flex items-center space-x-3 bg-[#010308] border border-gray-800 px-4 py-2.5 rounded-xl">
+                <span className="text-xs font-mono text-sky-400 truncate max-w-[150px] sm:max-w-[200px]">
+                  {window.location.origin}/?ref={activeUser.onChainId}
+                </span>
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(`${window.location.origin}/?ref=${activeUser.onChainId}`);
+                    alert("Affiliate link copied to clipboard!");
+                  }}
+                  className="p-1.5 bg-sky-500/20 hover:bg-sky-500/30 rounded-lg transition"
+                  title="Copy Affiliate Link"
+                >
+                  <Layers className="w-4 h-4 text-sky-400" />
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-[#050b14] border border-emerald-500/20 p-6 rounded-2xl shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+              <div>
+                <h2 className="text-lg font-extrabold text-white flex items-center gap-2">
+                  <Zap className="w-5 h-5 text-emerald-400" /> Auto-Upgrade
+                </h2>
+                <p className="text-sm text-emerald-200/60">Automatically save earnings for next level</p>
+              </div>
+              <div className="mt-4 sm:mt-0 flex flex-col items-end">
+                 <button 
+                   onClick={() => alert("Auto-Upgrade toggle initiated. Confirm transaction in MetaMask.")}
+                   className={`px-4 py-2 rounded-xl font-bold transition-all text-xs uppercase tracking-wider ${activeUser?.autoUpgrade ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.4)]' : 'bg-gray-800 text-gray-400 hover:bg-gray-700'}`}>
+                   {activeUser?.autoUpgrade ? 'Enabled' : 'Disabled'}
+                 </button>
+              </div>
+            </div>
           </div>
-          <div className="mt-4 sm:mt-0 flex items-center space-x-3 bg-slate-950 border border-slate-800 px-4 py-2.5 rounded-xl">
-            <span className="text-xs font-mono text-brand-400 truncate max-w-[200px] sm:max-w-xs">
-              {window.location.origin}/?ref={activeUser.onChainId}
-            </span>
-            <button 
-              onClick={() => {
-                navigator.clipboard.writeText(`${window.location.origin}/?ref=${activeUser.onChainId}`);
-                alert("Affiliate link copied to clipboard!");
-              }}
-              className="p-1.5 bg-brand-500/20 hover:bg-brand-500/30 rounded-lg transition"
-              title="Copy Affiliate Link"
-            >
-              <Layers className="w-4 h-4 text-brand-400" />
-            </button>
-          </div>
-        </div>
-      )}
+        )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
         <div className="lg:col-span-1 space-y-6">

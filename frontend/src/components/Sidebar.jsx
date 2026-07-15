@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
-import { LayoutDashboard, Users, History, LogOut, ExternalLink } from "lucide-react";
+import { LayoutDashboard, Users, History, LogOut, ExternalLink, Link as LinkIcon, Trophy, CreditCard } from "lucide-react";
 import { CONTRACT_ADDRESS } from "../utils/contract";
 
 export default function Sidebar({ mobileOpen, setMobileOpen }) {
@@ -10,7 +10,10 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
 
   const navItems = [
     { name: "Dashboard", path: "/", icon: <LayoutDashboard className="w-5 h-5" /> },
+    { name: "Affiliate Hub", path: "/affiliate", icon: <LinkIcon className="w-5 h-5" /> },
+    { name: "Leaderboard", path: "/leaderboard", icon: <Trophy className="w-5 h-5" /> },
     { name: "Partners", path: "/partners", icon: <Users className="w-5 h-5" /> },
+    { name: "Buy Crypto", path: "/buy-crypto", icon: <CreditCard className="w-5 h-5" /> },
     { name: "History", path: "/history", icon: <History className="w-5 h-5" /> },
   ];
 
@@ -30,11 +33,11 @@ export default function Sidebar({ mobileOpen, setMobileOpen }) {
 
       <aside className={`fixed top-0 left-0 h-full w-64 bg-slate-950 border-r border-slate-900 z-50 flex flex-col transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} lg:translate-x-0`}>
         <div className="h-20 flex items-center px-6 border-b border-slate-900">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-fuchsia-500 flex items-center justify-center font-bold text-lg text-white shadow-glow mr-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-emerald-500 flex items-center justify-center font-bold text-lg text-white shadow-glow mr-3">
             ⚡
           </div>
           <div>
-            <h1 className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-fuchsia-400">
+            <h1 className="text-xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-brand-400 to-emerald-400">
               OXIDEX
             </h1>
             <span className="text-[10px] text-slate-500 font-bold tracking-widest uppercase block mt-[-2px]">

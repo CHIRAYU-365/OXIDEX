@@ -11,6 +11,7 @@ const {
   getPlatformStats,
   getUserHistory,
 } = require("./controllers/userController");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 
 const app = express();
 
@@ -75,6 +76,8 @@ app.get("/api/users/:idOrAddress/partners", getUserPartners);
 app.get("/api/users/:idOrAddress/history", getUserHistory);
 app.get("/api/matrix/:userAddress/:program/:level", getMatrixState);
 app.get("/api/platform/stats", getPlatformStats);
+
+app.use("/api/analytics", analyticsRoutes);
 
 app.use((req, res, next) => {
   res.status(404).json({ success: false, error: "Resource not found" });

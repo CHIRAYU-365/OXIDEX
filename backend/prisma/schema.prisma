@@ -13,6 +13,10 @@ model User {
   onChainId       Int      @unique
   referrerAddress String?
   partnersCount   Int      @default(0)
+  totalEarnings   Decimal  @default(0)
+  autoUpgrade     Boolean  @default(false)
+  refCode         String?  @unique
+  badges          Int[]    @default([])
   registeredAt    DateTime @default(now())
   lastSeenAt      DateTime @default(now())
 }

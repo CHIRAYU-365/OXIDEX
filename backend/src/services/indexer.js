@@ -1,6 +1,7 @@
 const { ethers } = require("ethers");
 const { PrismaClient } = require("@prisma/client");
 const { OXIDEX_ABI } = require("../web3/abi");
+const { sendTelegramAlert } = require("./telegramBot");
 
 const prisma = new PrismaClient();
 
@@ -144,6 +145,9 @@ const startIndexer = (io) => {
           timestamp: Date.now(),
         },
       });
+
+      // Send Telegram Broadcast
+      sendTelegramAlert(`🎉 <b>New Member Registered!</b>\nUser: <code>${userLower}</code>\nReferred by: <code>${referrerLower}</code>`);
     } catch (err) {
       console.error("Error processing Registration event:", err);
     } finally {
@@ -191,6 +195,9 @@ const startIndexer = (io) => {
           timestamp: Date.now(),
         },
       });
+
+      // Send Telegram Broadcast
+      sendTelegramAlert(`🚀 <b>Level Upgrade!</b>\nUser <code>${userLower}</code> just upgraded to <b>${prog.toUpperCase()} Level ${lvl}</b>!`);
     } catch (err) {
       console.error("Error processing Upgrade event:", err);
     } finally {
@@ -344,6 +351,11 @@ const startIndexer = (io) => {
             body: `You received ${val} ETH from partner in ${prog.toUpperCase()} Level ${lvl}.`,
           },
         });
+
+        await tx.user.updateMany({
+          where: { walletAddress: receiverLower },
+          data: { totalEarnings: { increment: val } }
+        });
       });
 
       io.emit(`ws:earning:${receiverLower}`, {
@@ -355,6 +367,40 @@ const startIndexer = (io) => {
       });
     } catch (err) {
       console.error("Error processing SentExtraEthDividends event:", err);
+    } finally {
+      release();
+    }
+  };
+
+  const handleEscrowedForUpgrade = async (user, amount, event) => {
+    const release = await mutex.acquire([user]);
+    try {
+      const userLower = user.toLowerCase();
+      const val = ethers.formatEther(amount);
+
+      await prisma.$transaction(async (tx) => {
+        await tx.notification.create({
+          data: {
+            userAddress: userLower,
+            type: "escrow",
+            title: "Funds Escrowed for Upgrade!",
+            body: `You earned ${val} ETH which has been securely escrowed towards your next auto-upgrade.`,
+          },
+        });
+
+        await tx.user.updateMany({
+          where: { walletAddress: userLower },
+          data: { totalEarnings: { increment: val } }
+        });
+      });
+
+      io.emit(`ws:earning:${userLower}`, {
+        type: "escrow",
+        amount: val,
+        timestamp: Date.now(),
+      });
+    } catch (err) {
+      console.error("Error processing EscrowedForUpgrade event:", err);
     } finally {
       release();
     }
@@ -447,6 +493,8 @@ const startIndexer = (io) => {
             await handleNewUserPlace(eventArgs[0], eventArgs[1], eventArgs[2], eventArgs[3], eventArgs[4], eventObj);
           } else if (parsedLog.name === "SentExtraEthDividends") {
             await handleSentExtraEthDividends(eventArgs[0], eventArgs[1], eventArgs[2], eventArgs[3], eventObj);
+          } else if (parsedLog.name === "EscrowedForUpgrade") {
+            await handleEscrowedForUpgrade(eventArgs[0], eventArgs[1], eventObj);
           } else if (parsedLog.name === "MissedEthReceive") {
             await handleMissedEthReceive(eventArgs[0], eventArgs[1], eventArgs[2], eventArgs[3], eventObj);
           }
@@ -466,6 +514,7 @@ const startIndexer = (io) => {
     contract.on("Reinvest", handleReinvest);
     contract.on("NewUserPlace", handleNewUserPlace);
     contract.on("SentExtraEthDividends", handleSentExtraEthDividends);
+    contract.on("EscrowedForUpgrade", handleEscrowedForUpgrade);
     contract.on("MissedEthReceive", handleMissedEthReceive);
   }
 };

@@ -1,103 +1,253 @@
-# OXIDEX — Decentralized Matrix Platform
+<div align="center">
 
-OXIDEX is a 100% decentralized, fully autonomous smart contract matrix marketing platform running on EVM-compatible networks. Built with complete transparency, peer-to-peer automatic payment routing, and zero administrative intervention.
+# ⚡ OXIDEX PROTOCOL ⚡
+**The Autonomous, Peer-to-Peer Decentralized Matrix Network**
+
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![Ethereum](https://img.shields.io/badge/Network-Ethereum_Sepolia-627EEA.svg?logo=ethereum)](https://sepolia.etherscan.io/)
+[![Node.js](https://img.shields.io/badge/Node.js-v18.0.0-green.svg?logo=node.js)](https://nodejs.org/)
+[![React](https://img.shields.io/badge/React-18.2.0-blue.svg?logo=react)](https://reactjs.org/)
+[![Solidity](https://img.shields.io/badge/Solidity-^0.8.20-363636.svg?logo=solidity)](https://soliditylang.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-ORM-2D3748.svg?logo=prisma)](https://www.prisma.io/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-CSS-38B2AC.svg?logo=tailwind-css)](https://tailwindcss.com/)
+
+<br>
+
+<p align="center">
+  <em>An unstoppable blockchain matrix marketing protocol designed for hyper-scalability, peer-to-peer instantaneous payments, and autonomous level-ups. Zero human administration. Absolute transparency.</em>
+</p>
 
 ---
 
-## 📊 Platform Architecture & Data Flow
+</div>
 
-OXIDEX is structured as a robust, hybrid dApp that combines on-chain smart contract execution with a high-performance database caching indexer to provide a lag-free user experience.
+<br>
+
+## 🌌 Protocol Infographic & High-Level Architecture
+
+The OXIDEX ecosystem is built upon a tri-layer architecture consisting of a **Web3 Frontend**, a **Real-time Backend Node**, and the **EVM Smart Contracts**.
 
 ```mermaid
 graph TD
-    User([User Web3 Wallet]) <-->|Send Transactions / Read State| EVM[EVM Blockchain - OxideXBase]
-    User <-->|HTTP Requests / WebSockets| API[Express API Server]
-    EVM -->|Emit Events| Indexer[Background Indexer Node]
-    Indexer -->|Write Real-time State| DB[(PostgreSQL Database - Neon)]
-    API <-->|Prisma Queries| DB
-    Indexer -->|Websocket Triggers| API
+    %% Styling
+    classDef user fill:#0ea5e9,stroke:#0369a1,stroke-width:2px,color:#fff
+    classDef frontend fill:#10b981,stroke:#047857,stroke-width:2px,color:#fff
+    classDef backend fill:#8b5cf6,stroke:#5b21b6,stroke-width:2px,color:#fff
+    classDef blockchain fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff
+    classDef db fill:#ef4444,stroke:#b91c1c,stroke-width:2px,color:#fff
+
+    %% Nodes
+    U((Web3 User)):::user
+    F[React / Vite Frontend\nEthers.js]:::frontend
+    B[Node.js Express Backend\nSocket.io / Ethers]:::backend
+    DB[(Neon PostgreSQL\nPrisma ORM)]:::db
+    SC[(OxideXBase Contract\nERC20 + ERC1155)]:::blockchain
+
+    %% Edges
+    U -- "Connect Wallet" --> F
+    F -- "Sign Message (EIP-712)" --> B
+    B -- "Validate Signature" --> SC
+    B -- "Issue JWT" --> F
+    F -- "Buy Matrix Level (Tx)" --> SC
+    SC -- "Emit Events" --> B
+    B -- "Sync State" --> DB
+    B -- "WebSockets Push" --> F
+    F -- "Read Global State" --> DB
+    SC -- "Peer-to-Peer Transfer" --> U
 ```
 
----
+<br>
 
-## 🛠 Project Components
+## 📊 The Tri-Matrix System (x2, x3, x4)
 
-The monorepo contains three core directories:
+OXIDEX deploys three separate network matrices, each with its own mathematical progression algorithm. Members can upgrade levels in each matrix to capture higher referral value.
 
-1.  **`/blockchain`**: Hardhat project hosting the `OxideXBase.sol` smart contract, deploy scripts, and automated unit tests.
-2.  **`/backend`**: Node.js, Express, and Prisma setup running the background blockchain indexer and providing the statistics API.
-3.  **`/frontend`**: Vite & React dashboard using Tailwind CSS style configurations and `ethers.js` to interact with both the blockchain and the indexer.
+### 1. The X2 Matrix (Linear Velocity)
+```mermaid
+graph TD
+    classDef root fill:#0ea5e9,color:#fff,stroke:#0284c7;
+    classDef p1 fill:#10b981,color:#fff,stroke:#047857;
+    classDef rec fill:#ef4444,color:#fff,stroke:#b91c1c;
 
----
-
-## 🔄 Matrix Programs Deep-Dive
-
-OXIDEX operates three independent matrix structures simultaneously. When a user registers (0.075 ETH cost), Level 1 of all three programs is automatically activated.
-
-| Matrix Program | Structure | Revenue Model | Ideal For |
-| :--- | :--- | :--- | :--- |
-| **X2 Matrix** | 1 Row, 2 Slots | Slot 1: 100% Direct Pay<br>Slot 2: Reinvests (Pays Upline) | High-speed cycles & quick entry |
-| **X3 Matrix** | 1 Row, 3 Slots | Slots 1-2: 100% Direct Pay<br>Slot 3: Reinvests (Pays Upline) | Active builders & sponsors |
-| **X4 Matrix** | 2 Rows, 6 Slots | Row 1: Pays Upline<br>Row 2 (Slots 1-3): 100% Direct Pay<br>Slot 4: Reinvests (Pays Upline) | Passive spillover & team structures |
-
-### 1. X2 Program Mechanics (2 Slots)
+    Root((You\nLevel 1)):::root
+    Root --- P1((Partner 1\n100% Payout)):::p1
+    Root --- P2((Partner 2\nRecycle Up)):::rec
 ```
-     [ YOU ]
-     /     \
-  [P1]     [Recycle]
-(100% Pay) (To Upline)
+> **Mechanics:** 1-row, 2-slot board. The first placement directly pays you 100%. The second placement pays your upline and automatically clears (recycles) your board so you can earn again.
+
+<br>
+
+### 2. The X3 Matrix (Network Builder)
+```mermaid
+graph TD
+    classDef root fill:#0ea5e9,color:#fff,stroke:#0284c7;
+    classDef p1 fill:#10b981,color:#fff,stroke:#047857;
+    classDef rec fill:#ef4444,color:#fff,stroke:#b91c1c;
+
+    Root((You\nLevel 1)):::root
+    Root --- P1((Partner 1\n100% Payout)):::p1
+    Root --- P2((Partner 2\n100% Payout)):::p1
+    Root --- P3((Partner 3\nRecycle Up)):::rec
+```
+> **Mechanics:** 1-row, 3-slot board. The first two placements directly pay you 100%. The third placement pays your upline and recycles your board.
+
+<br>
+
+### 3. The X4 Matrix (Team Spillover)
+```mermaid
+graph TD
+    classDef root fill:#0ea5e9,color:#fff,stroke:#0284c7;
+    classDef f1 fill:#64748b,color:#fff,stroke:#475569;
+    classDef p1 fill:#10b981,color:#fff,stroke:#047857;
+    classDef rec fill:#ef4444,color:#fff,stroke:#b91c1c;
+
+    Root((You)):::root
+    Root --- L1P1((Row 1, Pos 1\nPays Upline)):::f1
+    Root --- L1P2((Row 1, Pos 2\nPays Upline)):::f1
+    
+    L1P1 --- L2P1((Row 2, Pos 1\n100% to You)):::p1
+    L1P1 --- L2P2((Row 2, Pos 2\n100% to You)):::p1
+    L1P2 --- L2P3((Row 2, Pos 3\n100% to You)):::p1
+    L1P2 --- L2P4((Row 2, Pos 4\nRecycle Up)):::rec
+```
+> **Mechanics:** 2-row, 6-slot board. Row 1 payments pass up. Row 2 positions 1, 2, and 3 pay you 100%. Position 4 recycles the board.
+
+<br>
+
+## 🔐 Core Features & Security Implementations
+
+| Feature Matrix | Implementation Details | Security Standard |
+|----------------|------------------------|-------------------|
+| **P2P Payments** | Payments never touch a central treasury. | Fully Decentralized |
+| **Auto-Escrow** | Smart contract holds partial funds to automatically buy next levels. | Non-custodial |
+| **Token Rewards** | Users get ERC20 ($OXI) when they register and recruit. | OpenZeppelin ERC20 |
+| **Soulbound NFTs** | Reach level 3, 6, 9 to mint non-transferable milestone NFTs. | ERC1155 (Locked) |
+| **JWT Off-Chain** | Signatures verify wallet ownership before granting dashboard access. | EIP-712 / Ethers |
+| **WebSockets** | Live network feed without constantly querying the blockchain RPC. | Socket.io / EventLog |
+
+<br>
+
+## 🛠 Project Monorepo Structure
+
+The project is broken into three distinct workspaces. Follow the `README.md` files inside each respective directory for hyper-detailed instructions.
+
+```text
+OXIDEX/
+├── blockchain/         # Hardhat, Solidity 0.8.20+, OpenZeppelin
+│   ├── contracts/      # OxideXBase.sol, OxiToken.sol, OxiMilestones.sol
+│   ├── scripts/        # deploy.js (Linking logic)
+│   └── test/           # Chai / Mocha unit tests
+│
+├── backend/            # Node.js, Express, Prisma ORM, Socket.io
+│   ├── prisma/         # schema.prisma (Neon Postgres)
+│   ├── src/
+│   │   ├── services/   # indexer.js (Blockchain listener)
+│   │   ├── controllers/# analyticsController.js, authController.js
+│   │   └── app.js      # Main Express API entry
+│   └── seed_owner.js   # Master Account injection script
+│
+└── frontend/           # React 18, Vite, Tailwind CSS, Lucide Icons
+    ├── src/
+    │   ├── context/    # Web3Context.jsx (Ethers.js provider)
+    │   ├── pages/      # Dashboard, Leaderboard, AffiliateHub
+    │   └── components/ # Sidebar, Modals, Real-time feeds
+    └── index.html      # Vite Entry point
 ```
 
-### 2. X3 Program Mechanics (3 Slots)
-```
-        [ YOU ]
-      /    |    \
-   [P1]   [P2]   [Recycle]
-   (100% Payments) (To Upline)
-```
+<br>
 
-### 3. X4 Program Mechanics (6 Slots)
-```
-          [ YOU ]
-         /       \
-      [F1]       [F2]      <--- Row 1 (Payments go to Upline)
-     /   \       /   \
-  [S1]   [S2]  [S3]  [Recycle] <--- Row 2 (Slots 1-3 pay YOU, Slot 4 recycles)
-```
-
----
-
-## 🛡 Security Protections
-
-*   **DoS Bounded Lookup**: On-chain referrer searching has a hardbound limit of 30 parent elements to prevent contract execution from failing due to out-of-gas errors.
-*   **Anti-Contract Register Check**: Only Externally Owned Accounts (EOA) can register (`msg.sender == tx.origin`).
-*   **Strict CORS Policy**: CORS limits browser origins strictly to the specified whitelist (supporting automatic trailing slash sanitization).
-*   **API Rate Limiters**: Built-in rate limiters restrict global request counts to 100 per 15 minutes, and authentication actions to 20 per 15 minutes.
-*   **Nonce Expiry & Storage TTL**: Login nonces expire after 10 minutes to prevent memory leaks and protect against replay attacks.
-
-## 🚀 Live Deployment
-The smart contract has been successfully deployed to the **Sepolia Testnet**.
-- **Contract Address:** `0xF79A892eaF3D1085c1a4Da364881DF2240D29F4d`
-- **Frontend URL:** Hosted on GitHub Pages
-- **Backend API:** Hosted on Render (`https://oxidex-api.onrender.com`)
-
----
-
-## ⚙ Setup & Installation
+## ⚡ Step-by-Step Installation
 
 ### Prerequisites
-*   Node.js v18+
-*   PostgreSQL Database instance
-*   MetaMask Wallet with Sepolia Testnet ETH
+- [Node.js v18+](https://nodejs.org/)
+- [MetaMask Wallet](https://metamask.io/) installed in your browser
+- A PostgreSQL Database (e.g. [Neon](https://neon.tech/))
+- Sepolia Testnet ETH
 
-### Sub-project Configurations
-Follow the setup instructions in each directory:
-1.  **Blockchain (`/blockchain`)**:
-    - Create a `.env` file and add your `PRIVATE_KEY=your_metamask_key` (Make sure your wallet has Sepolia ETH).
-    - Run `npx hardhat compile` and `npx hardhat run scripts/deploy.js --network sepolia` to deploy.
-2.  **Backend (`/backend`)**:
-    - Setup `/backend/.env` with your Neon database credentials, `RPC_URL`, and the new `CONTRACT_ADDRESS`.
-    - Run `npx prisma db push` to generate client mappings, and launch your API.
-3.  **Frontend (`/frontend`)**:
-    - Update the contract address in `src/utils/contract.js`.
-    - Run `npm run build` and `npm run deploy` to publish to GitHub Pages.
+### 1. Blockchain Deployment
+```bash
+cd blockchain
+npm install
+# Add your ALCHEMY_URL and PRIVATE_KEY to .env
+npx hardhat compile
+npx hardhat run scripts/deploy.js --network sepolia
+```
+*Copy the deployed contract addresses. You will need them for the frontend and backend.*
+
+### 2. Backend Initialization
+```bash
+cd backend
+npm install
+# Add DATABASE_URL, CORS_ORIGIN, JWT_SECRET, PRIVATE_KEY to .env
+npx prisma generate
+npx prisma db push
+node seed_owner.js
+npm run dev
+```
+
+### 3. Frontend Execution
+```bash
+cd frontend
+npm install
+# Add VITE_BACKEND_URL and update CONTRACT_ADDRESS in utils/contract.js
+npm run dev
+```
+
+<br>
+
+## 💸 Economic Data Flow Diagram
+
+Understanding the flow of Ether through the system is critical.
+
+```mermaid
+sequenceDiagram
+    participant Bob as Bob (User)
+    participant SC as Smart Contract
+    participant Alice as Alice (Upline)
+    participant DB as Backend Database
+    
+    Bob->>SC: buyNewLevel(matrix=x3, level=2) + 0.05 ETH
+    SC->>SC: calculateUpline(Bob)
+    SC->>SC: isAutoUpgradeEnabled?
+    
+    alt Auto-Upgrade Enabled
+        SC->>SC: hold in Escrow
+        SC-->>Bob: Emit EscrowedForUpgrade
+    else Direct Payout
+        SC->>Alice: transfer(0.05 ETH)
+        SC-->>Alice: Emit NewUserPlace
+    end
+    
+    SC-->>DB: Indexer catches Event
+    DB->>DB: Prisma Update (earnings, active level)
+    DB-->>Bob: Socket.io Emit ("Live Feed Update")
+```
+
+<br>
+
+## 🛡 Security Audits & Known Vectors
+
+- **Reentrancy**: Mitigated using OpenZeppelin `ReentrancyGuard` on all state-mutating, value-transferring functions.
+- **Gas Limits**: Reinvestment loops are strictly capped at mathematical limits, heavily tested to prevent Out-Of-Gas (OOG) reverts on deeply nested matrices.
+- **Admin Keys**: The owner account is initialized at deploy time, but the contract features **ZERO** pause, withdrawal, or administrative override functions. Once deployed, the matrix is unstoppable.
+- **Token Emissions**: $OXI Token minting is strictly regulated by the `OxideXBase` contract acting as the sole authorized minter.
+
+<br>
+
+## 🚀 Live Roadmap
+
+- [x] **Phase 1**: Core Matrix Smart Contracts (x3, x4)
+- [x] **Phase 1.5**: ERC20 Token & ERC1155 Soulbound NFT Integration
+- [x] **Phase 2**: Backend Indexer, Neon DB Integration, API Routes
+- [x] **Phase 2.5**: Telegram Webhook Community Alerts
+- [x] **Phase 3**: Trust-Incurred UI Overhaul (Sky Blue/Emerald Theme)
+- [x] **Phase 3.5**: Affiliate Hub & Global Analytics Leaderboard
+- [ ] **Phase 4**: Mainnet Deployment & External Security Audit
+- [ ] **Phase 5**: Cross-Chain Bridging (Arbitrum & Polygon)
+
+<br>
+
+<div align="center">
+  <b>Built with ❤️ for the decentralized future.</b><br>
+  For questions, please refer to the specific workspace READMEs.
+</div>

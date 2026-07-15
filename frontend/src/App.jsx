@@ -7,6 +7,9 @@ import MatrixProgram from "./pages/MatrixProgram";
 import Layout from "./components/Layout";
 import Partners from "./pages/Partners";
 import History from "./pages/History";
+import AffiliateHub from "./pages/AffiliateHub";
+import Leaderboard from "./pages/Leaderboard";
+import FiatOnRamp from "./pages/FiatOnRamp";
 
 function AuthenticatedRoutes() {
   const { account, token, user, isViewOnly } = useWeb3();
@@ -28,6 +31,9 @@ function AuthenticatedRoutes() {
         <Route path="/partners" element={<Partners />} />
         <Route path="/history" element={<History />} />
         <Route path="/matrix/:program/:level" element={<MatrixProgram />} />
+        <Route path="/affiliate" element={<AffiliateHub />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/buy-crypto" element={<FiatOnRamp />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Layout>

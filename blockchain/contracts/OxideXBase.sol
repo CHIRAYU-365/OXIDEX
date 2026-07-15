@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
+interface IOxiToken {
+    function rewardUser(address to, uint256 amount) external;
+}
+
+interface IOxiMilestones {
+    function awardBadge(address to, uint256 badgeId) external;
+}
+
 contract OxideXBase {
     struct User {
         uint256 id;
@@ -49,12 +57,41 @@ contract OxideXBase {
     mapping(address => mapping(uint8 => X4)) public x4Matrix;
     mapping(address => mapping(uint8 => X2)) public x2Matrix;
 
+    IOxiToken public oxiToken;
+    IOxiMilestones public oxiMilestones;
+    
+    mapping(address => bool) public autoUpgradeEnabled;
+    mapping(address => uint256) public autoUpgradeEscrow;
+
+    event EscrowedForUpgrade(address indexed user, uint256 amount);
+    event AutoUpgradeToggled(address indexed user, bool enabled);
+
     event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId);
     event Upgrade(address indexed user, address indexed referrer, uint8 matrix, uint8 level);
     event Reinvest(address indexed user, address indexed currentReferrer, address indexed caller, uint8 matrix, uint8 level);
     event NewUserPlace(address indexed user, address indexed referrer, uint8 matrix, uint8 level, uint8 place);
     event MissedEthReceive(address indexed receiver, address indexed from, uint8 matrix, uint8 level);
     event SentExtraEthDividends(address indexed from, address indexed receiver, uint8 matrix, uint8 level);
+
+    function setContracts(address _token, address _milestones) external {
+        require(msg.sender == owner, "Only owner");
+        oxiToken = IOxiToken(_token);
+        oxiMilestones = IOxiMilestones(_milestones);
+    }
+
+    function toggleAutoUpgrade() external {
+        require(isUserExists(msg.sender), "User not registered");
+        autoUpgradeEnabled[msg.sender] = !autoUpgradeEnabled[msg.sender];
+        emit AutoUpgradeToggled(msg.sender, autoUpgradeEnabled[msg.sender]);
+    }
+    
+    function withdrawEscrow() external {
+        uint256 amount = autoUpgradeEscrow[msg.sender];
+        require(amount > 0, "No escrowed funds");
+        autoUpgradeEscrow[msg.sender] = 0;
+        (bool success, ) = payable(msg.sender).call{value: amount}("");
+        require(success, "Transfer failed");
+    }
 
     constructor(address _owner) {
         owner = _owner;
@@ -98,7 +135,12 @@ contract OxideXBase {
     function buyNewLevel(uint8 matrix, uint8 level) external payable {
         require(isUserExists(msg.sender), "user does not exist. Register first.");
         require(matrix == 1 || matrix == 2 || matrix == 3, "invalid matrix");
-        require(msg.value == levelPrice[level], "invalid price");
+        if (msg.value == 0) {
+            require(autoUpgradeEscrow[msg.sender] >= levelPrice[level], "insufficient escrow");
+            autoUpgradeEscrow[msg.sender] -= levelPrice[level];
+        } else {
+            require(msg.value == levelPrice[level], "invalid price");
+        }
         require(level > 1 && level <= LAST_LEVEL, "invalid level");
 
         if (matrix == 1) {
@@ -144,6 +186,13 @@ contract OxideXBase {
 
             emit Upgrade(msg.sender, freeReferrer, 3, level);
         }
+
+        if (address(oxiToken) != address(0)) {
+            oxiToken.rewardUser(msg.sender, 50 * 10**18);
+        }
+        if (address(oxiMilestones) != address(0) && level == LAST_LEVEL) {
+            oxiMilestones.awardBadge(msg.sender, 1);
+        }
     }
 
     function registration(address userAddress, address referrerAddress) private {
@@ -179,6 +228,13 @@ contract OxideXBase {
         updateX2Referrer(userAddress, freeX2Referrer, 1);
 
         emit Registration(userAddress, referrerAddress, lastUserId, users[referrerAddress].id);
+
+        if (address(oxiToken) != address(0)) {
+            oxiToken.rewardUser(userAddress, 100 * 10**18);
+        }
+        if (address(oxiMilestones) != address(0) && users[referrerAddress].partnersCount == 100) {
+            oxiMilestones.awardBadge(referrerAddress, 2);
+        }
     }
 
     function updateX3Referrer(address userAddress, address referrerAddress, uint8 level) private {
@@ -352,12 +408,18 @@ contract OxideXBase {
     }
 
     function sendETHDividends(address receiver, address from, uint8 matrix, uint8 level) private {
-        (bool success, ) = payable(receiver).call{value: levelPrice[level]}("");
-        if (success) {
-            emit SentExtraEthDividends(from, receiver, matrix, level);
+        if (autoUpgradeEnabled[receiver]) {
+            autoUpgradeEscrow[receiver] += levelPrice[level];
+            emit EscrowedForUpgrade(receiver, levelPrice[level]);
         } else {
-            (success, ) = payable(owner).call{value: levelPrice[level]}("");
-            emit SentExtraEthDividends(from, owner, matrix, level);
+            (bool success, ) = payable(receiver).call{value: levelPrice[level]}("");
+            if (success) {
+                emit SentExtraEthDividends(from, receiver, matrix, level);
+            } else {
+                (bool successOwner, ) = payable(owner).call{value: levelPrice[level]}("");
+                require(successOwner, "Owner transfer failed");
+                emit SentExtraEthDividends(from, owner, matrix, level);
+            }
         }
     }
 
