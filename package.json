@@ -9,17 +9,9 @@
   ],
   "scripts": {
     "install:all": "npm install",
-    "start": "node start.js",
-    "start:dev": "npm run dev",
-    "start:prod": "npm run build && concurrently \"npm run prod:backend\" \"npm run prod:frontend\"",
-    "build": "cd frontend && npm run build",
-    "prod:backend": "cd backend && npm start",
-    "prod:frontend": "cd frontend && npm run preview",
-    "dev:node": "cd blockchain && npx hardhat node",
-    "dev:deploy": "wait-on tcp:127.0.0.1:8545 && cd blockchain && npx hardhat run scripts/deploy.js --network localhost",
-    "dev:backend": "cd backend && npx prisma db push --accept-data-loss && npm run dev",
-    "dev:frontend": "cd frontend && npm run dev",
-    "dev": "concurrently \"npm run dev:node\" \"npm run dev:deploy\" \"npm run dev:backend\" \"npm run dev:frontend\""
+    "build:frontend": "cd frontend && npm run build",
+    "deploy:frontend": "cd frontend && npm run deploy",
+    "start:backend": "cd backend && npm start"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

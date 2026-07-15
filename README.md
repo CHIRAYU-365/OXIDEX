@@ -156,30 +156,16 @@ OXIDEX/
 
 <br>
 
-## 🚀 Quick Start (All-in-One Command)
+## 🚀 Deployment (Render + GitHub Pages)
 
-We have configured a unified one-line command that handles concurrency across all 3 workspaces automatically.
+This project is optimized exclusively for production environments without the need for local blockchain configurations.
 
-### For Local Development
-Run the following at the root of the project to boot the local blockchain, deploy contracts, start the backend server, and spin up the Vite frontend all at once:
-```bash
-npm install
-npm start
-```
-
-### For Production / Deployment
-If you are deploying, set the `NODE_ENV` to `production`. This will automatically build the frontend, start the backend in production mode, and serve the optimized static files (skipping local blockchain nodes).
-```bash
-# On Linux / macOS
-NODE_ENV=production npm start
-
-# On Windows (PowerShell)
-$env:NODE_ENV="production"; npm start
-```
+- **Backend (Render)**: Set your root directory to `backend/` in Render dashboard. Render will automatically install dependencies and run `npm start` (which handles Prisma generation and runs the Express server).
+- **Frontend (GitHub Pages)**: Navigate to the `frontend/` directory and run `npm run deploy`, or run `npm run deploy:frontend` from the root. This pushes the optimized production build to the `gh-pages` branch.
 
 <br>
 
-## ⚡ Step-by-Step Installation (Manual)
+## ⚡ Step-by-Step Installation
 
 ### Prerequisites
 - [Node.js v18+](https://nodejs.org/)

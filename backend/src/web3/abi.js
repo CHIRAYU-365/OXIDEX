@@ -5,6 +5,7 @@ const OXIDEX_ABI = [
   "event NewUserPlace(address indexed user, address indexed referrer, uint8 matrix, uint8 level, uint8 place)",
   "event MissedEthReceive(address indexed receiver, address indexed from, uint8 matrix, uint8 level)",
   "event SentExtraEthDividends(address indexed from, address indexed receiver, uint8 matrix, uint8 level)",
+  "event EscrowedForUpgrade(address indexed user, uint256 amount)",
   "function users(address) view returns (uint256 id, address referrer, uint256 partnersCount)",
   "function usersX3Matrix(address, uint8) view returns (address currentReferrer, address[] referrals, bool blocked, uint256 reinvestCount)",
   "function usersX4Matrix(address, uint8) view returns (address currentReferrer, address[] firstLevel, address[] secondLevel, bool blocked, uint256 reinvestCount, address closedPart)",
