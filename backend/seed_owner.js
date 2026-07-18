@@ -6,7 +6,6 @@ async function seed() {
     
     try {
         console.log("Clearing old local testnet data from database...");
-        await prisma.matrixState.deleteMany({});
         await prisma.earning.deleteMany({});
         await prisma.transaction.deleteMany({});
         await prisma.user.deleteMany({});
@@ -21,13 +20,7 @@ async function seed() {
                 }
             });
             
-            console.log("Activating all matrices for Owner...");
-            const programs = ["x3", "x4", "x2"];
-            for(const prog of programs) {
-                for(let i = 1; i <= 12; i++) {
-                    await prisma.matrixState.create({ data: { userAddress: ownerAddress, program: prog, level: i, isActive: true }});
-                }
-            }
+
             console.log("Success! Owner is now live in the database.");
 
     } catch (e) {

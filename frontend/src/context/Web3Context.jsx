@@ -173,7 +173,7 @@ export const Web3Provider = ({ children }) => {
       const currentChainIdHex = await window.ethereum.request({ method: "eth_chainId" });
       const activeChainId = parseInt(currentChainIdHex, 16);
 
-      const statement = "Sign in to OxideX decentralized matrix dashboard.";
+      const statement = "Sign in to OxideX Launchpad.";
       const message = `${domain} wants you to sign in with your Ethereum account:\n` +
         `${ethers.getAddress(walletAddress)}\n\n` +
         `${statement}\n\n` +
@@ -240,17 +240,6 @@ export const Web3Provider = ({ children }) => {
     }
   };
 
-  const executeBuyNewLevel = async (matrix, level) => {
-    try {
-      const contract = await getContractInstance();
-      const price = await contract.levelPrice(level);
-      const tx = await contract.buyNewLevel(matrix, level, { value: price });
-      return await tx.wait();
-    } catch (err) {
-      console.error(`On-chain matrix buy level ${level} failed:`, err);
-      throw err;
-    }
-  };
 
   const enterPreviewMode = async (idOrAddress) => {
     if (!idOrAddress) return false;
@@ -290,7 +279,6 @@ export const Web3Provider = ({ children }) => {
         connectAndLogin,
         logout,
         executeRegistration,
-        executeBuyNewLevel,
         fetchUserProfile: () => fetchUserProfile(activeAccount),
         previewAccount,
         previewUser,

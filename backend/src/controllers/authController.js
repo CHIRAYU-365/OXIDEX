@@ -142,12 +142,7 @@ const mockRegister = async (req, res) => {
       }
     });
 
-    await prisma.matrixState.createMany({
-      data: [
-        { userAddress: lowercaseAddress, program: "x3", level: 1, isActive: true, currentReferrer: referrerAddress.toLowerCase() },
-        { userAddress: lowercaseAddress, program: "x4", level: 1, isActive: true, currentReferrer: referrerAddress.toLowerCase() }
-      ]
-    });
+
 
     return res.json({ success: true, message: "Mock registration successful" });
   } catch (error) {

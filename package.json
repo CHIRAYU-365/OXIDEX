@@ -14,12 +14,10 @@
     "setup:blockchain": "cd blockchain && npm install && npx hardhat compile",
     "dev": "concurrently \"npm run setup:backend\" \"npm run setup:frontend\" \"npm run setup:blockchain\"",
     "build:frontend": "cd frontend && npm run build",
-    "deploy:frontend": "cd frontend && npm run deploy",
     "start:backend": "cd backend && npm start"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
-    "gh-pages": "^6.3.0",
     "wait-on": "^7.2.0"
   }
 }

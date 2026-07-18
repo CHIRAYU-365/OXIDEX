@@ -130,7 +130,7 @@ export default function Login() {
               OXIDEX
             </h1>
             <span className="text-[9px] text-slate-500 font-semibold tracking-widest uppercase block mt-[-3px]">
-              Decentralized Matrix
+              Unilevel Launchpad
             </span>
           </div>
         </div>
@@ -170,11 +170,11 @@ export default function Login() {
         <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight max-w-4xl">
           The Future of Decentralized <br className="hidden md:block"/>
           <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-emerald-400 to-amber-400">
-            Matrix Marketing
+            Token Launchpads
           </span>
         </h2>
         <p className="text-slate-400 text-sm md:text-lg max-w-2xl mt-6 leading-relaxed">
-          OXIDEX is a community-driven smart contract program deployed on-chain. Built with transparency, automatic spillover mechanics, and zero administrative intervention.
+          OXIDEX is a community-driven smart contract program deployed on-chain. Buy presale tokens and automatically reward your sponsor tree with direct ETH payments.
         </p>
       </section>
 
@@ -236,7 +236,7 @@ export default function Login() {
                           Unregistered Address
                         </span>
                         <p className="text-[11px] text-slate-400 mt-1">
-                          Activate Level 1 for x2, x3, and x4 programs (Total 0.075 ETH cost).
+                          Register your wallet to access the dashboard by linking your sponsor.
                         </p>
                       </div>
 
@@ -266,7 +266,7 @@ export default function Login() {
                         {isRegistering ? (
                           <span>Activating Account...</span>
                         ) : (
-                          <span>Register & Pay 0.075 ETH</span>
+                          <span>Register Account</span>
                         )}
                       </button>
                     </form>
@@ -293,7 +293,7 @@ export default function Login() {
               </div>
 
               <p className="text-xs text-slate-400 leading-relaxed mb-6">
-                Inspect any member's current matrix level, total revenue, partners structure, and live transaction statistics. No signature or wallet connection is required to preview accounts.
+                Inspect any member's current total revenue, partners structure, and live transaction statistics. No signature or wallet connection is required to preview accounts.
               </p>
 
               <form onSubmit={handlePreviewSubmit} className="space-y-4">
@@ -330,7 +330,7 @@ export default function Login() {
             </div>
 
             <div className="mt-6 pt-4 border-t border-slate-900/60 text-center text-[10px] text-slate-500">
-              Enter User ID <span className="text-amber-400 font-bold">1</span> to view the platform creator's master matrix setup.
+              Enter User ID <span className="text-amber-400 font-bold">1</span> to view the platform creator's master setup.
             </div>
           </div>
 
@@ -340,116 +340,85 @@ export default function Login() {
       <section className="max-w-7xl mx-auto px-6 mt-28 relative z-20">
         <div className="text-center mb-16">
           <h2 className="text-3xl font-extrabold tracking-tight">
-            How OXIDEX Matrices Work
+            How OXIDEX Unilevel Works
           </h2>
           <p className="text-slate-500 text-xs uppercase tracking-widest mt-2 font-bold">
-            Three dynamic matrix programs designed for scaling
+            A linear multi-tier affiliate program designed for scaling
           </p>
         </div>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="glass-panel p-8 rounded-3xl border-slate-900 shadow-glow relative overflow-hidden group">
-            <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-emerald-500/5 rounded-full blur-xl group-hover:bg-emerald-500/10 transition-all duration-500" />
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400 border border-emerald-500/20">
-                <Layers className="w-6 h-6" />
+        
+        <div className="glass-panel p-8 rounded-3xl border-slate-900 shadow-glow relative overflow-hidden group max-w-4xl mx-auto">
+          <div className="absolute top-[-30px] right-[-30px] w-48 h-48 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all duration-500" />
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+            <div>
+              <div className="flex items-center space-x-3 mb-4">
+                <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400 border border-emerald-500/20">
+                  <Layers className="w-6 h-6" />
+                </div>
+                <h3 className="text-2xl font-extrabold text-slate-100">
+                  5-Level Unilevel Commissions
+                </h3>
               </div>
-              <h3 className="text-xl font-extrabold text-slate-100">
-                OXIDEX x2 Matrix
-              </h3>
+              <p className="text-sm text-slate-400 leading-relaxed mb-6">
+                Unlike complex matrix systems, the Unilevel Launchpad uses a simple linear affiliate tree. Every time someone in your downline purchases $OXI tokens from the presale, a portion of their ETH is instantly sent directly to your wallet via smart contract.
+              </p>
+              
+              <ul className="space-y-3">
+                <li className="flex items-center justify-between text-sm p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+                  <span className="text-emerald-400 font-bold">Level 1 (Direct Referrals)</span>
+                  <span className="font-mono text-slate-300 bg-slate-950 px-2 py-1 rounded">10% Payout</span>
+                </li>
+                <li className="flex items-center justify-between text-sm p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+                  <span className="text-emerald-400/80 font-bold">Level 2</span>
+                  <span className="font-mono text-slate-300 bg-slate-950 px-2 py-1 rounded">5% Payout</span>
+                </li>
+                <li className="flex items-center justify-between text-sm p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+                  <span className="text-emerald-400/60 font-bold">Level 3</span>
+                  <span className="font-mono text-slate-300 bg-slate-950 px-2 py-1 rounded">3% Payout</span>
+                </li>
+                <li className="flex items-center justify-between text-sm p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+                  <span className="text-emerald-400/40 font-bold">Level 4</span>
+                  <span className="font-mono text-slate-300 bg-slate-950 px-2 py-1 rounded">2% Payout</span>
+                </li>
+                <li className="flex items-center justify-between text-sm p-3 bg-slate-900/50 rounded-lg border border-slate-800">
+                  <span className="text-emerald-400/20 font-bold">Level 5</span>
+                  <span className="font-mono text-slate-300 bg-slate-950 px-2 py-1 rounded">1% Payout</span>
+                </li>
+              </ul>
             </div>
-            <p className="text-xs text-slate-400 leading-relaxed mb-6">
-              A ultra-fast 1-row matrix containing only 2 slots. Perfect for quick recycling and entry. The 1st referral pays 100% directly to your wallet. The 2nd referral automatically reinvests to clear your board, sending payment to your upline.
-            </p>
-            <div className="flex items-center justify-center space-x-6 bg-slate-950/60 p-6 rounded-2xl border border-slate-900">
-              <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-[10px] font-bold text-emerald-300">
-                Lvl 1
+            
+            <div className="flex flex-col items-center justify-center p-8 bg-slate-950/80 rounded-2xl border border-slate-800">
+              <div className="w-20 h-20 rounded-full bg-brand-500/20 border-2 border-brand-500 flex items-center justify-center text-lg font-bold text-brand-300 mb-6 shadow-glow">
+                You
               </div>
-              <span className="text-slate-700">→</span>
-              <div className="flex space-x-3">
-                <div className="w-8 h-8 rounded-full bg-emerald-500/10 border-2 border-emerald-500 flex items-center justify-center text-[8px] font-bold text-emerald-300">
-                  P1
-                </div>
-                <div className="w-8 h-8 rounded-full border-2 border-dashed border-slate-700 flex items-center justify-center text-[8px] font-bold text-slate-500">
-                  Rec
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-panel p-8 rounded-3xl border-slate-900 shadow-glow relative overflow-hidden group">
-            <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-brand-500/5 rounded-full blur-xl group-hover:bg-brand-500/10 transition-all duration-500" />
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-3 bg-brand-500/10 rounded-2xl text-brand-400 border border-brand-500/20">
-                <Layers className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-extrabold text-slate-100">
-                OXIDEX x3 Matrix
-              </h3>
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed mb-6">
-              A 1-row matrix containing 3 slots. Highly dynamic and suited for active sponsors. The first 2 referrals pay 100% directly to your personal wallet. The 3rd slot automatically reinvests/recycles your position to clear the board, sending the payment to your upline.
-            </p>
-            <div className="flex items-center justify-center space-x-6 bg-slate-950/60 p-6 rounded-2xl border border-slate-900">
-              <div className="w-12 h-12 rounded-full bg-brand-500/20 border-2 border-brand-500 flex items-center justify-center text-[10px] font-bold text-brand-300">
-                Lvl 1
-              </div>
-              <span className="text-slate-700">→</span>
-              <div className="flex space-x-3">
-                <div className="w-8 h-8 rounded-full bg-brand-500/10 border-2 border-brand-500 flex items-center justify-center text-[8px] font-bold text-brand-300">
-                  P1
-                </div>
-                <div className="w-8 h-8 rounded-full bg-brand-500/10 border-2 border-brand-500 flex items-center justify-center text-[8px] font-bold text-brand-300">
-                  P2
-                </div>
-                <div className="w-8 h-8 rounded-full border-2 border-dashed border-slate-700 flex items-center justify-center text-[8px] font-bold text-slate-500">
-                  Rec
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass-panel p-8 rounded-3xl border-slate-900 shadow-glow relative overflow-hidden group">
-            <div className="absolute top-[-30px] right-[-30px] w-24 h-24 bg-amber-500/5 rounded-full blur-xl group-hover:bg-amber-500/10 transition-all duration-500" />
-            <div className="flex items-center space-x-3 mb-4">
-              <div className="p-3 bg-amber-500/10 rounded-2xl text-amber-400 border border-amber-500/20">
-                <Layers className="w-6 h-6" />
-              </div>
-              <h3 className="text-xl font-extrabold text-slate-100">
-                OXIDEX x4 Matrix
-              </h3>
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed mb-6">
-              A 2-row matrix containing 6 slots (2 on row 1, 4 on row 2). Perfect for spillovers and passive network structures. Payments from row 1 pass to your upline. For row 2, the first 3 placements pay 100% directly to you, while the 6th placement recycles your matrix.
-            </p>
-            <div className="flex items-center justify-center space-x-6 bg-slate-950/60 p-6 rounded-2xl border border-slate-900">
-              <div className="w-12 h-12 rounded-full bg-amber-500/20 border-2 border-amber-500 flex items-center justify-center text-[10px] font-bold text-amber-300">
-                Lvl 1
-              </div>
-              <span className="text-slate-700">→</span>
-              <div className="flex flex-col space-y-2">
-                <div className="flex justify-center space-x-4">
-                  <div className="w-6 h-6 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[7px] text-slate-400">
-                    F1
+              
+              <div className="w-0.5 h-8 bg-slate-700"></div>
+              
+              <div className="w-full flex justify-around">
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-xs font-bold text-emerald-300">
+                    L1
                   </div>
-                  <div className="w-6 h-6 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center text-[7px] text-slate-400">
-                    F2
-                  </div>
+                  <span className="text-[10px] text-slate-400 mt-2">10%</span>
                 </div>
-                <div className="flex justify-center space-x-2">
-                  <div className="w-6 h-6 rounded-full bg-amber-500/10 border-2 border-amber-500 flex items-center justify-center text-[7px] text-amber-300">
-                    S1
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-xs font-bold text-emerald-300">
+                    L1
                   </div>
-                  <div className="w-6 h-6 rounded-full bg-amber-500/10 border-2 border-amber-500 flex items-center justify-center text-[7px] text-amber-300">
-                    S2
+                  <span className="text-[10px] text-slate-400 mt-2">10%</span>
+                </div>
+                <div className="flex flex-col items-center">
+                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-xs font-bold text-emerald-300">
+                    L1
                   </div>
-                  <div className="w-6 h-6 rounded-full bg-amber-500/10 border-2 border-amber-500 flex items-center justify-center text-[7px] text-amber-300">
-                    S3
-                  </div>
-                  <div className="w-6 h-6 rounded-full border border-dashed border-slate-700 flex items-center justify-center text-[7px] text-slate-600">
-                    Rec
-                  </div>
+                  <span className="text-[10px] text-slate-400 mt-2">10%</span>
                 </div>
               </div>
+              
+              <p className="text-center text-xs text-slate-500 mt-6 max-w-xs">
+                As your direct referrals invite more people, your network expands downwards up to 5 levels deep.
+              </p>
             </div>
           </div>
         </div>
@@ -469,7 +438,7 @@ export default function Login() {
             <Coins className="w-8 h-8 text-sky-400 mb-4" />
             <h4 className="font-extrabold text-sm mb-2 uppercase tracking-wide">P2P Payments</h4>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              No platform balances or intermediate wallets. All entry fees and level upgrades are automatically routed instantly to upline member wallets peer-to-peer.
+              No platform balances or intermediate wallets. All entry fees and presale purchases are automatically routed instantly to upline member wallets peer-to-peer.
             </p>
           </div>
 
@@ -485,7 +454,7 @@ export default function Login() {
             <Activity className="w-8 h-8 text-emerald-400 mb-4" />
             <h4 className="font-extrabold text-sm mb-2 uppercase tracking-wide">Transparent</h4>
             <p className="text-[11px] text-slate-400 leading-relaxed">
-              All transactions, registration uplines, overflow cycles, and contract operations can be verified independently using standard blockchain explorers.
+              All transactions, registration uplines, commission payouts, and contract operations can be verified independently using standard blockchain explorers.
             </p>
           </div>
         </div>
@@ -493,7 +462,7 @@ export default function Login() {
 
       <footer className="max-w-7xl mx-auto px-6 mt-28 pt-8 border-t border-slate-900 flex flex-col md:flex-row items-center justify-between gap-6 relative z-20 text-slate-500 text-xs">
         <div>
-          <span>© 2026 OXIDEX Decentralized Matrix. Operational and Open Source.</span>
+          <span>© 2026 OXIDEX Unilevel Launchpad. Operational and Open Source.</span>
         </div>
         
         <div className="flex items-center space-x-2 bg-slate-900/40 border border-slate-900 px-4 py-2 rounded-xl backdrop-blur-sm">

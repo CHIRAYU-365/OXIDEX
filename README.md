@@ -1,7 +1,7 @@
 <div align="center">
 
 # ⚡ OXIDEX PROTOCOL ⚡
-**The Autonomous, Peer-to-Peer Decentralized Matrix Network**
+**The Decentralized Unilevel Token Launchpad**
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Ethereum](https://img.shields.io/badge/Network-Ethereum_Sepolia-627EEA.svg?logo=ethereum)](https://sepolia.etherscan.io/)
@@ -14,7 +14,7 @@
 <br>
 
 <p align="center">
-  <em>An unstoppable blockchain matrix marketing protocol designed for hyper-scalability, peer-to-peer instantaneous payments, and autonomous level-ups. Zero human administration. Absolute transparency.</em>
+  <em>An unstoppable blockchain unilevel marketing protocol designed for hyper-scalability, peer-to-peer instantaneous payments, and autonomous token launchpad presales.</em>
 </p>
 
 ---
@@ -41,87 +41,51 @@ graph TD
     F[React / Vite Frontend\nEthers.js]:::frontend
     B[Node.js Express Backend\nSocket.io / Ethers]:::backend
     DB[(Neon PostgreSQL\nPrisma ORM)]:::db
-    SC[(OxideXBase Contract\nERC20 + ERC1155)]:::blockchain
+    SC[(OxideXBase Contract\nERC20 OXI Token)]:::blockchain
 
     %% Edges
     U -- "Connect Wallet" --> F
     F -- "Sign Message (EIP-712)" --> B
     B -- "Validate Signature" --> SC
     B -- "Issue JWT" --> F
-    F -- "Buy Matrix Level (Tx)" --> SC
+    F -- "Buy Presale Tokens (Tx)" --> SC
     SC -- "Emit Events" --> B
     B -- "Sync State" --> DB
     B -- "WebSockets Push" --> F
     F -- "Read Global State" --> DB
-    SC -- "Peer-to-Peer Transfer" --> U
+    SC -- "Peer-to-Peer Commission" --> U
 ```
 
 <br>
 
-## 📊 The Tri-Matrix System (x2, x3, x4)
+## 📊 The 5-Level Unilevel System
 
-OXIDEX deploys three separate network matrices, each with its own mathematical progression algorithm. Members can upgrade levels in each matrix to capture higher referral value.
+OXIDEX deploys a single, linear progression network where users earn commissions up to 5 levels deep from their direct and indirect referrals.
 
-### 1. The X2 Matrix (Linear Velocity)
 ```mermaid
 graph TD
     classDef root fill:#0ea5e9,color:#fff,stroke:#0284c7;
     classDef p1 fill:#10b981,color:#fff,stroke:#047857;
-    classDef rec fill:#ef4444,color:#fff,stroke:#b91c1c;
-
-    Root((You\nLevel 1)):::root
-    Root --- P1((Partner 1\n100% Payout)):::p1
-    Root --- P2((Partner 2\nRecycle Up)):::rec
-```
-> **Mechanics:** 1-row, 2-slot board. The first placement directly pays you 100%. The second placement pays your upline and automatically clears (recycles) your board so you can earn again.
-
-<br>
-
-### 2. The X3 Matrix (Network Builder)
-```mermaid
-graph TD
-    classDef root fill:#0ea5e9,color:#fff,stroke:#0284c7;
-    classDef p1 fill:#10b981,color:#fff,stroke:#047857;
-    classDef rec fill:#ef4444,color:#fff,stroke:#b91c1c;
-
-    Root((You\nLevel 1)):::root
-    Root --- P1((Partner 1\n100% Payout)):::p1
-    Root --- P2((Partner 2\n100% Payout)):::p1
-    Root --- P3((Partner 3\nRecycle Up)):::rec
-```
-> **Mechanics:** 1-row, 3-slot board. The first two placements directly pay you 100%. The third placement pays your upline and recycles your board.
-
-<br>
-
-### 3. The X4 Matrix (Team Spillover)
-```mermaid
-graph TD
-    classDef root fill:#0ea5e9,color:#fff,stroke:#0284c7;
-    classDef f1 fill:#64748b,color:#fff,stroke:#475569;
-    classDef p1 fill:#10b981,color:#fff,stroke:#047857;
-    classDef rec fill:#ef4444,color:#fff,stroke:#b91c1c;
 
     Root((You)):::root
-    Root --- L1P1((Row 1, Pos 1\nPays Upline)):::f1
-    Root --- L1P2((Row 1, Pos 2\nPays Upline)):::f1
-    
-    L1P1 --- L2P1((Row 2, Pos 1\n100% to You)):::p1
-    L1P1 --- L2P2((Row 2, Pos 2\n100% to You)):::p1
-    L1P2 --- L2P3((Row 2, Pos 3\n100% to You)):::p1
-    L1P2 --- L2P4((Row 2, Pos 4\nRecycle Up)):::rec
+    Root --- L1((Level 1\n10% Payout)):::p1
+    L1 --- L2((Level 2\n5% Payout)):::p1
+    L2 --- L3((Level 3\n3% Payout)):::p1
+    L3 --- L4((Level 4\n2% Payout)):::p1
+    L4 --- L5((Level 5\n1% Payout)):::p1
 ```
-> **Mechanics:** 2-row, 6-slot board. Row 1 payments pass up. Row 2 positions 1, 2, and 3 pay you 100%. Position 4 recycles the board.
+
+> **Mechanics:** When a user buys tokens from the launchpad, a portion of the ETH is instantly routed up the referral tree, rewarding the sponsor network directly to their wallets.
 
 <br>
 
 ## 🔐 Core Features & Security Implementations
 
-| Feature Matrix | Implementation Details | Security Standard |
+| Feature | Implementation Details | Security Standard |
 |----------------|------------------------|-------------------|
-| **P2P Payments** | Payments never touch a central treasury. | Fully Decentralized |
-| **Auto-Escrow** | Smart contract holds partial funds to automatically buy next levels. | Non-custodial |
+| **P2P Commissions** | Payments never touch a central treasury. | Fully Decentralized |
+| **Token Presale** | Instantly mint $OXI tokens when purchasing via the Launchpad. | Non-custodial |
 | **Token Rewards** | Users get ERC20 ($OXI) when they register and recruit. | OpenZeppelin ERC20 |
-| **Soulbound NFTs** | Reach level 3, 6, 9 to mint non-transferable milestone NFTs. | ERC1155 (Locked) |
 | **JWT Off-Chain** | Signatures verify wallet ownership before granting dashboard access. | EIP-712 / Ethers |
 | **WebSockets** | Live network feed without constantly querying the blockchain RPC. | Socket.io / EventLog |
 
@@ -134,7 +98,7 @@ The project is broken into three distinct workspaces. Follow the `README.md` fil
 ```text
 OXIDEX/
 ├── blockchain/         # Hardhat, Solidity 0.8.20+, OpenZeppelin
-│   ├── contracts/      # OxideXBase.sol, OxiToken.sol, OxiMilestones.sol
+│   ├── contracts/      # OxideXBase.sol, OxiToken.sol
 │   ├── scripts/        # deploy.js (Linking logic)
 │   └── test/           # Chai / Mocha unit tests
 │
@@ -142,26 +106,26 @@ OXIDEX/
 │   ├── prisma/         # schema.prisma (Neon Postgres)
 │   ├── src/
 │   │   ├── services/   # indexer.js (Blockchain listener)
-│   │   ├── controllers/# analyticsController.js, authController.js
+│   │   ├── controllers/# authController.js, userController.js
 │   │   └── app.js      # Main Express API entry
 │   └── seed_owner.js   # Master Account injection script
 │
 └── frontend/           # React 18, Vite, Tailwind CSS, Lucide Icons
     ├── src/
     │   ├── context/    # Web3Context.jsx (Ethers.js provider)
-    │   ├── pages/      # Dashboard, Leaderboard, AffiliateHub
-    │   └── components/ # Sidebar, Modals, Real-time feeds
+    │   ├── pages/      # TokenLaunchpad, Dashboard
+    │   └── components/ # Layouts, Real-time feeds
     └── index.html      # Vite Entry point
 ```
 
 <br>
 
-## 🚀 Deployment (Render + GitHub Pages)
+## 🚀 Deployment (Render + Vercel)
 
 This project is optimized exclusively for production environments without the need for local blockchain configurations.
 
 - **Backend (Render)**: Set your root directory to `backend/` in Render dashboard. Render will automatically install dependencies and run `npm start` (which handles Prisma generation and runs the Express server).
-- **Frontend (GitHub Pages)**: Navigate to the `frontend/` directory and run `npm run deploy`, or run `npm run deploy:frontend` from the root. This pushes the optimized production build to the `gh-pages` branch.
+- **Frontend (Vercel)**: Import the repository to Vercel, set the Framework Preset to Vite, and set the Root Directory to `frontend`. Vercel will automatically run `npm run build` and deploy the application.
 
 <br>
 
@@ -215,20 +179,17 @@ sequenceDiagram
     participant Alice as Alice (Upline)
     participant DB as Backend Database
     
-    Bob->>SC: buyNewLevel(matrix=x3, level=2) + 0.05 ETH
+    Bob->>SC: buyLaunchpadTokens(referrer) + 1.0 ETH
     SC->>SC: calculateUpline(Bob)
-    SC->>SC: isAutoUpgradeEnabled?
     
-    alt Auto-Upgrade Enabled
-        SC->>SC: hold in Escrow
-        SC-->>Bob: Emit EscrowedForUpgrade
-    else Direct Payout
-        SC->>Alice: transfer(0.05 ETH)
-        SC-->>Alice: Emit NewUserPlace
-    end
+    SC->>Alice: transfer(10% ETH Commission)
+    SC-->>Alice: Emit CommissionPaid
     
+    SC->>Bob: Mint 10000 OXI
+    SC-->>Bob: Emit TokensPurchased
+
     SC-->>DB: Indexer catches Event
-    DB->>DB: Prisma Update (earnings, active level)
+    DB->>DB: Prisma Update (earnings, tokens)
     DB-->>Bob: Socket.io Emit ("Live Feed Update")
 ```
 
@@ -237,22 +198,9 @@ sequenceDiagram
 ## 🛡 Security Audits & Known Vectors
 
 - **Reentrancy**: Mitigated using OpenZeppelin `ReentrancyGuard` on all state-mutating, value-transferring functions.
-- **Gas Limits**: Reinvestment loops are strictly capped at mathematical limits, heavily tested to prevent Out-Of-Gas (OOG) reverts on deeply nested matrices.
-- **Admin Keys**: The owner account is initialized at deploy time, but the contract features **ZERO** pause, withdrawal, or administrative override functions. Once deployed, the matrix is unstoppable.
+- **Gas Limits**: Reinvestment loops are strictly capped at mathematical limits, heavily tested to prevent Out-Of-Gas (OOG) reverts.
+- **Admin Keys**: The owner account is initialized at deploy time, and the commission percentages can be modified.
 - **Token Emissions**: $OXI Token minting is strictly regulated by the `OxideXBase` contract acting as the sole authorized minter.
-
-<br>
-
-## 🚀 Live Roadmap
-
-- [x] **Phase 1**: Core Matrix Smart Contracts (x3, x4)
-- [x] **Phase 1.5**: ERC20 Token & ERC1155 Soulbound NFT Integration
-- [x] **Phase 2**: Backend Indexer, Neon DB Integration, API Routes
-- [x] **Phase 2.5**: Telegram Webhook Community Alerts
-- [x] **Phase 3**: Trust-Incurred UI Overhaul (Sky Blue/Emerald Theme)
-- [x] **Phase 3.5**: Affiliate Hub & Global Analytics Leaderboard
-- [ ] **Phase 4**: Mainnet Deployment & External Security Audit
-- [ ] **Phase 5**: Cross-Chain Bridging (Arbitrum & Polygon)
 
 <br>
 

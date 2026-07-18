@@ -14,7 +14,7 @@ OxideXBase.sol     --->    Node.js Indexer     --->   React Frontend
 (Solidity Contract)        (Prisma / Database)        (Ethers.js / Auth Nonces)
 ```
 
-1.  **On-Chain Layer (`/blockchain`)**: Smart contract logic, reinvest loops, gas limit boundaries, access controls, and payment routing.
+1.  **On-Chain Layer (`/blockchain`)**: Smart contract logic, Unilevel commission distribution loops, access controls, and token minting permissions.
 2.  **Ingestion & State Layer (`/backend`)**: API middleware security, database connection pooling, reorg-safe block indexing, CORS policies, JWT signature verifications, and rate limit protections.
 3.  **Client Application Layer (`/frontend`)**: Input sanitization, wallet connection security, and view-only preview state sanitation.
 
@@ -27,13 +27,13 @@ OxideXBase.sol     --->    Node.js Indexer     --->   React Frontend
 
 ---
 
-## 📊 Severity Classification Matrix
+## 📊 Severity Classification 
 
 We evaluate security vulnerabilities based on their impact on fund security, server availability, and user data privacy:
 
 | Severity | Description / Example | Action Requirement |
 | :--- | :--- | :--- |
-| **Critical** | Reentrancy attacks, referral path bypasses, or logic errors that block peer-to-peer ETH payouts. | Immediate hotfix / contract migration warning. |
+| **Critical** | Reentrancy attacks, referral path bypasses, or logic errors that block ETH commission payouts or token mints. | Immediate hotfix / contract migration warning. |
 | **High** | Reorg-handling failures leading to double-indexed earnings, indexer memory exhaustion, or JWT validation bypasses. | Fix and deploy within 24 hours. |
 | **Medium** | CORS validation bypasses, rate limiter evasion, database connection leaks, or missing frontend validation checks. | Patched in the next scheduled release cycle. |
 | **Low** | Slow queries, front-end visual issues, log pollution, or minor outdated package versions. | Handled via normal issue tracking. |
