@@ -31,11 +31,8 @@ const allowedOrigins = process.env.CORS_ORIGIN
   : ["*"];
 app.use(cors({
   origin: function (origin, callback) {
-    if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(null, false);
-    }
+    // Echo the requested origin to allow dynamic Vercel preview URLs
+    callback(null, origin || true);
   },
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
