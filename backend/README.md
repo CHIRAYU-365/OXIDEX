@@ -38,8 +38,7 @@ graph TD
     FE[React Frontend]:::client
     TG[Community Telegram\nBot Webhook]:::client
 
-    EVM -- "EscrowedForUpgrade" --> IX
-    EVM -- "Registration / Upgrade" --> IX
+    EVM -- "Registration / TokensPurchased" --> IX
     
     IX -- "Upsert Data" --> DB
     IX -- "Trigger Alert" --> TG
@@ -65,12 +64,6 @@ erDiagram
         string referrerAddress FK
         float totalEarnings
         int partnersCount
-        boolean autoUpgrade
-        string refCode
-        json activeLevelsX2
-        json activeLevelsX3
-        json activeLevelsX4
-        json badges
         datetime createdAt
     }
     
@@ -78,25 +71,13 @@ erDiagram
         string txHash PK
         string userAddress FK
         string eventType
-        string program
-        int level
         float amount
+        string tokensAmount
         int blockNumber
         datetime blockTimestamp
     }
     
-    MATRIX_STATE {
-        string id PK
-        string userAddress FK
-        string program
-        int level
-        boolean isActive
-        json structure
-        int reinvestCount
-    }
-
     USER ||--o{ TRANSACTION : "executes"
-    USER ||--o{ MATRIX_STATE : "owns"
     USER ||--o{ USER : "refers (self-relation)"
 ```
 
@@ -112,20 +93,6 @@ The API is strictly used for read-only analytics and EIP-712 authentication.
 | `POST` | `/nonce` | Generates a secure random nonce for a given wallet address. | No |
 | `POST` | `/verify`| Validates the EIP-712 cryptographic signature. Returns JWT. | No |
 
-### User Analytics (`/api/users`)
-| Method | Endpoint | Description | Auth Req |
-|--------|----------|-------------|----------|
-| `GET` | `/:address` | Returns the user's dashboard stats, ID, and active levels. | Yes |
-| `GET` | `/:address/partners` | Returns the downline tree for the requested user. | Yes |
-| `GET` | `/:address/history` | Returns the chronological transaction history for the user. | Yes |
-
-### Global Analytics (`/api/analytics`)
-| Method | Endpoint | Description | Auth Req |
-|--------|----------|-------------|----------|
-| `GET` | `/top-earners` | Fetches the top 10 users ranked by `totalEarnings` | No |
-| `GET` | `/top-recruiters`| Fetches the top 10 users ranked by `partnersCount` | No |
-| `GET` | `/stats` | Aggregated global platform data (Total Vol, Users 24h) | No |
-
 <br>
 
 ## ⚡ Real-Time WebSockets (Socket.io)
@@ -133,29 +100,8 @@ The API is strictly used for read-only analytics and EIP-712 authentication.
 Instead of the frontend repeatedly polling the API, the backend pushes live blockchain events directly to the user's browser.
 
 ### Emitted Events
-- `ws:event` (Global broadcast): Sent whenever *any* user registers, upgrades, or reinvests. Used to populate the "Live Feed" on the dashboard.
-- `ws:earning:{walletAddress}` (Targeted broadcast): Sent exclusively to a specific user when they receive a direct P2P matrix payment or auto-upgrade escrow. Triggers a confetti animation/alert on their screen.
-
-<br>
-
-## 🤖 Telegram Bot Webhook Integration
-
-The backend is configured to automatically broadcast massive protocol milestones directly to the community Telegram channel.
-
-```mermaid
-sequenceDiagram
-    participant SC as Smart Contract
-    participant Indexer as Node.js Indexer
-    participant DB as PostgreSQL
-    participant TG as Telegram API
-    
-    SC-->>Indexer: Event: Registration(User, Referrer)
-    Indexer->>DB: Update User & Referrer tables
-    Indexer->>TG: POST https://api.telegram.org/bot<TOKEN>/sendMessage
-    TG-->>Indexer: 200 OK
-    Note over TG: "🎉 New Member Registered! User: 0x123... Referred by: 0x456..."
-```
-*Logic is handled inside `src/services/telegramBot.js` and hooked into `indexer.js`.*
+- `ws:event` (Global broadcast): Sent whenever *any* user registers, or buys tokens. Used to populate the "Live Feed" on the dashboard.
+- `ws:earning:{walletAddress}` (Targeted broadcast): Sent exclusively to a specific user when they receive a direct P2P commission payment. Triggers a confetti animation/alert on their screen.
 
 <br>
 
@@ -165,7 +111,7 @@ Create a `.env` file in the `backend/` root:
 
 ```env
 # Server Port
-PORT=5000
+PORT=8080
 
 # Database Configuration (Neon Postgres)
 DATABASE_URL="postgresql://user:password@ep-host.region.aws.neon.tech/neondb?sslmode=require"
@@ -176,12 +122,8 @@ JWT_SECRET="your_super_secret_jwt_key_here_make_it_long"
 # Blockchain Configuration
 RPC_URL="https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY"
 
-# Telegram Bot (Optional - for community webhook alerts)
-TELEGRAM_BOT_TOKEN="your_bot_token"
-TELEGRAM_CHAT_ID="@your_channel_id"
-
 # CORS Setup
-CORS_ORIGIN="http://localhost:3000"
+CORS_ORIGIN="http://localhost:8000"
 ```
 
 <br>
@@ -200,30 +142,27 @@ The Smart Contract relies on `User ID 1` existing before anyone else can registe
 ```bash
 node seed_owner.js
 ```
-*Note: This script automatically reads the `OXIDEX_ABI` and extracts the owner address directly from the deployed contract, inserting them into Postgres with all matrix levels active.*
 
 ### 3. Running the Server
 **Development Mode:**
 ```bash
 npm run dev
 ```
-*(Runs with `nodemon` for auto-reloading)*
 
 **Production Mode:**
 ```bash
 npm start
 ```
-*(Runs standard `node src/app.js`)*
 
 <br>
 
 ## 🛡 Concurrency & Race Conditions
 
 **The Problem:**
-Because blockchain events can arrive in bursts (or out of order due to RPC latency), updating the database concurrently can cause race conditions. For example, if a user receives 3 payments in the same block, Prisma might read the `totalEarnings` as 0 three times, resulting in a finalized balance of `+1 payment` instead of `+3 payments`.
+Because blockchain events can arrive in bursts (or out of order due to RPC latency), updating the database concurrently can cause race conditions. For example, if a user receives 3 commission payments in the same block, Prisma might read the `totalEarnings` as 0 three times, resulting in a finalized balance of `+1 payment` instead of `+3 payments`.
 
 **The Solution:**
-The `indexer.js` utilizes an in-memory **Keyed Mutex** (`src/services/indexer.js`). When an event arrives for `0xUser`, a lock is acquired for that specific address. Subsequent events for that user are queued until the first Prisma transaction successfully commits, ensuring perfectly synchronous and accurate balance tracking.
+The `indexer.js` utilizes an in-memory **Keyed Mutex** (`src/services/indexer.js`). When an event arrives, a lock is acquired. Subsequent events are queued until the first Prisma transaction successfully commits, ensuring perfectly synchronous and accurate balance tracking.
 
 <br>
 

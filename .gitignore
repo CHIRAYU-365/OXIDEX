@@ -23,6 +23,7 @@ frontend/dist/
 frontend/build/
 frontend/.vite/
 frontend/out/
+.vercel/
 
 # Backend (Express/Prisma)
 backend/node_modules/

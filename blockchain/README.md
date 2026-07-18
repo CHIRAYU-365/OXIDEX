@@ -21,22 +21,19 @@ graph TD
     classDef ext fill:#1e3a8a,stroke:#1e40af,stroke-width:2px,color:#fff
 
     Admin((Deployer)):::ext
-    User((Matrix Participant)):::ext
+    User((Presale Participant)):::ext
     
     subgraph OXIDEX Protocol Smart Contracts
-        Base[OxideXBase.sol\nCore Matrix Logic]:::core
-        OXI[OxiToken.sol\nERC20 Rewards]:::token
-        NFT[OxiMilestones.sol\nERC1155 Soulbound]:::token
+        Base[OxideXBase.sol\nLaunchpad Logic]:::core
+        OXI[OxiToken.sol\nERC20 Token]:::token
     end
 
     Admin -. "Deploys & Links" .-> Base
     Admin -. "Deploys" .-> OXI
-    Admin -. "Deploys" .-> NFT
     
-    User -- "buysLevel(ETH)" --> Base
+    User -- "buyLaunchpadTokens(ETH)" --> Base
     Base -- "mintTokens()" --> OXI
-    Base -- "mintBadge()" --> NFT
-    Base -- "Peer-to-Peer Transfer" --> User
+    Base -- "Unilevel P2P Commissions" --> User
 ```
 
 <br>
@@ -44,7 +41,7 @@ graph TD
 ## 📜 Contract Specifications
 
 ### 1. `OxideXBase.sol`
-This is the master contract controlling the x2, x3, and x4 matrices.
+This is the master contract controlling the Unilevel Token Launchpad.
 
 #### Storage Variables
 | Variable | Type | Description |
@@ -52,22 +49,17 @@ This is the master contract controlling the x2, x3, and x4 matrices.
 | `users` | `mapping(address => User)` | Stores global user state (id, referrer, partner counts) |
 | `idToAddress` | `mapping(uint => address)` | Reverse lookup from ID to EVM Address |
 | `lastUserId` | `uint` | Counter tracking total registered members |
-| `levelPrice` | `mapping(uint8 => uint)` | Cost (in wei) for each matrix level (1-12) |
-| `autoUpgradeEscrow` | `mapping(address => uint)` | User balance escrowed for automatic upgrades |
-| `autoUpgradeEnabled` | `mapping(address => bool)` | Opt-in boolean flag for users |
+| `levelCommissions` | `mapping(uint8 => uint)` | Commission payout percentages for levels 1-5 |
 
 #### State Modifying Functions
 | Function Signature | Modifier | Emitted Event | Use Case |
 |--------------------|----------|---------------|----------|
-| `registrationExt(address referrerAddress)` | `payable`, `nonReentrant` | `Registration` | Main entry point for new users paying 0.075 ETH. |
-| `buyNewLevel(uint8 matrix, uint8 level)` | `payable`, `nonReentrant` | `Upgrade` | Purchases higher matrix tier. |
-| `toggleAutoUpgrade()` | `external` | `AutoUpgradeToggled` | User flips escrow mode ON/OFF. |
-| `withdrawEscrow()` | `nonReentrant` | `EscrowWithdrawn` | Escapes funds from the contract if opted out. |
+| `buyLaunchpadTokens(address referrer)` | `payable`, `nonReentrant` | `TokensPurchased` | Main entry point for buying tokens and paying upline. |
 
 <br>
 
 ### 2. `OxiToken.sol`
-The native ERC20 token acting as the protocol's reward layer.
+The native ERC20 token for the launchpad.
 
 | Feature | Description |
 |---------|-------------|
@@ -78,42 +70,22 @@ The native ERC20 token acting as the protocol's reward layer.
 
 <br>
 
-### 3. `OxiMilestones.sol`
-The protocol's ERC1155 Soulbound Badge implementation.
+## 💸 5-Level Unilevel Commission Algorithm
 
-| Token ID | Milestone Description | Rarity |
-|----------|-----------------------|--------|
-| `1` | **Level 3 Achiever** - Activated Level 3 in any Matrix | Common |
-| `2` | **Level 6 Elite** - Activated Level 6 in any Matrix | Rare |
-| `3` | **Level 9 Master** - Activated Level 9 in any Matrix | Epic |
-| `4` | **Level 12 Legend** - Reached max level | Legendary |
-
-*Note: The `safeTransferFrom` and `safeBatchTransferFrom` functions are overridden to strictly `revert`, enforcing the Soulbound nature.*
-
-<br>
-
-## 💸 X4 Matrix Placement Algorithm
-
-The X4 Matrix logic is the most computationally heavy. It relies on a deterministic placement algorithm to find free slots in a 2-row (2x4) structure.
+The commission logic handles paying up to 5 levels of sponsors instantly.
 
 ```mermaid
 flowchart TD
-    Start[User A Buys x4 Lvl 2] --> Check{Does Upline have active Lvl 2?}
-    Check -- Yes --> Placer[Place in Upline's active matrix]
-    Check -- No --> Walk[Traverse Upwards to find eligible Sponsor]
-    Walk --> Placer
-    
-    Placer --> Slot{Is Row 1 Free?}
-    Slot -- Yes (Pos 1/2) --> R1[Place in Row 1]
-    R1 --> Payout[Payment goes to Sponsor's Sponsor]
-    
-    Slot -- No --> Row2{Is Row 2 Pos 1-3 Free?}
-    Row2 -- Yes --> R2Pay[Place in Row 2]
-    R2Pay --> PayoutUser[Payment goes 100% to Sponsor]
-    
-    Row2 -- No --> Pos6[Place in Row 2 Pos 4]
-    Pos6 --> Recycle[Recycle Sponsor Matrix]
-    Recycle --> Recursion[Pass Payment to Sponsor's Upline]
+    Start[User Buys Presale Tokens] --> Check{Does User have Upline 1?}
+    Check -- Yes --> P1[Pay 10% to Upline 1]
+    P1 --> Check2{Does User have Upline 2?}
+    Check2 -- Yes --> P2[Pay 5% to Upline 2]
+    P2 --> Check3{Does User have Upline 3?}
+    Check3 -- Yes --> P3[Pay 3% to Upline 3]
+    P3 --> Check4{Does User have Upline 4?}
+    Check4 -- Yes --> P4[Pay 2% to Upline 4]
+    P4 --> Check5{Does User have Upline 5?}
+    Check5 -- Yes --> P5[Pay 1% to Upline 5]
 ```
 
 <br>
@@ -135,39 +107,17 @@ npx hardhat compile
 ```
 
 ### 3. Running the Test Suite
-The contract suite is heavily tested for edge cases involving overflow, reentrancy, and matrix recursion.
+The contract suite is heavily tested for edge cases involving overflow, reentrancy, and commission recursion.
 ```bash
 npx hardhat test
 ```
-*Expected Output:*
-```text
-  OxideX Protocol
-    Deployment
-      ✔ Should deploy all three contracts
-      ✔ Should set the correct owner
-      ✔ Should link Token and NFT to Base
-    Registration
-      ✔ Should register the first user (Owner)
-      ✔ Should revert if trying to register without 0.075 ETH
-    Auto-Upgrade & Escrow
-      ✔ Should accurately redirect funds to Escrow if toggled
-      ✔ Should allow user to withdraw escrow manually
-```
 
 ### 4. Deploying to Sepolia Testnet
-The `deploy.js` script handles the 3-step deployment and the critical linking phase.
+The `deploy.js` script handles the deployment and the critical linking phase.
 
 ```bash
 npx hardhat run scripts/deploy.js --network sepolia
 ```
-
-*The script executes:*
-1. Deploys `OxideXBase`.
-2. Deploys `OxiToken`.
-3. Deploys `OxiMilestones`.
-4. Calls `OxiToken.setOxideXContract(baseAddress)`.
-5. Calls `OxiMilestones.setOxideXContract(baseAddress)`.
-6. Calls `OxideXBase.setInterfaces(tokenAddress, nftAddress)`.
 
 ### 5. Contract Verification
 After deployment, wait 5 block confirmations, then verify on Etherscan:
@@ -180,13 +130,9 @@ npx hardhat verify --network sepolia <DEPLOYED_ADDRESS>
 ## 🛡 Security & Audit Notes
 
 ### Non-Custodial by Design
-The `OxideXBase.sol` contract holds exactly **zero** ETH for normal operations. All matrix payments (registration and level upgrades) are processed and forwarded in the exact same transaction block. 
-
-### Exception: The Escrow Feature
-The only time the contract holds funds is via the `autoUpgradeEscrow` mapping. This is heavily protected by OpenZeppelin's `ReentrancyGuard`. Users maintain 100% sovereignty over these funds and can call `withdrawEscrow()` at any time to instantly pull their ETH back.
+The `OxideXBase.sol` contract holds exactly **zero** ETH for normal operations. All commission payments are processed and forwarded in the exact same transaction block. 
 
 ### Centralization Risks
-- **Owner Privileges**: The contract has no `pause()`, `upgradeTo()`, or `withdrawAll()` functions. The owner only exists to seed the initial ID #1 into the matrix.
 - **Immutability**: Once deployed, the logic cannot be altered by anyone, including the deployer.
 
 <br>

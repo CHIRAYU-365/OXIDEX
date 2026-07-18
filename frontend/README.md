@@ -30,7 +30,7 @@ The frontend is styled using a custom Tailwind CSS configuration designed to eli
 
 ## 🗺 Component Architecture
 
-The React application utilizes a Context-driven architecture, eliminating the need for heavy global state managers like Redux.
+The React application utilizes a Context-driven architecture.
 
 ```mermaid
 graph TD
@@ -46,10 +46,8 @@ graph TD
     AuthRoutes{Authenticated Routes}:::main
     
     Side[Sidebar.jsx\nNavigation]:::comp
-    Dash[Dashboard.jsx\nMatrix Overview]:::page
-    Aff[AffiliateHub.jsx\nNetwork Stats]:::page
-    Ldb[Leaderboard.jsx\nGlobal Rankings]:::page
-    Fiat[FiatOnRamp.jsx\nBuy Crypto]:::page
+    Dash[Dashboard.jsx\nUnilevel Overview]:::page
+    Admin[AdminDashboard.jsx\nAdmin Settings]:::page
     
     App --> Ctx
     Ctx --> App
@@ -59,9 +57,7 @@ graph TD
     
     AuthRoutes --> Side
     AuthRoutes --> Dash
-    AuthRoutes --> Aff
-    AuthRoutes --> Ldb
-    AuthRoutes --> Fiat
+    AuthRoutes --> Admin
 ```
 
 <br>
@@ -99,24 +95,12 @@ sequenceDiagram
 
 ## 🚀 Key Pages & Features
 
-### 1. `Dashboard.jsx` (The Matrix Viewer)
-- Automatically queries the connected wallet's active levels (1-12) across all 3 matrices (x2, x3, x4).
-- Renders the interactive matrix slots using dynamic CSS grids.
-- Includes the **Auto-Upgrade Toggle**, allowing users to opt into smart-contract escrowing.
+### 1. `Dashboard.jsx`
+- Automatically queries the connected wallet's statistics.
+- Displays Unilevel network growth and presale token purchases.
 
-### 2. `AffiliateHub.jsx` (Network Growth)
-- Generates the user's specific registration link: `https://.../?ref=0x...`
-- Tracks the total number of downstream partners and network earnings.
-- Built-in copy-to-clipboard functionality.
-
-### 3. `Leaderboard.jsx` (Global Gamification)
-- Queries the backend's `/api/analytics/top-earners` route.
-- Displays a top 10 ranking table separated into "Highest Earners" and "Top Recruiters".
-- Includes dynamic podium graphics (Gold, Silver, Bronze styling).
-
-### 4. `FiatOnRamp.jsx` (Crypto Purchasing)
-- A dedicated page allowing users to buy Ethereum without leaving the platform.
-- Integrates an `onClick` trigger that launches the external **MoonPay** widget pre-configured for ETH.
+### 2. `AdminDashboard.jsx`
+- Admin settings and network tree viewers.
 
 <br>
 
@@ -126,10 +110,7 @@ Create a `.env` file in the `frontend/` directory:
 
 ```env
 # URL for the Node.js Express Backend
-VITE_BACKEND_URL="http://localhost:5000"
-
-# (Optional) If you deploy to a subpath via GitHub Pages
-VITE_BASE_PATH="/OXIDEX/"
+VITE_BACKEND_URL="http://localhost:8080"
 ```
 
 **Contract Address Configuration:**
@@ -152,32 +133,14 @@ npm install
 ```bash
 npm run dev
 ```
-*Vite will start a blazing fast HMR server at `http://localhost:3000`.*
+*Vite will start a blazing fast HMR server at `http://localhost:8000`.*
 
 ### 3. Production Build
 ```bash
 npm run build
 ```
-*Compiles the application into static assets located in the `dist/` directory. These assets can be hosted on Vercel, Netlify, or GitHub Pages.*
+*Compiles the application into static assets located in the `dist/` directory. These assets can be hosted on Vercel.*
 
-### 4. Deploying to GitHub Pages (Automated)
-```bash
-npm run deploy
-```
-*This command runs the `gh-pages` module to automatically push the `dist/` directory to the `gh-pages` branch of your repository.*
-
-<br>
-
-## 🕷 Troubleshooting
-
-| Error / Issue | Cause | Solution |
-|---------------|-------|----------|
-| **White Screen on Load** | Module Import Failure | Check the console for broken imports (e.g. `react-icons`). Ensure `npm install` was fully run. |
-| **"Invalid Nonce" during Login** | API Desync | Clear your LocalStorage, hard refresh, and ensure your backend Node.js server is running. |
-| **RPC Network Error** | MetaMask config | Ensure MetaMask is connected to **Sepolia Testnet** (Chain ID: `11155111`). |
-| **Contract Call Reverted** | Outdated ABI/Address | If you redeployed the smart contracts, update `CONTRACT_ADDRESS` and copy the new `ABI` array into `utils/contract.js`. |
-
-<br>
 <br>
 
 <div align="center">
