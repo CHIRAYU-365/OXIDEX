@@ -14,28 +14,15 @@ model User {
   referrerAddress String?
   partnersCount   Int      @default(0)
   totalEarnings   Decimal  @default(0)
-  autoUpgrade     Boolean  @default(false)
   refCode         String?  @unique
-  badges          Int[]    @default([])
   registeredAt    DateTime @default(now())
   lastSeenAt      DateTime @default(now())
 }
 
-model MatrixState {
-  id              Int      @id @default(autoincrement())
-  userAddress     String
-  program         String
-  level           Int
-  isActive        Boolean  @default(false)
-  reinvestCount   Int      @default(0)
-  currentReferrer String?
-  referrals       String[]
-  firstLevel      String[]
-  secondLevel     String[]
-  activatedAt     DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-
-  @@unique([userAddress, program, level])
+model AdminConfig {
+  id           Int      @id @default(autoincrement())
+  level        Int      @unique
+  commissionBps Int     
 }
 
 model Transaction {
@@ -43,9 +30,8 @@ model Transaction {
   txHash         String   @unique
   userAddress    String
   eventType      String
-  program        String?
-  level          Int?
   amount         Decimal?
+  tokensAmount   Decimal?
   blockNumber    Int
   blockTimestamp DateTime
   rawData        Json?
@@ -54,8 +40,6 @@ model Transaction {
 model Earning {
   id            Int      @id @default(autoincrement())
   userAddress   String
-  sourceType    String
-  program       String
   level         Int
   amount        Decimal
   fromAddress   String

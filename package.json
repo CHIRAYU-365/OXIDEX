@@ -8,7 +8,11 @@
     "frontend"
   ],
   "scripts": {
-    "install:all": "npm install",
+    "install:all": "concurrently \"cd backend && npm install\" \"cd frontend && npm install\" \"cd blockchain && npm install\"",
+    "setup:backend": "cd backend && npm install && npx prisma db push --accept-data-loss && npm run dev",
+    "setup:frontend": "cd frontend && npm install && npm run dev",
+    "setup:blockchain": "cd blockchain && npm install && npx hardhat compile",
+    "dev": "concurrently \"npm run setup:backend\" \"npm run setup:frontend\" \"npm run setup:blockchain\"",
     "build:frontend": "cd frontend && npm run build",
     "deploy:frontend": "cd frontend && npm run deploy",
     "start:backend": "cd backend && npm start"

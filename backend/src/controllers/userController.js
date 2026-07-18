@@ -1,5 +1,6 @@
 const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
+const PDFDocument = require("pdfkit");
 
 const getUserProfile = async (req, res) => {
   try {
@@ -21,36 +22,9 @@ const getUserProfile = async (req, res) => {
       return res.status(404).json({ success: false, error: "User not registered in local cache DB" });
     }
 
-    const activeLevels = await prisma.matrixState.findMany({
-      where: { userAddress: user.walletAddress, isActive: true },
-      select: { program: true, level: true },
-    });
-
-    const activeLevelsX3 = activeLevels.filter(m => m.program === "x3").map(m => m.level);
-    const activeLevelsX4 = activeLevels.filter(m => m.program === "x4").map(m => m.level);
-    const activeLevelsX2 = activeLevels.filter(m => m.program === "x2").map(m => m.level);
-
-    const earnings = await prisma.earning.findMany({
-      where: { userAddress: user.walletAddress },
-      select: { amount: true },
-    });
-
-    const totalEarnings = earnings.reduce((sum, item) => sum + parseFloat(item.amount), 0);
-
     return res.json({
       success: true,
-      data: {
-        id: user.id,
-        walletAddress: user.walletAddress,
-        onChainId: user.onChainId,
-        referrerAddress: user.referrerAddress,
-        partnersCount: user.partnersCount,
-        registeredAt: user.registeredAt,
-        activeLevelsX3,
-        activeLevelsX4,
-        activeLevelsX2,
-        totalEarnings,
-      },
+      data: user,
     });
   } catch (error) {
     console.error("Error fetching user profile:", error);
@@ -70,9 +44,6 @@ const getUserPartners = async (req, res) => {
       query = { walletAddress: idOrAddress.toLowerCase() };
     } else {
       const id = parseInt(idOrAddress, 10);
-      if (isNaN(id)) {
-        return res.status(400).json({ success: false, error: "Invalid user ID or wallet address" });
-      }
       query = { onChainId: id };
     }
 
@@ -95,11 +66,7 @@ const getUserPartners = async (req, res) => {
     return res.json({
       success: true,
       data: partners,
-      meta: {
-        page,
-        limit,
-        total,
-      },
+      meta: { page, limit, total },
     });
   } catch (error) {
     console.error("Error fetching user partners:", error);
@@ -107,76 +74,119 @@ const getUserPartners = async (req, res) => {
   }
 };
 
-const getMatrixState = async (req, res) => {
+const getAdminTree = async (req, res) => {
   try {
-    const { userAddress, program, level } = req.params;
-    const lvl = parseInt(level, 10);
-
-    if (!userAddress.startsWith("0x") || (program !== "x3" && program !== "x4" && program !== "x2") || isNaN(lvl)) {
-      return res.status(400).json({ success: false, error: "Invalid query parameters" });
-    }
-
-    const state = await prisma.matrixState.findUnique({
-      where: {
-        userAddress_program_level: {
-          userAddress: userAddress.toLowerCase(),
-          program,
-          level: lvl,
-        },
-      },
+    const users = await prisma.user.findMany({
+      select: {
+        walletAddress: true,
+        referrerAddress: true,
+        partnersCount: true,
+        totalEarnings: true,
+        registeredAt: true,
+      }
     });
-
-    if (!state) {
-      return res.json({
-        success: true,
-        data: {
-          userAddress: userAddress.toLowerCase(),
-          program,
-          level: lvl,
-          isActive: false,
-          reinvestCount: 0,
-          currentReferrer: null,
-          referrals: [],
-          firstLevel: [],
-          secondLevel: [],
-        },
-      });
-    }
-
-    return res.json({
-      success: true,
-      data: state,
-    });
+    return res.json({ success: true, data: users });
   } catch (error) {
-    console.error("Error fetching matrix state:", error);
+    console.error("Error fetching admin tree:", error);
     return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+const getCommissions = async (req, res) => {
+  try {
+    const configs = await prisma.adminConfig.findMany({
+      orderBy: { level: 'asc' }
+    });
+    return res.json({ success: true, data: configs });
+  } catch (error) {
+    console.error("Error fetching commissions:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+const setCommissions = async (req, res) => {
+  try {
+    const { levels } = req.body; 
+    if (!Array.isArray(levels)) {
+      return res.status(400).json({ success: false, error: "Invalid payload format" });
+    }
+
+    const updates = levels.map(l => 
+      prisma.adminConfig.upsert({
+        where: { level: l.level },
+        update: { commissionBps: l.commissionBps },
+        create: { level: l.level, commissionBps: l.commissionBps }
+      })
+    );
+    await prisma.$transaction(updates);
+
+    return res.json({ success: true, message: "Commissions updated" });
+  } catch (error) {
+    console.error("Error setting commissions:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+const generateStatementPDF = async (req, res) => {
+  try {
+    const { idOrAddress } = req.params;
+    let walletAddress = idOrAddress.toLowerCase();
+    if (!idOrAddress.startsWith("0x")) {
+      const user = await prisma.user.findUnique({ where: { onChainId: parseInt(idOrAddress, 10) } });
+      if (user) walletAddress = user.walletAddress;
+    }
+
+    const earnings = await prisma.earning.findMany({
+      where: { userAddress: walletAddress },
+      orderBy: { earnedAt: "desc" },
+    });
+    
+    const transactions = await prisma.transaction.findMany({
+      where: { userAddress: walletAddress },
+      orderBy: { blockTimestamp: "desc" },
+    });
+
+    const doc = new PDFDocument();
+    res.setHeader('Content-disposition', `attachment; filename=Statement_${walletAddress}.pdf`);
+    res.setHeader('Content-type', 'application/pdf');
+    doc.pipe(res);
+
+    doc.fontSize(20).text(`Transaction Statement`, { align: 'center' });
+    doc.fontSize(12).text(`User: ${walletAddress}`, { align: 'center' });
+    doc.moveDown();
+    
+    doc.fontSize(14).text('Earnings');
+    if (earnings.length === 0) doc.fontSize(10).text("No earnings found.");
+    earnings.forEach(e => {
+      doc.fontSize(10).text(`- ${e.earnedAt.toISOString()}: +${e.amount} from ${e.fromAddress} (Level ${e.level})`);
+    });
+    
+    doc.moveDown();
+    doc.fontSize(14).text('Transactions');
+    if (transactions.length === 0) doc.fontSize(10).text("No transactions found.");
+    transactions.forEach(t => {
+      doc.fontSize(10).text(`- ${t.blockTimestamp.toISOString()}: ${t.eventType} ${t.amount || t.tokensAmount || ''} Tx: ${t.txHash}`);
+    });
+
+    doc.end();
+
+  } catch (error) {
+    console.error("Error generating PDF:", error);
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, error: "Internal server error" });
+    }
   }
 };
 
 const getPlatformStats = async (req, res) => {
   try {
     const totalUsers = await prisma.user.count();
-    const earningsSum = await prisma.earning.aggregate({
-      _sum: { amount: true },
-    });
-
-    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    const users24h = await prisma.user.count({
-      where: { registeredAt: { gte: oneDayAgo } },
-    });
-    
-    const volume24hSum = await prisma.earning.aggregate({
-      where: { earnedAt: { gte: oneDayAgo } },
-      _sum: { amount: true },
-    });
-
+    const earningsSum = await prisma.earning.aggregate({ _sum: { amount: true } });
     return res.json({
       success: true,
       data: {
         totalUsers,
         totalVolume: earningsSum._sum.amount || 0,
-        volume24h: volume24hSum._sum.amount || 0,
-        users24h,
       },
     });
   } catch (error) {
@@ -185,48 +195,12 @@ const getPlatformStats = async (req, res) => {
   }
 };
 
-const getUserHistory = async (req, res) => {
-  try {
-    const { idOrAddress } = req.params;
-    let walletAddress = idOrAddress.toLowerCase();
-
-    if (!idOrAddress.startsWith("0x")) {
-      const id = parseInt(idOrAddress, 10);
-      const user = await prisma.user.findUnique({ where: { onChainId: id } });
-      if (!user) {
-        return res.status(404).json({ success: false, error: "User not found" });
-      }
-      walletAddress = user.walletAddress;
-    }
-
-    const earnings = await prisma.earning.findMany({
-      where: { userAddress: walletAddress },
-      orderBy: { earnedAt: "desc" },
-      take: 50,
-    });
-
-    const transactions = await prisma.transaction.findMany({
-      where: { userAddress: walletAddress },
-      orderBy: { blockTimestamp: "desc" },
-      take: 50,
-    });
-
-    const history = [
-      ...earnings.map(e => ({ ...e, recordType: "earning", date: e.earnedAt })),
-      ...transactions.map(t => ({ ...t, recordType: "transaction", date: t.blockTimestamp }))
-    ].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 50);
-
-    return res.json({ success: true, data: history });
-  } catch (error) {
-    console.error("Error fetching user history:", error);
-    return res.status(500).json({ success: false, error: "Internal server error" });
-  }
-};
-
 module.exports = {
   getUserProfile,
   getUserPartners,
-  getMatrixState,
   getPlatformStats,
-  getUserHistory,
+  getAdminTree,
+  getCommissions,
+  setCommissions,
+  generateStatementPDF
 };

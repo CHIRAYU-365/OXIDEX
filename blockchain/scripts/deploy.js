@@ -19,28 +19,17 @@ async function main() {
   const tokenAddress = await token.getAddress();
   console.log("OxiToken deployed to:", tokenAddress);
 
-  // Deploy Milestones Contract
-  const OxiMilestones = await hre.ethers.getContractFactory("OxiMilestones");
-  const milestones = await OxiMilestones.deploy("https://oxidex.com/api/metadata/{id}.json");
-  await milestones.waitForDeployment();
-  const milestonesAddress = await milestones.getAddress();
-  console.log("OxiMilestones deployed to:", milestonesAddress);
-
   // Link Contracts
   console.log("Linking contracts...");
   let tx;
   
-  tx = await oxideX.setContracts(tokenAddress, milestonesAddress);
+  tx = await oxideX.setToken(tokenAddress);
   await tx.wait(1);
-  console.log("- OxideXBase linked");
+  console.log("- OxideXBase linked to OxiToken");
   
-  tx = await token.setMatrixContract(oxideXAddress);
+  tx = await token.setLaunchpadContract(oxideXAddress);
   await tx.wait(1);
-  console.log("- OxiToken linked");
-  
-  tx = await milestones.setMatrixContract(oxideXAddress);
-  await tx.wait(1);
-  console.log("- OxiMilestones linked");
+  console.log("- OxiToken linked to OxideXBase");
 
   console.log("All contracts successfully deployed and linked!");
 }

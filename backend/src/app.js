@@ -7,13 +7,15 @@ const { getNonce, verifySignature, mockRegister } = require("./controllers/authC
 const {
   getUserProfile,
   getUserPartners,
-  getMatrixState,
   getPlatformStats,
-  getUserHistory,
+  getAdminTree,
+  getCommissions,
+  setCommissions,
+  generateStatementPDF
 } = require("./controllers/userController");
-const analyticsRoutes = require("./routes/analyticsRoutes");
 
 const app = express();
+app.set("trust proxy", 1);
 
 app.use(helmet());
 
@@ -35,7 +37,7 @@ app.use(cors({
       callback(null, false);
     }
   },
-  methods: ["GET", "POST"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 }));
 
@@ -71,13 +73,18 @@ app.post("/api/auth/nonce", getNonce);
 app.post("/api/auth/verify", verifySignature);
 app.post("/api/auth/mock-register", mockRegister);
 
+// User endpoints
 app.get("/api/users/:idOrAddress", getUserProfile);
-app.get("/api/users/:idOrAddress/partners", getUserPartners);
-app.get("/api/users/:idOrAddress/history", getUserHistory);
-app.get("/api/matrix/:userAddress/:program/:level", getMatrixState);
+app.get("/api/users/:idOrAddress/partners", getUserPartners); // Direct partners
+app.get("/api/users/:idOrAddress/statement/pdf", generateStatementPDF); // Statement PDF
+
+// Admin endpoints
+app.get("/api/admin/tree", getAdminTree); // Complete tree
+app.get("/api/admin/commissions", getCommissions);
+app.post("/api/admin/commissions", setCommissions);
+
 app.get("/api/platform/stats", getPlatformStats);
 
-app.use("/api/analytics", analyticsRoutes);
 
 app.use((req, res, next) => {
   res.status(404).json({ success: false, error: "Resource not found" });

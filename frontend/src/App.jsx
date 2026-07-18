@@ -2,42 +2,60 @@ import React from "react";
 import { HashRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { useWeb3 } from "./context/Web3Context";
 import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import MatrixProgram from "./pages/MatrixProgram";
-import Layout from "./components/Layout";
-import Partners from "./pages/Partners";
-import History from "./pages/History";
-import AffiliateHub from "./pages/AffiliateHub";
-import Leaderboard from "./pages/Leaderboard";
-import FiatOnRamp from "./pages/FiatOnRamp";
+
+import AdminLayout from "./components/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import TreeView from "./pages/admin/TreeView";
+import CommissionSettings from "./pages/admin/CommissionSettings";
+
+import UserLayout from "./components/UserLayout";
+import UserDashboard from "./pages/user/UserDashboard";
+import TokenLaunchpad from "./pages/user/TokenLaunchpad";
+import TransactionHistory from "./pages/user/TransactionHistory";
+import SmartContractView from "./pages/user/SmartContractView";
+
+function AdminRoutes() {
+  return (
+    <AdminLayout>
+      <Routes>
+        <Route path="/" element={<AdminDashboard />} />
+        <Route path="/tree" element={<TreeView />} />
+        <Route path="/commissions" element={<CommissionSettings />} />
+        <Route path="*" element={<Navigate to="/admin" replace />} />
+      </Routes>
+    </AdminLayout>
+  );
+}
+
+function UserRoutes() {
+  return (
+    <UserLayout>
+      <Routes>
+        <Route path="/" element={<UserDashboard />} />
+        <Route path="/launchpad" element={<TokenLaunchpad />} />
+        <Route path="/history" element={<TransactionHistory />} />
+        <Route path="/contract" element={<SmartContractView />} />
+        <Route path="*" element={<Navigate to="/user" replace />} />
+      </Routes>
+    </UserLayout>
+  );
+}
 
 function AuthenticatedRoutes() {
-  const { account, token, user, isViewOnly } = useWeb3();
+  const { account, token, isViewOnly } = useWeb3();
 
   if (!isViewOnly) {
     if (!account || !token) {
       return <Login />;
     }
-
-    // Verify if the user is sponsored (registered on-chain)
-    if (!user || !user.onChainId) {
-      return <Login />;
-    }
   }
 
   return (
-    <Layout>
-      <Routes>
-        <Route path="/" element={<Dashboard />} />
-        <Route path="/partners" element={<Partners />} />
-        <Route path="/history" element={<History />} />
-        <Route path="/matrix/:program/:level" element={<MatrixProgram />} />
-        <Route path="/affiliate" element={<AffiliateHub />} />
-        <Route path="/leaderboard" element={<Leaderboard />} />
-        <Route path="/buy-crypto" element={<FiatOnRamp />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </Layout>
+    <Routes>
+      <Route path="/admin/*" element={<AdminRoutes />} />
+      <Route path="/user/*" element={<UserRoutes />} />
+      <Route path="*" element={<Navigate to="/user" replace />} />
+    </Routes>
   );
 }
 

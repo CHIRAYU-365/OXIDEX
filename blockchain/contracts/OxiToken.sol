@@ -6,34 +6,28 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title OxideX Token (OXI)
- * @dev The native utility and reward token for the OXIDEX ecosystem.
- * Users earn OXI tokens by actively participating in the matrix (registering, upgrading).
+ * @dev The native utility token for the OXIDEX ecosystem Launchpad.
  */
 contract OxiToken is ERC20, Ownable {
-    address public matrixContract;
+    address public launchpadContract;
 
-    modifier onlyMatrix() {
-        require(msg.sender == matrixContract, "OxiToken: Caller is not the Matrix contract");
+    modifier onlyLaunchpad() {
+        require(msg.sender == launchpadContract, "OxiToken: Caller is not the Launchpad contract");
         _;
     }
 
-    constructor() ERC20("OxideX Token", "OXI") {
-        // Mint an initial supply of 10,000,000 OXI to the creator for liquidity/marketing
+    constructor() ERC20("OxideX Token", "OXI") Ownable() {
         _mint(msg.sender, 10_000_000 * 10 ** decimals());
     }
 
-    /**
-     * @dev Sets the official OXIDEX Matrix contract address.
-     * Only this contract can mint new reward tokens.
-     */
-    function setMatrixContract(address _matrixContract) external onlyOwner {
-        matrixContract = _matrixContract;
+    function setLaunchpadContract(address _launchpadContract) external onlyOwner {
+        launchpadContract = _launchpadContract;
     }
 
     /**
-     * @dev Called by the Matrix contract to mint OXI rewards to users.
+     * @dev Called by the Launchpad contract to mint OXI tokens to users upon purchase.
      */
-    function rewardUser(address to, uint256 amount) external onlyMatrix {
+    function rewardUser(address to, uint256 amount) external onlyLaunchpad {
         _mint(to, amount);
     }
 }
