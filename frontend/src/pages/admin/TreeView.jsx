@@ -7,7 +7,7 @@ export default function TreeView() {
   useEffect(() => {
     const fetchTree = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/admin/tree');
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/admin/tree`);
         const data = await res.json();
         if (data.success) {
           setTreeData(data.data);

@@ -7,7 +7,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch('http://localhost:8080/api/platform/stats');
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/platform/stats`);
         const data = await res.json();
         if (data.success) {
           setStats(data.data);

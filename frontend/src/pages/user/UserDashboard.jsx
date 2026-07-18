@@ -11,7 +11,7 @@ export default function UserDashboard() {
   useEffect(() => {
     const fetchPartners = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/users/${account}/partners`);
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/users/${account}/partners`);
         const data = await res.json();
         if (data.success) {
           setPartners(data.data);
