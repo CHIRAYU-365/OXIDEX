@@ -88,27 +88,31 @@ export default function TreeView() {
 
     const query = searchQuery.toLowerCase();
     
-    function dfs(node, path) {
-      const currentPath = [...path, node.name];
+    function findPath(root, query) {
+      const stack = [{ node: root, path: [] }];
       
-      // If we found a match in the full address or the truncated name
-      if (
-        (node.attributes?.FullAddress && node.attributes.FullAddress.toLowerCase().includes(query)) ||
-        node.name.toLowerCase().includes(query)
-      ) {
-        return currentPath;
-      }
-      
-      if (node.children) {
-        for (const child of node.children) {
-          const result = dfs(child, currentPath);
-          if (result) return result;
+      while (stack.length > 0) {
+        const { node, path } = stack.pop();
+        const currentPath = [...path, node.name];
+        
+        if (
+          (node.attributes?.FullAddress && node.attributes.FullAddress.toLowerCase().includes(query)) ||
+          node.name.toLowerCase().includes(query)
+        ) {
+          return currentPath;
+        }
+        
+        if (node.children) {
+          // Push backwards to maintain left-to-right traversal
+          for (let i = node.children.length - 1; i >= 0; i--) {
+            stack.push({ node: node.children[i], path: currentPath });
+          }
         }
       }
       return null;
     }
 
-    const resultPath = dfs(treeData, []);
+    const resultPath = findPath(treeData, query);
     if (resultPath) {
       setHighlightedPath(new Set(resultPath));
     } else {
