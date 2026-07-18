@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0x84de52852884b9e7e5A37a126A48D5267cA079Be";
+export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0x98A6F0671Bf68f36A1ee414D2A043b228a79df8C";
 
 export const CONTRACT_ABI = [
   "event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId)",
