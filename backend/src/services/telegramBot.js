@@ -3,11 +3,6 @@ const axios = require("axios");
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
 
-/**
- * Sends a message to the configured Telegram community channel.
- * Silently aborts if the environment variables are not configured.
- * @param {string} message - The message to send. HTML formatting supported.
- */
 const sendTelegramAlert = async (message) => {
   if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_CHAT_ID) {
     return;

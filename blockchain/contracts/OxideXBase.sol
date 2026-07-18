@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.20;
 
 interface IOxiToken {
@@ -8,7 +8,7 @@ interface IOxiToken {
 contract OxideXBase {
     address public owner;
     IOxiToken public launchpadToken;
-    uint256 public tokenPrice = 0.0001 ether; // 1 token = 0.0001 ETH
+    uint256 public tokenPrice = 0.0001 ether; 
     
     struct User {
         uint256 id;
@@ -21,10 +21,10 @@ contract OxideXBase {
     mapping(uint256 => address) public idToAddress;
     uint256 public lastUserId;
     
-    // Fully automated dynamic commission parameters
-    uint8 public constant GAS_LIMIT_MAX_LEVELS = 50; // Hard EVM cap
     
-    // Hybrid Commission State
+    uint8 public constant GAS_LIMIT_MAX_LEVELS = 50; 
+    
+    
     mapping(uint8 => uint256) public levelCommissions;
     uint8 public maxManualLevels;
     
@@ -49,7 +49,7 @@ contract OxideXBase {
         });
         idToAddress[1] = _owner;
         
-        // Dynamic halving curve takes over automatically, no manual admin setup needed!
+        
     }
     
     function setToken(address _token) external onlyOwner {
@@ -60,7 +60,7 @@ contract OxideXBase {
         tokenPrice = _price;
     }
     
-    // Admin configuration for Manual Overrides
+    
     function setCommission(uint8 level, uint256 percentageBps) external onlyOwner {
         require(level > 0 && level <= 50, "Invalid level");
         levelCommissions[level] = percentageBps;
@@ -77,7 +77,7 @@ contract OxideXBase {
     function registerUser(address user, address referrer) internal {
         require(!isUserExists(user), "User already exists");
         if (!isUserExists(referrer)) {
-            referrer = owner; // Fallback to owner if referrer is invalid
+            referrer = owner; 
         }
         
         lastUserId++;
@@ -97,25 +97,25 @@ contract OxideXBase {
     function distributeCommission(address user, uint256 amount) internal {
         address currentReferrer = users[user].referrer;
         uint256 currentBps;
-        uint256 autoBpsTracker = 1000; // Default 10% fallback
+        uint256 autoBpsTracker = 1000; 
         uint8 level = 1;
         
-        // Loop dynamically climbs the tree until it hits the root, hits precision 0, or hits the 50-level gas cap.
+        
         while (currentReferrer != address(0) && level <= GAS_LIMIT_MAX_LEVELS) {
             
-            // Check if level has a manual override
+            
             if (level <= maxManualLevels && levelCommissions[level] > 0) {
                 currentBps = levelCommissions[level];
-                autoBpsTracker = currentBps; // Sync auto tracker to the last manual level
+                autoBpsTracker = currentBps; 
             } else {
-                // Auto generate
+                
                 if (level > 1) {
-                    autoBpsTracker = autoBpsTracker / 2; // Halving curve
+                    autoBpsTracker = autoBpsTracker / 2; 
                 }
                 currentBps = autoBpsTracker;
             }
             
-            // If the dynamic curve hits 0, stop to save gas
+            
             if (currentBps == 0) break;
             
             uint256 commissionAmount = (amount * currentBps) / 10000;
@@ -143,10 +143,10 @@ contract OxideXBase {
         
         uint256 tokensToTransfer = (msg.value * 1e18) / tokenPrice;
         
-        // Distribute ETH commissions up the unilevel tree
+        
         distributeCommission(msg.sender, msg.value);
         
-        // Mint tokens to buyer
+        
         launchpadToken.rewardUser(msg.sender, tokensToTransfer);
         
         emit TokensPurchased(msg.sender, tokensToTransfer, msg.value);

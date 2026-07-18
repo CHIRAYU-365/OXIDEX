@@ -73,13 +73,13 @@ app.post("/api/auth/nonce", getNonce);
 app.post("/api/auth/verify", verifySignature);
 app.post("/api/auth/mock-register", mockRegister);
 
-// User endpoints
-app.get("/api/users/:idOrAddress", getUserProfile);
-app.get("/api/users/:idOrAddress/partners", getUserPartners); // Direct partners
-app.get("/api/users/:idOrAddress/statement/pdf", generateStatementPDF); // Statement PDF
 
-// Admin endpoints
-app.get("/api/admin/tree", getAdminTree); // Complete tree
+app.get("/api/users/:idOrAddress", getUserProfile);
+app.get("/api/users/:idOrAddress/partners", getUserPartners); 
+app.get("/api/users/:idOrAddress/statement/pdf", generateStatementPDF); 
+
+
+app.get("/api/admin/tree", getAdminTree); 
 app.get("/api/admin/commissions", getCommissions);
 app.post("/api/admin/commissions", setCommissions);
 

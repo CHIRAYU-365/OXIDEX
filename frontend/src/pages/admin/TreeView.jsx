@@ -43,7 +43,7 @@ export default function TreeView() {
   const buildTree = (users) => {
     const nodeMap = {};
     users.forEach(user => {
-      // Keep full address in an attribute so we can search it, but display truncated
+      
       nodeMap[user.walletAddress] = {
         name: `${user.walletAddress.substring(0,6)}...${user.walletAddress.substring(38)}`,
         attributes: {
@@ -74,8 +74,8 @@ export default function TreeView() {
       };
     }
 
-    // ITERATIVE PRUNING: Sever branches deeper than the EVM Gas Limit (50)
-    // This prevents d3.hierarchy from throwing a Stack Overflow on massive vertical trees
+    
+    
     function pruneTree(root, maxDepth) {
       if (!root) return;
       const queue = [{ node: root, depth: 1 }];
@@ -90,7 +90,7 @@ export default function TreeView() {
               Status: 'Network Pruned (EVM Gas Cap)' 
             };
           }
-          node.children = []; // Cut off the rest of the branch
+          node.children = []; 
         } else if (node.children) {
           for (const child of node.children) {
             queue.push({ node: child, depth: depth + 1 });
@@ -103,7 +103,7 @@ export default function TreeView() {
     return finalTree;
   };
 
-  // DFS to find path to the searched wallet
+  
   useEffect(() => {
     if (!treeData || searchQuery.length < 4) {
       setHighlightedPath(new Set());
@@ -127,7 +127,7 @@ export default function TreeView() {
         }
         
         if (node.children) {
-          // Push backwards to maintain left-to-right traversal
+          
           for (let i = node.children.length - 1; i >= 0; i--) {
             stack.push({ node: node.children[i], path: currentPath });
           }
@@ -145,7 +145,7 @@ export default function TreeView() {
   }, [searchQuery, treeData]);
 
   const getPathClass = ({ target }) => {
-    // target is the child node in the link. If child is in highlighted path, line is highlighted
+    
     if (highlightedPath.has(target.data.name)) {
       return 'custom-link-highlighted';
     }
@@ -162,7 +162,7 @@ export default function TreeView() {
           <p className="text-gray-400 mt-2">Interactive visualization of the multi-level affiliation tree.</p>
         </div>
         
-        {/* Search & Stats */}
+        {}
         <div className="flex flex-col md:items-end gap-2 w-full md:w-96">
           <div className="relative w-full">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -290,7 +290,7 @@ export default function TreeView() {
         )}
       </div>
 
-      {/* Node Details Modal */}
+      {}
       {selectedNode && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedNode(null)}>
           <div className="bg-zinc-950 border border-amber-500/20 rounded-2xl p-6 w-full max-w-md shadow-[0_0_30px_rgba(245,158,11,0.15)] transform transition-transform" onClick={(e) => e.stopPropagation()}>

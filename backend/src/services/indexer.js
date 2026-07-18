@@ -3,7 +3,7 @@ const { PrismaClient } = require("@prisma/client");
 const { sendTelegramAlert } = require("./telegramBot");
 const prisma = new PrismaClient();
 
-// The new ABI for OxideXBase unilevel events
+
 const OXIDEX_ABI = [
   "event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId)",
   "event CommissionPaid(address indexed from, address indexed to, uint8 level, uint256 amount)",
@@ -127,7 +127,7 @@ const startIndexer = (io) => {
           },
         });
 
-        // Send Telegram Broadcast
+        
         if (typeof sendTelegramAlert === "function") {
           sendTelegramAlert(`🎉 <b>New Member Registered!</b>\nUser: <code>${userLower}</code>\nReferred by: <code>${referrerLower}</code>`);
         }

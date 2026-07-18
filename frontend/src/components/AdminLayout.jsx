@@ -17,7 +17,7 @@ export default function AdminLayout({ children }) {
   return (
     <div className="flex h-screen bg-zinc-950 text-gray-200 font-sans">
       
-      {/* Mobile Header */}
+      {}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-900/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 z-50">
         <div className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-orange-400 to-amber-500">
           OXIDEX Admin
@@ -27,7 +27,7 @@ export default function AdminLayout({ children }) {
         </button>
       </div>
 
-      {/* Sidebar */}
+      {}
       <aside className={`
         fixed md:static inset-y-0 left-0 z-40 w-64 bg-zinc-900/50 backdrop-blur-xl border-r border-white/5 
         transform transition-transform duration-300 ease-in-out flex flex-col pt-16 md:pt-4 p-4
@@ -71,7 +71,7 @@ export default function AdminLayout({ children }) {
         </div>
       </aside>
 
-      {/* Mobile Overlay */}
+      {}
       {mobileMenuOpen && (
         <div 
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 md:hidden"
@@ -79,7 +79,7 @@ export default function AdminLayout({ children }) {
         />
       )}
 
-      {/* Main Content */}
+      {}
       <main className="flex-1 overflow-y-auto pt-16 md:pt-0 p-4 md:p-8 bg-gradient-to-br from-zinc-950 via-zinc-900/20 to-black">
         <div className="max-w-7xl mx-auto">
           {children}

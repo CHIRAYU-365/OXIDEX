@@ -1,13 +1,9 @@
-// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/**
- * @title OxideX Token (OXI)
- * @dev The native utility token for the OXIDEX ecosystem Launchpad.
- */
 contract OxiToken is ERC20, Ownable {
     address public launchpadContract;
 
@@ -24,10 +20,7 @@ contract OxiToken is ERC20, Ownable {
         launchpadContract = _launchpadContract;
     }
 
-    /**
-     * @dev Called by the Launchpad contract to mint OXI tokens to users upon purchase.
-     */
-    function rewardUser(address to, uint256 amount) external onlyLaunchpad {
+        function rewardUser(address to, uint256 amount) external onlyLaunchpad {
         _mint(to, amount);
     }
 }

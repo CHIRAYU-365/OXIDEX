@@ -14,7 +14,7 @@ export default function CommissionSettings() {
         if (data.success && data.data.length > 0) {
           setLevels(data.data.map(d => ({ level: d.level, percentage: d.commissionBps / 100 })));
         } else {
-          // Default fallbacks if empty
+          
           setLevels([
             { level: 1, percentage: 10 },
             { level: 2, percentage: 5 },
@@ -61,14 +61,14 @@ export default function CommissionSettings() {
 
       alert("Please confirm the MetaMask transactions to save these levels on-chain.");
       
-      // Need to loop sequentially because MetaMask doesn't like rapid-fire popups
+      
       for (const l of levels) {
         const bps = Math.floor(l.percentage * 100);
         const tx = await contract.setCommission(l.level, bps);
         await tx.wait();
       }
       
-      // Also set the max manual levels so the contract knows where the manual configuration ends
+      
       const txMax = await contract.setMaxManualLevels(levels.length);
       await txMax.wait();
 
