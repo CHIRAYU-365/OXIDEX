@@ -9,6 +9,8 @@ export default function TreeView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedPath, setHighlightedPath] = useState(new Set());
   const [selectedNode, setSelectedNode] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [treeKey, setTreeKey] = useState(0);
 
   // Dynamically calculate the center of the container when it mounts or resizes
   const containerRef = useCallback((containerElem) => {
@@ -164,17 +166,28 @@ export default function TreeView() {
         
         {}
         <div className="flex flex-col md:items-end gap-2 w-full md:w-96">
-          <div className="relative w-full">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <Search className="h-5 w-5 text-amber-500/50" />
+          <div className="flex gap-2 w-full">
+            <div className="relative w-full">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-amber-500/50" />
+              </div>
+              <input
+                type="text"
+                className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500/50 shadow-inner transition-colors font-mono text-sm"
+                placeholder="Search wallet..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
-            <input
-              type="text"
-              className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500/50 shadow-inner transition-colors font-mono text-sm"
-              placeholder="Search wallet address..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+            <button 
+              onClick={() => {
+                setIsExpanded(!isExpanded);
+                setTreeKey(k => k + 1);
+              }}
+              className="px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/50 rounded-xl text-amber-400 font-bold uppercase tracking-wider text-xs whitespace-nowrap transition-colors"
+            >
+              {isExpanded ? 'Collapse' : 'Expand'}
+            </button>
           </div>
           
           {highlightedPath.size > 0 && searchQuery.length > 3 && (
@@ -198,6 +211,8 @@ export default function TreeView() {
           </div>
         ) : treeData ? (
           <Tree 
+            key={treeKey}
+            initialDepth={isExpanded ? 50 : 1}
             data={treeData} 
             orientation="vertical"
             pathFunc="step"
