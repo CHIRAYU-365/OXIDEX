@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../../../utils/contract';
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../../utils/contract';
 
 export default function CommissionSettings() {
   const [levels, setLevels] = useState([
