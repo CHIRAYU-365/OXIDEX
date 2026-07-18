@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import Tree from 'react-d3-tree';
 
 export default function TreeView() {
-  const [treeData, setTreeData] = useState([]);
+  const [treeData, setTreeData] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -9,8 +10,10 @@ export default function TreeView() {
       try {
         const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/admin/tree`);
         const data = await res.json();
-        if (data.success) {
-          setTreeData(data.data);
+        if (data.success && data.data.length > 0) {
+          setTreeData(buildTree(data.data));
+        } else {
+          setTreeData(null);
         }
       } catch (err) {
         console.error("Failed to fetch tree", err);
@@ -21,39 +24,77 @@ export default function TreeView() {
     fetchTree();
   }, []);
 
-  // Basic representation of tree nodes
-  const renderNode = (user, users) => {
-    const children = users.filter(u => u.referrerAddress === user.walletAddress);
-    return (
-      <div key={user.walletAddress} className="ml-6 mt-2">
-        <div className="flex items-center gap-2 text-sm bg-gray-800 p-2 rounded border border-gray-700">
-          <span className="font-mono text-blue-400">{user.walletAddress.substring(0,6)}...{user.walletAddress.substring(38)}</span>
-          <span className="text-xs text-gray-400">(Partners: {user.partnersCount})</span>
-        </div>
-        {children.length > 0 && (
-          <div className="border-l border-gray-700 ml-4 pl-2 mt-2">
-            {children.map(child => renderNode(child, users))}
-          </div>
-        )}
-      </div>
-    );
+  // Helper to convert flat array into D3 hierarchical JSON format
+  const buildTree = (users) => {
+    // 1. Create a map of all nodes
+    const nodeMap = {};
+    users.forEach(user => {
+      nodeMap[user.walletAddress] = {
+        name: `${user.walletAddress.substring(0,6)}...${user.walletAddress.substring(38)}`,
+        attributes: {
+          Partners: user.partnersCount,
+        },
+        children: []
+      };
+    });
+
+    // 2. Build the tree by assigning children to their referrers
+    const roots = [];
+    users.forEach(user => {
+      if (user.referrerAddress && nodeMap[user.referrerAddress]) {
+        nodeMap[user.referrerAddress].children.push(nodeMap[user.walletAddress]);
+      } else {
+        roots.push(nodeMap[user.walletAddress]);
+      }
+    });
+
+    // If there's multiple roots, wrap them in a master 'Company' node
+    if (roots.length > 1) {
+      return {
+        name: 'Launchpad Protocol',
+        attributes: {
+          Roots: roots.length
+        },
+        children: roots
+      };
+    }
+    
+    return roots[0];
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Unilevel Tree View</h1>
-      <p className="text-gray-400">Complete view of the MLM hierarchy.</p>
+    <div className="space-y-6 h-screen flex flex-col">
+      <div>
+        <h1 className="text-3xl font-bold">Unilevel Tree View</h1>
+        <p className="text-gray-400">Interactive animated view of the MLM hierarchy. Scroll to zoom, click and drag to pan.</p>
+      </div>
       
-      <div className="bg-gray-900 p-6 rounded-xl border border-gray-800 overflow-x-auto min-h-[500px]">
+      <div className="bg-gray-900 flex-1 rounded-xl border border-gray-800 overflow-hidden relative min-h-[600px]">
         {loading ? (
-          <p>Loading tree...</p>
-        ) : treeData.length > 0 ? (
-          // Find root nodes (no referrer or referrer not in list)
-          treeData
-            .filter(u => !u.referrerAddress || !treeData.find(t => t.walletAddress === u.referrerAddress))
-            .map(root => renderNode(root, treeData))
+          <div className="p-6">Loading tree...</div>
+        ) : treeData ? (
+          <Tree 
+            data={treeData} 
+            orientation="vertical"
+            pathFunc="step"
+            translate={{ x: window.innerWidth / 3, y: 100 }}
+            nodeSize={{ x: 200, y: 150 }}
+            renderCustomNodeElement={({ nodeDatum, toggleNode }) => (
+              <g>
+                <circle r="20" fill="#3b82f6" onClick={toggleNode} className="cursor-pointer" />
+                <text fill="white" strokeWidth="1" x="25" y="-10" className="text-sm shadow-black drop-shadow-md">
+                  {nodeDatum.name}
+                </text>
+                {nodeDatum.attributes?.Partners !== undefined && (
+                  <text fill="#9ca3af" strokeWidth="1" x="25" y="10" className="text-xs">
+                    Partners: {nodeDatum.attributes.Partners}
+                  </text>
+                )}
+              </g>
+            )}
+          />
         ) : (
-          <p className="text-gray-500">No users found in the system.</p>
+          <div className="p-6 text-gray-500">No users found in the system.</div>
         )}
       </div>
     </div>

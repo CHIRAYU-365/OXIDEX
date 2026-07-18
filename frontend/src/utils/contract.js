@@ -10,5 +10,6 @@ export const CONTRACT_ABI = [
   "function levelCommissions(uint8) view returns (uint256)",
   "function isUserExists(address) view returns (bool)",
   "function buyLaunchpadTokens(address referrer) payable",
-  "function tokenPrice() view returns (uint256)"
+  "function tokenPrice() view returns (uint256)",
+  "function setCommission(uint8 level, uint256 percentageBps)"
 ];

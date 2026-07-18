@@ -23,7 +23,7 @@ contract OxideXBase {
     
     // Admin config for commission levels
     mapping(uint8 => uint256) public levelCommissions;
-    uint8 public maxLevels = 5;
+    uint8 public maxLevels = 6;
     
     event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId);
     event CommissionPaid(address indexed from, address indexed to, uint8 level, uint256 amount);
@@ -62,9 +62,21 @@ contract OxideXBase {
         tokenPrice = _price;
     }
     
+    function getTotalCommissionBps() public view returns (uint256) {
+        uint256 total = 0;
+        for (uint8 i = 1; i <= maxLevels; i++) {
+            total += levelCommissions[i];
+        }
+        return total;
+    }
+
     function setCommission(uint8 level, uint256 percentageBps) external onlyOwner {
         require(level > 0 && level <= maxLevels, "Invalid level");
-        require(percentageBps <= 10000, "Cannot exceed 100%");
+        
+        uint256 currentTotal = getTotalCommissionBps();
+        uint256 newTotal = currentTotal - levelCommissions[level] + percentageBps;
+        require(newTotal <= 10000, "Total commission cannot exceed 100%");
+        
         levelCommissions[level] = percentageBps;
     }
     
