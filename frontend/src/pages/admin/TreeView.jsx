@@ -1,9 +1,21 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import Tree from 'react-d3-tree';
 
 export default function TreeView() {
   const [treeData, setTreeData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [translate, setTranslate] = useState({ x: 0, y: 0 });
+
+  // Dynamically calculate the center of the container when it mounts or resizes
+  const containerRef = useCallback((containerElem) => {
+    if (containerElem !== null) {
+      const { width } = containerElem.getBoundingClientRect();
+      setTranslate({
+        x: width / 2,
+        y: 100 // Top padding
+      });
+    }
+  }, []);
 
   useEffect(() => {
     const fetchTree = async () => {
@@ -24,9 +36,7 @@ export default function TreeView() {
     fetchTree();
   }, []);
 
-  // Helper to convert flat array into D3 hierarchical JSON format
   const buildTree = (users) => {
-    // 1. Create a map of all nodes
     const nodeMap = {};
     users.forEach(user => {
       nodeMap[user.walletAddress] = {
@@ -38,7 +48,6 @@ export default function TreeView() {
       };
     });
 
-    // 2. Build the tree by assigning children to their referrers
     const roots = [];
     users.forEach(user => {
       if (user.referrerAddress && nodeMap[user.referrerAddress]) {
@@ -48,7 +57,6 @@ export default function TreeView() {
       }
     });
 
-    // If there's multiple roots, wrap them in a master 'Company' node
     if (roots.length > 1) {
       return {
         name: 'Launchpad Protocol',
@@ -63,45 +71,74 @@ export default function TreeView() {
   };
 
   return (
-    <div className="space-y-6 h-screen flex flex-col">
+    <div className="space-y-8 flex flex-col h-[calc(100vh-8rem)]">
       <div>
-        <h1 className="text-3xl font-bold">Unilevel Tree View</h1>
-        <p className="text-gray-400">Interactive animated view of the MLM hierarchy. Scroll to zoom, click and drag to pan.</p>
+        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500 pb-2">
+          Network Topology
+        </h1>
+        <p className="text-gray-400 mt-2">Interactive visualization of the multi-level affiliation tree. Drag to pan, scroll to zoom.</p>
       </div>
       
-      <div className="bg-gray-900 flex-1 rounded-xl border border-gray-800 overflow-hidden relative min-h-[600px]">
+      <div 
+        ref={containerRef}
+        className="flex-1 bg-black/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_0_20px_rgba(245,158,11,0.05)] relative overflow-hidden"
+      >
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500 z-10"></div>
+        
         {loading ? (
-          <div className="p-6">Loading tree...</div>
+          <div className="flex h-full items-center justify-center">
+            <p className="text-amber-500/60 animate-pulse text-lg uppercase tracking-widest font-bold">Scanning Network...</p>
+          </div>
         ) : treeData ? (
           <Tree 
             data={treeData} 
             orientation="vertical"
             pathFunc="step"
-            translate={{ x: window.innerWidth / 3, y: 100 }}
-            nodeSize={{ x: 200, y: 150 }}
+            translate={translate}
+            nodeSize={{ x: 220, y: 160 }}
+            pathClassFunc={() => 'stroke-amber-500/20 stroke-2'}
             renderCustomNodeElement={({ nodeDatum, toggleNode }) => (
               <g>
-                <circle r="20" fill="#3b82f6" onClick={toggleNode} className="cursor-pointer" />
+                <circle 
+                  r="24" 
+                  fill="#18181b" 
+                  stroke="#f59e0b"
+                  strokeWidth="3"
+                  onClick={toggleNode} 
+                  className="cursor-pointer drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] transition-all duration-300 hover:stroke-[#fbbf24]" 
+                />
                 <text 
-                  style={{ fill: '#ffffff', fontSize: '14px' }}
-                  x="25" y="-5" 
-                  className="shadow-black drop-shadow-md"
+                  style={{ fill: '#ffffff', fontSize: '14px', fontWeight: 'bold' }}
+                  x="35" y="-5" 
+                  className="shadow-black drop-shadow-md font-mono"
                 >
                   {nodeDatum.name}
                 </text>
                 {nodeDatum.attributes?.Partners !== undefined && (
                   <text 
-                    style={{ fill: '#9ca3af', fontSize: '12px' }}
-                    x="25" y="15"
+                    style={{ fill: '#fbbf24', fontSize: '12px', fontWeight: 'bold' }}
+                    x="35" y="15"
+                    className="uppercase tracking-widest"
                   >
                     Partners: {nodeDatum.attributes.Partners}
+                  </text>
+                )}
+                {nodeDatum.attributes?.Roots !== undefined && (
+                  <text 
+                    style={{ fill: '#fbbf24', fontSize: '12px', fontWeight: 'bold' }}
+                    x="35" y="15"
+                    className="uppercase tracking-widest"
+                  >
+                    Roots: {nodeDatum.attributes.Roots}
                   </text>
                 )}
               </g>
             )}
           />
         ) : (
-          <div className="p-6 text-gray-500">No users found in the system.</div>
+          <div className="flex h-full items-center justify-center">
+            <p className="text-gray-500 uppercase tracking-widest text-sm">No users found in the protocol.</p>
+          </div>
         )}
       </div>
     </div>

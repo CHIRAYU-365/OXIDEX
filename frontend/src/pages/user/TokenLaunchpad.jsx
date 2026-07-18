@@ -10,7 +10,7 @@ export default function TokenLaunchpad() {
 
   // Mock ABI for launchpad buy
   const buyLaunchpadTokensAbi = ["function buyLaunchpadTokens(address referrer) external payable"];
-  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || "0x0000000000000000000000000000000000000000"; // Placeholder
+  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || "0x98A6F0671Bf68f36A1ee414D2A043b228a79df8C";
 
   const handleBuy = async () => {
     if (!amountEth || isNaN(amountEth) || parseFloat(amountEth) <= 0) {
@@ -22,8 +22,7 @@ export default function TokenLaunchpad() {
       setLoading(true);
       setTxHash('');
       
-      // In a real scenario, extract ref from local storage or URL if not registered
-      const referrer = localStorage.getItem("referrer") || account; // Mock fallback
+      const referrer = localStorage.getItem("referrer") || account; 
       
       const { Contract } = await import('ethers');
       const contract = new Contract(contractAddress, buyLaunchpadTokensAbi, signer);
@@ -42,64 +41,73 @@ export default function TokenLaunchpad() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-10">
-      <div className="bg-[#13131a] rounded-2xl border border-gray-800 shadow-2xl overflow-hidden">
-        <div className="p-8 text-center bg-gradient-to-b from-green-900/20 to-transparent border-b border-gray-800">
-          <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-emerald-600 mb-2">
+    <div className="max-w-2xl mx-auto mt-6">
+      <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_0_20px_rgba(245,158,11,0.05)] overflow-hidden">
+        <div className="p-8 text-center border-b border-white/5 bg-gradient-to-b from-amber-500/10 to-transparent relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
+          <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500 mb-2 tracking-tight">
             OXI Token Presale
           </h1>
-          <p className="text-gray-400">Join the future of DeFi. Buy tokens to participate in the ecosystem.</p>
+          <p className="text-gray-400 text-sm md:text-base">Join the future of decentralized finance. Secure your tokens today.</p>
         </div>
         
-        <div className="p-8 space-y-6">
-          <div className="flex justify-between text-sm text-gray-400">
-            <span>Current Price:</span>
-            <span className="font-bold text-green-400">1 OXI = 0.0001 ETH</span>
+        <div className="p-6 md:p-8 space-y-8">
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-gray-400 font-semibold uppercase tracking-wider">Current Price</span>
+            <span className="font-bold text-amber-400 px-3 py-1 bg-amber-500/10 rounded-full border border-amber-500/20">
+              1 OXI = 0.0001 ETH
+            </span>
           </div>
           
           <div>
-            <label className="block text-gray-400 mb-2 text-sm font-semibold">Amount to Invest (ETH)</label>
-            <div className="relative">
+            <label className="block text-gray-400 mb-3 text-sm font-semibold uppercase tracking-wider">Amount to Invest (ETH)</label>
+            <div className="relative group">
               <input 
                 type="number" 
                 value={amountEth}
                 onChange={(e) => setAmountEth(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-lg p-4 pl-12 text-white font-mono text-lg focus:outline-none focus:border-green-500 transition-colors"
+                className="w-full bg-black/50 border border-white/10 rounded-xl p-4 pl-12 text-white font-mono text-xl focus:outline-none focus:border-amber-500/50 transition-colors group-hover:border-white/20 shadow-inner"
                 placeholder="0.1"
                 min="0"
                 step="0.01"
               />
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">Ξ</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 font-bold text-xl">Ξ</span>
             </div>
           </div>
           
-          <div className="bg-gray-900/50 p-4 rounded-lg flex justify-between items-center border border-gray-800/50">
-            <span className="text-gray-400 text-sm">You will receive approx:</span>
-            <span className="text-2xl font-bold text-white">
-              {amountEth && !isNaN(amountEth) ? (parseFloat(amountEth) / 0.0001).toLocaleString() : '0'} <span className="text-green-500 text-sm">OXI</span>
+          <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/5 p-6 rounded-xl flex justify-between items-center border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
+            <span className="text-gray-300 text-sm font-semibold uppercase tracking-wider">You will receive approx:</span>
+            <span className="text-3xl font-black text-white">
+              {amountEth && !isNaN(amountEth) ? (parseFloat(amountEth) / 0.0001).toLocaleString() : '0'} 
+              <span className="text-amber-500 text-sm ml-2 font-bold uppercase tracking-widest">OXI</span>
             </span>
           </div>
 
           <button 
             onClick={handleBuy}
             disabled={loading}
-            className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform active:scale-95 ${loading ? 'bg-gray-700 text-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)] hover:shadow-[0_0_25px_rgba(16,185,129,0.7)]'}`}
+            className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-lg transition-all transform active:scale-95 ${
+              loading 
+              ? 'bg-zinc-800 text-gray-500 cursor-not-allowed border border-white/5' 
+              : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:shadow-[0_0_30px_rgba(245,158,11,0.6)] border border-amber-400/50'
+            }`}
           >
             {loading ? 'Processing Transaction...' : 'Buy OXI Tokens'}
           </button>
           
           {txHash && (
-            <div className="mt-4 text-center text-sm">
-              <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">
-                View Transaction on Explorer
+            <div className="mt-4 text-center">
+              <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 hover:underline transition-colors text-sm font-semibold bg-amber-500/10 px-4 py-2 rounded-full border border-amber-500/20">
+                <span>View Transaction on Etherscan</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
               </a>
             </div>
           )}
         </div>
       </div>
       
-      <div className="mt-8 text-center">
-        <p className="text-gray-500 text-sm">Every purchase contributes to the MLM reward pool. Refer friends to earn up to 5 levels deep!</p>
+      <div className="mt-8 text-center px-4">
+        <p className="text-gray-500 text-sm font-medium">Every purchase contributes to the MLM reward pool. Refer friends to earn commissions up to 6 levels deep!</p>
       </div>
     </div>
   );

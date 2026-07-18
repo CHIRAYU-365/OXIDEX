@@ -28,45 +28,56 @@ export default function TransactionHistory() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-3xl font-bold text-white">History & Statements</h1>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 border-b border-white/5 pb-6">
+        <div>
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500 pb-2">
+            History & Statements
+          </h1>
+          <p className="text-gray-400 mt-2">View all your transactions, token purchases, and commission payouts.</p>
+        </div>
         <button 
           onClick={downloadPDF}
-          className="bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-6 rounded shadow flex items-center gap-2 transition-colors"
+          className="bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 hover:border-amber-400/60 font-semibold py-3 px-6 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.1)] transition-all flex items-center gap-3 whitespace-nowrap"
         >
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+          </svg>
           Download PDF Statement
         </button>
       </div>
 
-      <div className="bg-[#13131a] p-6 rounded-xl border border-gray-800 shadow-xl">
+      <div className="bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
         {loading ? (
-          <p className="text-gray-400">Loading history...</p>
+          <p className="text-amber-500/60 animate-pulse text-center py-10">Loading history data...</p>
         ) : history.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
+          <div className="overflow-x-auto rounded-xl border border-white/5">
+            <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="border-b border-gray-800 text-gray-400">
-                  <th className="p-3">Date</th>
-                  <th className="p-3">Type</th>
-                  <th className="p-3">Amount</th>
-                  <th className="p-3">Details</th>
+                <tr className="bg-white/5 text-gray-400 border-b border-white/5 text-sm uppercase tracking-wider">
+                  <th className="p-4 font-semibold">Date</th>
+                  <th className="p-4 font-semibold">Type</th>
+                  <th className="p-4 font-semibold text-right">Amount</th>
+                  <th className="p-4 font-semibold">Details</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-white/5">
                 {history.map((record, i) => (
-                  <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-800/20">
-                    <td className="p-3 text-gray-300">{new Date(record.date).toLocaleString()}</td>
-                    <td className="p-3">
-                      <span className={`px-2 py-1 rounded text-xs font-bold ${record.recordType === 'earning' ? 'bg-green-900/30 text-green-400' : 'bg-blue-900/30 text-blue-400'}`}>
+                  <tr key={i} className="hover:bg-white/5 transition-colors">
+                    <td className="p-4 text-gray-400 whitespace-nowrap">{new Date(record.date).toLocaleString()}</td>
+                    <td className="p-4">
+                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
+                        record.recordType === 'earning' 
+                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
+                        : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                      }`}>
                         {record.recordType.toUpperCase()}
                       </span>
                     </td>
-                    <td className="p-3 font-mono text-white">
+                    <td className={`p-4 font-mono text-right whitespace-nowrap font-medium ${record.recordType === 'earning' ? 'text-amber-400' : 'text-gray-300'}`}>
                       {record.recordType === 'earning' ? `+${record.amount} ETH` : `${record.amount || record.tokensAmount || '-'} ETH`}
                     </td>
-                    <td className="p-3 text-sm text-gray-400 font-mono truncate max-w-xs">
+                    <td className="p-4 text-sm text-gray-400 font-mono truncate max-w-xs md:max-w-md">
                       {record.recordType === 'earning' ? `From: ${record.fromAddress} (Lvl ${record.level})` : `Tx: ${record.txHash}`}
                     </td>
                   </tr>
@@ -75,8 +86,8 @@ export default function TransactionHistory() {
             </table>
           </div>
         ) : (
-          <div className="text-center py-10">
-            <p className="text-gray-500 mb-4">No transactions found.</p>
+          <div className="text-center py-12 bg-black/30 rounded-xl border border-white/5 border-dashed">
+            <p className="text-gray-500">No transactions found.</p>
           </div>
         )}
       </div>
