@@ -36,6 +36,22 @@ export default function Login() {
   const [referrer, setReferrer] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [regError, setRegError] = useState(null);
+
+  // Auto-fill referral address from URL params
+  useEffect(() => {
+    try {
+      const hashParts = window.location.hash.split('?');
+      if (hashParts.length > 1) {
+        const params = new URLSearchParams(hashParts[1]);
+        const refParam = params.get('ref');
+        if (refParam && /^0x[a-fA-F0-9]{40}$/.test(refParam)) {
+          setReferrer(refParam);
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse referral param:", e);
+    }
+  }, []);
   
   const [previewInput, setPreviewInput] = useState("");
   const [previewLoading, setPreviewLoading] = useState(false);

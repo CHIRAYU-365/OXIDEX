@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useWeb3 } from '../context/Web3Context';
-import { Menu, X } from 'lucide-react'; // ensure lucide-react is installed, package.json had it earlier
+import { Menu, X, LogOut } from 'lucide-react';
 
 export default function UserLayout({ children }) {
   const location = useLocation();
-  const { account } = useWeb3();
+  const { account, logout, isViewOnly, exitPreviewMode } = useWeb3();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -58,10 +58,17 @@ export default function UserLayout({ children }) {
           })}
         </nav>
         
-        <div className="mt-auto pt-4 border-t border-white/5">
+        <div className="mt-auto pt-4 border-t border-white/5 space-y-3">
           <p className="text-xs text-amber-500/60 truncate font-mono bg-amber-500/5 p-2 rounded-lg border border-amber-500/10">
-            {account}
+            {isViewOnly ? `Preview: ${account}` : account}
           </p>
+          <button 
+            onClick={isViewOnly ? exitPreviewMode : logout}
+            className="w-full flex items-center justify-center space-x-2 p-2 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-all duration-300 text-sm font-bold"
+          >
+            <LogOut size={16} />
+            <span>{isViewOnly ? 'Exit Preview' : 'Disconnect'}</span>
+          </button>
         </div>
       </aside>
 

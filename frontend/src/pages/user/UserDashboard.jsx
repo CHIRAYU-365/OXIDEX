@@ -6,7 +6,8 @@ export default function UserDashboard() {
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const referralLink = `${window.location.origin}/#/register?ref=${account}`;
+  // Generates a robust HashRouter-compatible referral link
+  const referralLink = `${window.location.origin}${window.location.pathname}#/?ref=${account}`;
 
   useEffect(() => {
     const fetchPartners = async () => {

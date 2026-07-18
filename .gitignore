@@ -6,8 +6,8 @@ yarn-debug.log*
 yarn-error.log*
 
 # Node modules
-node_modules/
-.npm/
+**/node_modules/
+**/.npm/
 
 # Hardhat & Blockchain Artifacts
 blockchain/artifacts/
@@ -38,6 +38,8 @@ backend/prisma/*.db-journal
 .env.test.local
 .env.production.local
 *.env
+**/.env
+**/.env.*
 
 # IDE and OS files
 .DS_Store

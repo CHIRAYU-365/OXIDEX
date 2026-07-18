@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import Tree from 'react-d3-tree';
+import { Search } from 'lucide-react';
 
 export default function TreeView() {
   const [treeData, setTreeData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
+  const [searchQuery, setSearchQuery] = useState('');
+  const [highlightedPath, setHighlightedPath] = useState(new Set());
 
   // Dynamically calculate the center of the container when it mounts or resizes
   const containerRef = useCallback((containerElem) => {
@@ -39,10 +42,12 @@ export default function TreeView() {
   const buildTree = (users) => {
     const nodeMap = {};
     users.forEach(user => {
+      // Keep full address in an attribute so we can search it, but display truncated
       nodeMap[user.walletAddress] = {
         name: `${user.walletAddress.substring(0,6)}...${user.walletAddress.substring(38)}`,
         attributes: {
           Partners: user.partnersCount,
+          FullAddress: user.walletAddress
         },
         children: []
       };
@@ -61,7 +66,8 @@ export default function TreeView() {
       return {
         name: 'Launchpad Protocol',
         attributes: {
-          Roots: roots.length
+          Roots: roots.length,
+          FullAddress: 'protocol'
         },
         children: roots
       };
@@ -70,13 +76,74 @@ export default function TreeView() {
     return roots[0];
   };
 
+  // DFS to find path to the searched wallet
+  useEffect(() => {
+    if (!treeData || searchQuery.length < 4) {
+      setHighlightedPath(new Set());
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    
+    function dfs(node, path) {
+      const currentPath = [...path, node.name];
+      
+      // If we found a match in the full address or the truncated name
+      if (
+        (node.attributes?.FullAddress && node.attributes.FullAddress.toLowerCase().includes(query)) ||
+        node.name.toLowerCase().includes(query)
+      ) {
+        return currentPath;
+      }
+      
+      if (node.children) {
+        for (const child of node.children) {
+          const result = dfs(child, currentPath);
+          if (result) return result;
+        }
+      }
+      return null;
+    }
+
+    const resultPath = dfs(treeData, []);
+    if (resultPath) {
+      setHighlightedPath(new Set(resultPath));
+    } else {
+      setHighlightedPath(new Set());
+    }
+  }, [searchQuery, treeData]);
+
+  const getPathClass = ({ target }) => {
+    // target is the child node in the link. If child is in highlighted path, line is highlighted
+    if (highlightedPath.has(target.data.name)) {
+      return 'custom-link-highlighted';
+    }
+    return 'custom-link';
+  };
+
   return (
-    <div className="space-y-8 flex flex-col h-[calc(100vh-8rem)]">
-      <div>
-        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500 pb-2">
-          Network Topology
-        </h1>
-        <p className="text-gray-400 mt-2">Interactive visualization of the multi-level affiliation tree. Drag to pan, scroll to zoom.</p>
+    <div className="space-y-6 flex flex-col h-[calc(100vh-6rem)]">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <div>
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500 pb-2">
+            Network Topology
+          </h1>
+          <p className="text-gray-400 mt-2">Interactive visualization of the multi-level affiliation tree.</p>
+        </div>
+        
+        {/* Search Bar */}
+        <div className="relative w-full md:w-96">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Search className="h-5 w-5 text-amber-500/50" />
+          </div>
+          <input
+            type="text"
+            className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500/50 shadow-inner transition-colors font-mono text-sm"
+            placeholder="Search wallet address..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
       </div>
       
       <div 
@@ -95,49 +162,79 @@ export default function TreeView() {
             orientation="vertical"
             pathFunc="step"
             translate={translate}
-            nodeSize={{ x: 220, y: 160 }}
-            pathFunc="step"
-            pathClassFunc={() => 'custom-link'}
-            renderCustomNodeElement={({ nodeDatum, toggleNode }) => (
-              <g>
-                <circle 
-                  r="24" 
-                  fill="#18181b" 
-                  stroke="#f59e0b"
-                  strokeWidth="3"
-                  onClick={toggleNode} 
-                  className="cursor-pointer transition-all duration-300 hover:stroke-[#fbbf24]" 
-                  style={{ filter: 'drop-shadow(0px 0px 8px rgba(245,158,11,0.5))' }}
-                />
-                <text 
-                  fill="#ffffff"
-                  fontSize="14"
-                  fontWeight="bold"
-                  x="35" y="-5" 
-                  fontFamily="monospace"
-                >
-                  {nodeDatum.name}
-                </text>
-                {nodeDatum.attributes?.Partners !== undefined && (
+            nodeSize={{ x: 320, y: 180 }}
+            pathClassFunc={getPathClass}
+            renderCustomNodeElement={({ nodeDatum, toggleNode }) => {
+              const isTarget = searchQuery.length > 3 && (
+                (nodeDatum.attributes?.FullAddress && nodeDatum.attributes.FullAddress.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                nodeDatum.name.toLowerCase().includes(searchQuery.toLowerCase())
+              );
+              
+              const isPath = highlightedPath.has(nodeDatum.name);
+
+              return (
+                <g>
+                  {/* Glowing halo for target node */}
+                  {isTarget && (
+                    <circle r="35" fill="none" stroke="#22c55e" strokeWidth="2" className="animate-pulse" style={{ filter: 'drop-shadow(0px 0px 15px rgba(34,197,94,0.8))' }} />
+                  )}
+                  
+                  <circle 
+                    r={isTarget ? "22" : "18"} 
+                    fill="#18181b" 
+                    stroke={isTarget ? "#22c55e" : isPath ? "#fbbf24" : "#f59e0b"}
+                    strokeWidth={isTarget ? "4" : isPath ? "3" : "2"}
+                    onClick={toggleNode} 
+                    className="cursor-pointer transition-all duration-300 hover:stroke-[#fbbf24]" 
+                    style={{ filter: isTarget ? 'drop-shadow(0px 0px 10px rgba(34,197,94,0.6))' : 'drop-shadow(0px 0px 8px rgba(245,158,11,0.5))' }}
+                  />
+                  
+                  {/* Background plate for highly visible text */}
+                  <rect 
+                    x="25" y="-14" 
+                    width="145" height="42" 
+                    fill="#000000" 
+                    fillOpacity="0.75" 
+                    rx="6" 
+                    stroke={isTarget ? "#22c55e" : "rgba(255,255,255,0.1)"}
+                  />
+                  
                   <text 
-                    style={{ fill: '#fbbf24', fontSize: '12px', fontWeight: 'bold' }}
-                    x="35" y="15"
-                    className="uppercase tracking-widest"
+                    fill={isTarget ? "#4ade80" : "#ffffff"}
+                    fontSize="15"
+                    fontWeight="900"
+                    x="33" y="2" 
+                    fontFamily="monospace"
+                    style={{ letterSpacing: '0.05em' }}
                   >
-                    Partners: {nodeDatum.attributes.Partners}
+                    {nodeDatum.name}
                   </text>
-                )}
-                {nodeDatum.attributes?.Roots !== undefined && (
-                  <text 
-                    style={{ fill: '#fbbf24', fontSize: '12px', fontWeight: 'bold' }}
-                    x="35" y="15"
-                    className="uppercase tracking-widest"
-                  >
-                    Roots: {nodeDatum.attributes.Roots}
-                  </text>
-                )}
-              </g>
-            )}
+                  
+                  {nodeDatum.attributes?.Partners !== undefined && (
+                    <text 
+                      fill="#fbbf24"
+                      fontSize="11"
+                      fontWeight="bold"
+                      x="33" y="18"
+                      style={{ letterSpacing: '0.1em' }}
+                    >
+                      PARTNERS: {nodeDatum.attributes.Partners}
+                    </text>
+                  )}
+                  {nodeDatum.attributes?.Roots !== undefined && (
+                    <text 
+                      fill="#fbbf24"
+                      fontSize="11"
+                      fontWeight="bold"
+                      x="33" y="18"
+                      style={{ letterSpacing: '0.1em' }}
+                    >
+                      ROOTS: {nodeDatum.attributes.Roots}
+                    </text>
+                  )}
+                </g>
+              )
+            }}
           />
         ) : (
           <div className="flex h-full items-center justify-center">
