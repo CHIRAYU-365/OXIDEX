@@ -82,11 +82,18 @@ export default function TreeView() {
             renderCustomNodeElement={({ nodeDatum, toggleNode }) => (
               <g>
                 <circle r="20" fill="#3b82f6" onClick={toggleNode} className="cursor-pointer" />
-                <text fill="white" strokeWidth="1" x="25" y="-10" className="text-sm shadow-black drop-shadow-md">
+                <text 
+                  style={{ fill: '#ffffff', fontSize: '14px' }}
+                  x="25" y="-5" 
+                  className="shadow-black drop-shadow-md"
+                >
                   {nodeDatum.name}
                 </text>
                 {nodeDatum.attributes?.Partners !== undefined && (
-                  <text fill="#9ca3af" strokeWidth="1" x="25" y="10" className="text-xs">
+                  <text 
+                    style={{ fill: '#9ca3af', fontSize: '12px' }}
+                    x="25" y="15"
+                  >
                     Partners: {nodeDatum.attributes.Partners}
                   </text>
                 )}
