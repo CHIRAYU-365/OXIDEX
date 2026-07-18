@@ -65,18 +65,42 @@ export default function TreeView() {
       }
     });
 
+    let finalTree = roots[0];
     if (roots.length > 1) {
-      return {
+      finalTree = {
         name: 'Launchpad Protocol',
-        attributes: {
-          Roots: roots.length,
-          FullAddress: 'protocol'
-        },
+        attributes: { Roots: roots.length, FullAddress: 'protocol' },
         children: roots
       };
     }
-    
-    return roots[0];
+
+    // ITERATIVE PRUNING: Sever branches deeper than the EVM Gas Limit (50)
+    // This prevents d3.hierarchy from throwing a Stack Overflow on massive vertical trees
+    function pruneTree(root, maxDepth) {
+      if (!root) return;
+      const queue = [{ node: root, depth: 1 }];
+      
+      while (queue.length > 0) {
+        const { node, depth } = queue.shift();
+        
+        if (depth >= maxDepth) {
+          if (node.children && node.children.length > 0) {
+            node.attributes = { 
+              ...node.attributes, 
+              Status: 'Network Pruned (EVM Gas Cap)' 
+            };
+          }
+          node.children = []; // Cut off the rest of the branch
+        } else if (node.children) {
+          for (const child of node.children) {
+            queue.push({ node: child, depth: depth + 1 });
+          }
+        }
+      }
+    }
+
+    pruneTree(finalTree, 50);
+    return finalTree;
   };
 
   // DFS to find path to the searched wallet
