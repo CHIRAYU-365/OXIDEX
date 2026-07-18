@@ -3,7 +3,7 @@ import { useWeb3 } from '../../context/Web3Context';
 import { parseEther } from 'ethers';
 
 export default function TokenLaunchpad() {
-  const { account, signer } = useWeb3();
+  const { account } = useWeb3();
   const [amountEth, setAmountEth] = useState('');
   const [loading, setLoading] = useState(false);
   const [txHash, setTxHash] = useState('');
@@ -24,7 +24,9 @@ export default function TokenLaunchpad() {
       
       const referrer = localStorage.getItem("referrer") || account; 
       
-      const { Contract } = await import('ethers');
+      const { Contract, BrowserProvider } = await import('ethers');
+      const provider = new BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
       const contract = new Contract(contractAddress, buyLaunchpadTokensAbi, signer);
       
       const tx = await contract.buyLaunchpadTokens(referrer, { value: parseEther(amountEth) });
