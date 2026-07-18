@@ -8,6 +8,7 @@ export default function TreeView() {
   const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedPath, setHighlightedPath] = useState(new Set());
+  const [selectedNode, setSelectedNode] = useState(null);
 
   // Dynamically calculate the center of the container when it mounts or resizes
   const containerRef = useCallback((containerElem) => {
@@ -47,7 +48,9 @@ export default function TreeView() {
         name: `${user.walletAddress.substring(0,6)}...${user.walletAddress.substring(38)}`,
         attributes: {
           Partners: user.partnersCount,
-          FullAddress: user.walletAddress
+          FullAddress: user.walletAddress,
+          Earnings: user.totalEarnings ? parseFloat(user.totalEarnings).toFixed(4) + ' ETH' : '0.0000 ETH',
+          Joined: user.registeredAt ? new Date(user.registeredAt).toLocaleDateString() : 'Unknown'
         },
         children: []
       };
@@ -131,18 +134,27 @@ export default function TreeView() {
           <p className="text-gray-400 mt-2">Interactive visualization of the multi-level affiliation tree.</p>
         </div>
         
-        {/* Search Bar */}
-        <div className="relative w-full md:w-96">
-          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <Search className="h-5 w-5 text-amber-500/50" />
+        {/* Search & Stats */}
+        <div className="flex flex-col md:items-end gap-2 w-full md:w-96">
+          <div className="relative w-full">
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <Search className="h-5 w-5 text-amber-500/50" />
+            </div>
+            <input
+              type="text"
+              className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500/50 shadow-inner transition-colors font-mono text-sm"
+              placeholder="Search wallet address..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-          <input
-            type="text"
-            className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500/50 shadow-inner transition-colors font-mono text-sm"
-            placeholder="Search wallet address..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+          
+          {highlightedPath.size > 0 && searchQuery.length > 3 && (
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-1.5 rounded-lg text-xs font-bold shadow-[0_0_10px_rgba(239,68,68,0.2)] flex items-center gap-2 w-full md:w-auto">
+              <div className="w-2 h-2 rounded-full bg-red-400 animate-ping"></div>
+              Target Located: {highlightedPath.size - 1} node{highlightedPath.size - 1 !== 1 ? 's' : ''} from root
+            </div>
+          )}
         </div>
       </div>
       
@@ -176,61 +188,68 @@ export default function TreeView() {
                 <g>
                   {/* Glowing halo for target node */}
                   {isTarget && (
-                    <circle r="35" fill="none" stroke="#22c55e" strokeWidth="2" className="animate-pulse" style={{ filter: 'drop-shadow(0px 0px 15px rgba(34,197,94,0.8))' }} />
+                    <circle r="35" fill="none" stroke="#ef4444" strokeWidth="2" className="animate-pulse" style={{ filter: 'drop-shadow(0px 0px 15px rgba(239,68,68,0.8))' }} />
                   )}
                   
                   <circle 
                     r={isTarget ? "22" : "18"} 
                     fill="#18181b" 
-                    stroke={isTarget ? "#22c55e" : isPath ? "#fbbf24" : "#f59e0b"}
+                    stroke={isTarget ? "#ef4444" : isPath ? "#fbbf24" : "#f59e0b"}
                     strokeWidth={isTarget ? "4" : isPath ? "3" : "2"}
-                    onClick={toggleNode} 
+                    onClick={() => {
+                      toggleNode();
+                      setSelectedNode(nodeDatum);
+                    }} 
                     className="cursor-pointer transition-all duration-300 hover:stroke-[#fbbf24]" 
-                    style={{ filter: isTarget ? 'drop-shadow(0px 0px 10px rgba(34,197,94,0.6))' : 'drop-shadow(0px 0px 8px rgba(245,158,11,0.5))' }}
+                    style={{ filter: isTarget ? 'drop-shadow(0px 0px 10px rgba(239,68,68,0.6))' : 'drop-shadow(0px 0px 8px rgba(245,158,11,0.5))' }}
                   />
                   
-                  {/* Background plate for highly visible text */}
-                  <rect 
-                    x="25" y="-14" 
-                    width="145" height="42" 
-                    fill="#000000" 
-                    fillOpacity="0.75" 
-                    rx="6" 
-                    stroke={isTarget ? "#22c55e" : "rgba(255,255,255,0.1)"}
-                  />
-                  
-                  <text 
-                    fill={isTarget ? "#4ade80" : "#ffffff"}
-                    fontSize="15"
-                    fontWeight="900"
-                    x="33" y="2" 
-                    fontFamily="monospace"
-                    style={{ letterSpacing: '0.05em' }}
-                  >
-                    {nodeDatum.name}
-                  </text>
-                  
-                  {nodeDatum.attributes?.Partners !== undefined && (
-                    <text 
-                      fill="#fbbf24"
-                      fontSize="11"
-                      fontWeight="bold"
-                      x="33" y="18"
-                      style={{ letterSpacing: '0.1em' }}
-                    >
-                      PARTNERS: {nodeDatum.attributes.Partners}
-                    </text>
-                  )}
-                  {nodeDatum.attributes?.Roots !== undefined && (
-                    <text 
-                      fill="#fbbf24"
-                      fontSize="11"
-                      fontWeight="bold"
-                      x="33" y="18"
-                      style={{ letterSpacing: '0.1em' }}
-                    >
-                      ROOTS: {nodeDatum.attributes.Roots}
-                    </text>
+                  {(isTarget || selectedNode?.name === nodeDatum.name) && (
+                    <g>
+                      {/* Background plate for highly visible text */}
+                      <rect 
+                        x="25" y="-14" 
+                        width="145" height="42" 
+                        fill="#000000" 
+                        fillOpacity="0.75" 
+                        rx="6" 
+                        stroke={isTarget ? "#ef4444" : "rgba(255,255,255,0.1)"}
+                      />
+                      
+                      <text 
+                        fill={isTarget ? "#f87171" : "#ffffff"}
+                        fontSize="15"
+                        fontWeight="900"
+                        x="33" y="2" 
+                        fontFamily="monospace"
+                        style={{ letterSpacing: '0.05em' }}
+                      >
+                        {nodeDatum.name}
+                      </text>
+                      
+                      {nodeDatum.attributes?.Partners !== undefined && (
+                        <text 
+                          fill="#fbbf24"
+                          fontSize="11"
+                          fontWeight="bold"
+                          x="33" y="18"
+                          style={{ letterSpacing: '0.1em' }}
+                        >
+                          PARTNERS: {nodeDatum.attributes.Partners}
+                        </text>
+                      )}
+                      {nodeDatum.attributes?.Roots !== undefined && (
+                        <text 
+                          fill="#fbbf24"
+                          fontSize="11"
+                          fontWeight="bold"
+                          x="33" y="18"
+                          style={{ letterSpacing: '0.1em' }}
+                        >
+                          ROOTS: {nodeDatum.attributes.Roots}
+                        </text>
+                      )}
+                    </g>
                   )}
                 </g>
               )
@@ -242,6 +261,56 @@ export default function TreeView() {
           </div>
         )}
       </div>
+
+      {/* Node Details Modal */}
+      {selectedNode && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedNode(null)}>
+          <div className="bg-zinc-950 border border-amber-500/20 rounded-2xl p-6 w-full max-w-md shadow-[0_0_30px_rgba(245,158,11,0.15)] transform transition-transform" onClick={(e) => e.stopPropagation()}>
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500">
+                Network Node Details
+              </h3>
+              <button onClick={() => setSelectedNode(null)} className="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            
+            <div className="space-y-5">
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 font-bold">Wallet Address</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-mono text-amber-400 break-all bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 text-sm flex-1">
+                    {selectedNode.attributes?.FullAddress || selectedNode.name}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div className="bg-white/5 p-4 rounded-xl border border-white/10 shadow-inner">
+                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Direct Partners</p>
+                  <p className="text-3xl font-black text-white mt-1">{selectedNode.attributes?.Partners || 0}</p>
+                </div>
+                <div className="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10 shadow-inner">
+                  <p className="text-[10px] text-emerald-500/70 uppercase font-bold tracking-widest">Total Earnings</p>
+                  <p className="text-xl font-black text-emerald-400 mt-1 truncate">{selectedNode.attributes?.Earnings || '0.0000 ETH'}</p>
+                </div>
+              </div>
+              
+              <div>
+                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1 font-bold">Registration Date</p>
+                <p className="text-gray-300 bg-white/5 inline-block px-3 py-1.5 rounded-lg text-sm">{selectedNode.attributes?.Joined || 'Protocol Genesis'}</p>
+              </div>
+            </div>
+            
+            <div className="mt-8">
+               <button 
+                 onClick={() => { navigator.clipboard.writeText(selectedNode.attributes?.FullAddress || ''); alert('Wallet Address Copied!'); }} 
+                 className="w-full py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 rounded-xl text-white font-black uppercase tracking-widest transition-all duration-300 shadow-lg text-sm"
+               >
+                 Copy Full Address
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

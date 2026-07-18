@@ -21,9 +21,12 @@ contract OxideXBase {
     mapping(uint256 => address) public idToAddress;
     uint256 public lastUserId;
     
-    // Admin config for commission levels
+    // Fully automated dynamic commission parameters
+    uint8 public constant GAS_LIMIT_MAX_LEVELS = 50; // Hard EVM cap
+    
+    // Hybrid Commission State
     mapping(uint8 => uint256) public levelCommissions;
-    uint8 public maxLevels = 6;
+    uint8 public maxManualLevels;
     
     event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId);
     event CommissionPaid(address indexed from, address indexed to, uint8 level, uint256 amount);
@@ -46,12 +49,7 @@ contract OxideXBase {
         });
         idToAddress[1] = _owner;
         
-        // Default commissions: 10%, 5%, 3%, 2%, 1% (in basis points: 10000 = 100%)
-        levelCommissions[1] = 1000;
-        levelCommissions[2] = 500;
-        levelCommissions[3] = 300;
-        levelCommissions[4] = 200;
-        levelCommissions[5] = 100;
+        // Dynamic halving curve takes over automatically, no manual admin setup needed!
     }
     
     function setToken(address _token) external onlyOwner {
@@ -62,26 +60,14 @@ contract OxideXBase {
         tokenPrice = _price;
     }
     
-    function getTotalCommissionBps() public view returns (uint256) {
-        uint256 total = 0;
-        for (uint8 i = 1; i <= maxLevels; i++) {
-            total += levelCommissions[i];
-        }
-        return total;
-    }
-
+    // Admin configuration for Manual Overrides
     function setCommission(uint8 level, uint256 percentageBps) external onlyOwner {
-        require(level > 0 && level <= maxLevels, "Invalid level");
-        
-        uint256 currentTotal = getTotalCommissionBps();
-        uint256 newTotal = currentTotal - levelCommissions[level] + percentageBps;
-        require(newTotal <= 10000, "Total commission cannot exceed 100%");
-        
+        require(level > 0 && level <= 50, "Invalid level");
         levelCommissions[level] = percentageBps;
     }
     
-    function setMaxLevels(uint8 _maxLevels) external onlyOwner {
-        maxLevels = _maxLevels;
+    function setMaxManualLevels(uint8 _max) external onlyOwner {
+        maxManualLevels = _max;
     }
     
     function isUserExists(address user) public view returns (bool) {
@@ -110,26 +96,40 @@ contract OxideXBase {
     
     function distributeCommission(address user, uint256 amount) internal {
         address currentReferrer = users[user].referrer;
+        uint256 currentBps;
+        uint256 autoBpsTracker = 1000; // Default 10% fallback
+        uint8 level = 1;
         
-        for (uint8 i = 1; i <= maxLevels; i++) {
-            if (currentReferrer == address(0)) {
-                break;
+        // Loop dynamically climbs the tree until it hits the root, hits precision 0, or hits the 50-level gas cap.
+        while (currentReferrer != address(0) && level <= GAS_LIMIT_MAX_LEVELS) {
+            
+            // Check if level has a manual override
+            if (level <= maxManualLevels && levelCommissions[level] > 0) {
+                currentBps = levelCommissions[level];
+                autoBpsTracker = currentBps; // Sync auto tracker to the last manual level
+            } else {
+                // Auto generate
+                if (level > 1) {
+                    autoBpsTracker = autoBpsTracker / 2; // Halving curve
+                }
+                currentBps = autoBpsTracker;
             }
             
-            uint256 commissionPercentage = levelCommissions[i];
-            if (commissionPercentage > 0) {
-                uint256 commissionAmount = (amount * commissionPercentage) / 10000;
-                
-                if (commissionAmount > 0) {
-                    users[currentReferrer].totalEarnings += commissionAmount;
-                    (bool success, ) = payable(currentReferrer).call{value: commissionAmount}("");
-                    if (success) {
-                        emit CommissionPaid(user, currentReferrer, i, commissionAmount);
-                    }
+            // If the dynamic curve hits 0, stop to save gas
+            if (currentBps == 0) break;
+            
+            uint256 commissionAmount = (amount * currentBps) / 10000;
+            
+            if (commissionAmount > 0) {
+                users[currentReferrer].totalEarnings += commissionAmount;
+                (bool success, ) = payable(currentReferrer).call{value: commissionAmount}("");
+                if (success) {
+                    emit CommissionPaid(user, currentReferrer, level, commissionAmount);
                 }
             }
             
             currentReferrer = users[currentReferrer].referrer;
+            level++;
         }
     }
     

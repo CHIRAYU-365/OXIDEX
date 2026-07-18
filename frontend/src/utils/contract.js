@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 
-export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0x98A6F0671Bf68f36A1ee414D2A043b228a79df8C";
+export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0x09caaB06bED52403F3Ba8c6D4409dd7A2e196488";
 
 export const CONTRACT_ABI = [
   "event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId)",
@@ -11,5 +11,7 @@ export const CONTRACT_ABI = [
   "function isUserExists(address) view returns (bool)",
   "function buyLaunchpadTokens(address referrer) payable",
   "function tokenPrice() view returns (uint256)",
-  "function setCommission(uint8 level, uint256 percentageBps)"
+  "function setCommission(uint8 level, uint256 percentageBps)",
+  "function setMaxManualLevels(uint8 _max)",
+  "function maxManualLevels() view returns (uint8)"
 ];
