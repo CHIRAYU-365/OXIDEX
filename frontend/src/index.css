@@ -114,3 +114,14 @@
 .neon-border-gold {
   box-shadow: 0 0 15px rgba(245, 158, 11, 0.15), inset 0 0 15px rgba(245, 158, 11, 0.05);
 }
+
+/* D3 Tree Custom Link Style */
+.custom-link {
+  fill: none;
+  stroke: rgba(245, 158, 11, 0.3); /* Amber-500 with 30% opacity */
+  stroke-width: 3px;
+  transition: all 0.3s ease;
+}
+.custom-link:hover {
+  stroke: rgba(245, 158, 11, 0.8);
+}

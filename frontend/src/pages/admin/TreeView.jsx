@@ -96,7 +96,8 @@ export default function TreeView() {
             pathFunc="step"
             translate={translate}
             nodeSize={{ x: 220, y: 160 }}
-            pathClassFunc={() => 'stroke-amber-500/20 stroke-2'}
+            pathFunc="step"
+            pathClassFunc={() => 'custom-link'}
             renderCustomNodeElement={({ nodeDatum, toggleNode }) => (
               <g>
                 <circle 
@@ -105,12 +106,15 @@ export default function TreeView() {
                   stroke="#f59e0b"
                   strokeWidth="3"
                   onClick={toggleNode} 
-                  className="cursor-pointer drop-shadow-[0_0_8px_rgba(245,158,11,0.5)] transition-all duration-300 hover:stroke-[#fbbf24]" 
+                  className="cursor-pointer transition-all duration-300 hover:stroke-[#fbbf24]" 
+                  style={{ filter: 'drop-shadow(0px 0px 8px rgba(245,158,11,0.5))' }}
                 />
                 <text 
-                  style={{ fill: '#ffffff', fontSize: '14px', fontWeight: 'bold' }}
+                  fill="#ffffff"
+                  fontSize="14"
+                  fontWeight="bold"
                   x="35" y="-5" 
-                  className="shadow-black drop-shadow-md font-mono"
+                  fontFamily="monospace"
                 >
                   {nodeDatum.name}
                 </text>
