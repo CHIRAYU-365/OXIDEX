@@ -112,8 +112,8 @@ export default function UserLayout({ children }) {
       )}
 
       {}
-      <main className="flex-1 overflow-y-auto pt-20 md:pt-10 p-6 md:p-12 lg:p-16 bg-gradient-to-br from-zinc-950 via-zinc-900/20 to-black">
-        <div className="max-w-[1400px] mx-auto">
+      <main className="flex-1 overflow-y-auto pt-16 md:pt-6 p-4 md:p-10 bg-gradient-to-br from-zinc-950 via-zinc-900/20 to-black">
+        <div className="max-w-7xl mx-auto">
           {children}
         </div>
       </main>
