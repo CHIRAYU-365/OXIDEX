@@ -61,13 +61,13 @@ export default function UserDashboard() {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-blue-500/20 pb-6 mb-8">
+    <div className="space-y-12">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-blue-500/20 pb-8 mb-12">
         <div>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-sky-500 pb-2">
+          <h1 className="text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-sky-500 pb-3">
             Dashboard Overview
           </h1>
-          <p className="text-gray-400 mt-2">Track your revenue and network growth.</p>
+          <p className="text-gray-400 mt-2 text-lg">Track your revenue and network growth.</p>
         </div>
         <a 
           href={`https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}`}
@@ -79,74 +79,74 @@ export default function UserDashboard() {
         </a>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="group bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)] hover:border-blue-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] transition-all duration-500 relative overflow-hidden">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="group bg-white/5 backdrop-blur-xl p-10 rounded-[2rem] border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)] hover:border-blue-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] transition-all duration-500 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-sky-500 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <h2 className="text-gray-400 font-semibold mb-2 uppercase tracking-wider text-sm">Total Revenue</h2>
-          <p className="text-4xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
-            {user?.totalEarnings ? parseFloat(user.totalEarnings).toFixed(4) : "0.0000"} <span className="text-sm text-blue-400/50 font-normal">ETH</span>
+          <h2 className="text-gray-400 font-semibold mb-4 uppercase tracking-wider text-sm">Total Revenue</h2>
+          <p className="text-5xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
+            {user?.totalEarnings ? parseFloat(user.totalEarnings).toFixed(4) : "0.0000"} <span className="text-lg text-blue-400/50 font-normal">ETH</span>
           </p>
         </div>
         
-        <div className="group bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)] hover:border-blue-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] transition-all duration-500 relative overflow-hidden">
+        <div className="group bg-white/5 backdrop-blur-xl p-10 rounded-[2rem] border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)] hover:border-blue-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] transition-all duration-500 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-sky-500 to-blue-400 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <h2 className="text-gray-400 font-semibold mb-2 uppercase tracking-wider text-sm">OXI Tokens</h2>
-          <p className="text-4xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
-            {parseFloat(oxiBalance).toFixed(2)} <span className="text-sm text-sky-400/50 font-normal">OXI</span>
+          <h2 className="text-gray-400 font-semibold mb-4 uppercase tracking-wider text-sm">OXI Tokens</h2>
+          <p className="text-5xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
+            {parseFloat(oxiBalance).toFixed(2)} <span className="text-lg text-sky-400/50 font-normal">OXI</span>
           </p>
         </div>
 
-        <div className="group bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)] hover:border-blue-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] transition-all duration-500 relative overflow-hidden">
+        <div className="group bg-white/5 backdrop-blur-xl p-10 rounded-[2rem] border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)] hover:border-blue-500/30 hover:shadow-[0_0_30px_rgba(99,102,241,0.15)] transition-all duration-500 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-blue-500 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
-          <h2 className="text-gray-400 font-semibold mb-2 uppercase tracking-wider text-sm">Direct Partners</h2>
-          <p className="text-4xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
+          <h2 className="text-gray-400 font-semibold mb-4 uppercase tracking-wider text-sm">Direct Partners</h2>
+          <p className="text-5xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
             {user?.partnersCount || 0}
           </p>
         </div>
       </div>
 
-      <div className="bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)]">
-        <h2 className="text-2xl font-bold mb-4 text-white">Your Referral Link</h2>
-        <div className="flex flex-col sm:flex-row gap-4">
+      <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[2rem] border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)]">
+        <h2 className="text-3xl font-black mb-6 text-white tracking-tight">Your Referral Link</h2>
+        <div className="flex flex-col sm:flex-row gap-6">
           <input 
             type="text" 
             readOnly 
             value={referralLink} 
-            className="flex-1 bg-black/50 border border-white/10 rounded-xl p-4 text-gray-300 focus:outline-none focus:border-blue-500/50 transition-colors"
+            className="flex-1 bg-black/50 border border-white/10 rounded-2xl p-5 text-lg text-gray-300 focus:outline-none focus:border-blue-500/50 transition-colors"
           />
           <button 
             onClick={copyLink}
-            className="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-8 rounded-xl transition-colors shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)]"
+            className="bg-blue-600 hover:bg-blue-500 text-white font-black uppercase tracking-wider py-5 px-10 rounded-2xl transition-all shadow-[0_0_15px_rgba(99,102,241,0.3)] hover:shadow-[0_0_25px_rgba(99,102,241,0.5)] active:scale-95"
           >
             Copy Link
           </button>
         </div>
-        <p className="text-sm text-gray-500 mt-4">Share this link to invite direct partners to the Launchpad and earn multi-level commissions!</p>
+        <p className="text-base text-gray-500 mt-6 font-medium">Share this link to invite direct partners to the Launchpad and earn multi-level commissions!</p>
       </div>
 
-      <div className="bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)]">
-        <h2 className="text-2xl font-bold mb-6 text-white">Direct Partners List</h2>
+      <div className="bg-white/5 backdrop-blur-xl p-10 rounded-[2rem] border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)]">
+        <h2 className="text-3xl font-black mb-8 text-white tracking-tight">Direct Partners List</h2>
         {loading ? (
-          <p className="text-blue-400/60 animate-pulse">Loading network data...</p>
+          <p className="text-blue-400/60 animate-pulse text-lg">Loading network data...</p>
         ) : partners.length > 0 ? (
-          <div className="overflow-x-auto rounded-xl border border-white/5">
+          <div className="overflow-x-auto rounded-2xl border border-white/5">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-white/5 text-gray-400 border-b border-white/5">
-                  <th className="p-4 font-semibold">Wallet Address</th>
-                  <th className="p-4 font-semibold">Joined Date</th>
-                  <th className="p-4 font-semibold text-right">Revenue Generated</th>
+                <tr className="bg-white/5">
+                  <th className="p-6 text-gray-400 font-bold uppercase tracking-wider text-sm border-b border-white/5">Wallet Address</th>
+                  <th className="p-6 text-gray-400 font-bold uppercase tracking-wider text-sm border-b border-white/5">Joined Date</th>
+                  <th className="p-6 text-gray-400 font-bold uppercase tracking-wider text-sm border-b border-white/5 text-right">Revenue Generated</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {partners.map(p => (
                   <tr key={p.id} className="hover:bg-white/5 transition-colors group">
-                    <td className="p-4 font-mono text-sm text-sky-400/80 group-hover:text-sky-400 transition-colors">
+                    <td className="p-6 font-mono text-base text-sky-400/80 group-hover:text-sky-400 transition-colors">
                       {p.walletAddress}
                     </td>
-                    <td className="p-4 text-gray-400">{new Date(p.registeredAt).toLocaleDateString()}</td>
-                    <td className="p-4 text-gray-200 font-mono text-right">
-                      {p.totalEarnings ? parseFloat(p.totalEarnings).toFixed(4) : "0.00"} ETH
+                    <td className="p-6 text-gray-400 text-base">{new Date(p.registeredAt).toLocaleDateString()}</td>
+                    <td className="p-6 font-mono text-right font-bold text-base text-gray-200">
+                      {p.revenueGenerated ? parseFloat(p.revenueGenerated).toFixed(4) : "0.0000"} <span className="text-sm text-gray-500 font-normal">ETH</span>
                     </td>
                   </tr>
                 ))}
@@ -155,7 +155,7 @@ export default function UserDashboard() {
           </div>
         ) : (
           <div className="text-center py-12 bg-black/30 rounded-xl border border-white/5 border-dashed">
-            <p className="text-gray-500">You have no direct partners yet. Start referring!</p>
+            <p className="text-gray-500 text-lg">You don't have any direct partners yet. Share your referral link to start building your network!</p>
           </div>
         )}
       </div>

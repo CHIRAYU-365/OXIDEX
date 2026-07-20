@@ -43,15 +43,18 @@ export default function TokenLaunchpad() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto mt-6">
-      <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_0_20px_rgba(245,158,11,0.05)] overflow-hidden">
-        <div className="p-8 text-center border-b border-white/5 bg-gradient-to-b from-blue-500/10 to-transparent relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-sky-500"></div>
+    <div className="space-y-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-8 border-b border-blue-500/20 pb-6 mb-8">
+        <div>
           <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-sky-500 mb-2 tracking-tight">
             OXI Token Presale
           </h1>
           <p className="text-gray-400 text-sm md:text-base">Join the future of decentralized finance. Secure your tokens today.</p>
         </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto">
+        <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_0_20px_rgba(37,99,235,0.05)] overflow-hidden">
         
         <div className="p-6 md:p-8 space-y-8">
           <div className="flex justify-between items-center text-sm">
