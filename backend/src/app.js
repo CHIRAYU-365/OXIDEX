@@ -43,6 +43,24 @@ app.use(cors({
 
 app.use(morgan("dev"));
 
+const tarpitMiddleware = (req, res, next) => {
+  const badPaths = ['.env', 'wp-admin', 'phpmyadmin', 'db-admin', 'config.php', 'sql', 'dump'];
+  const isMalicious = badPaths.some(p => req.path.toLowerCase().includes(p));
+  
+  if (isMalicious) {
+    console.warn(`[TARPIT] Caught potential scanner from ${req.ip} targeting ${req.path}`);
+    res.writeHead(200, { 'Content-Type': 'text/plain', 'Connection': 'keep-alive' });
+    // Keep the connection open indefinitely by sending a single space every 10 seconds
+    // This wastes the hacker's scanner threads ("onion loop")
+    setInterval(() => {
+      res.write(' ');
+    }, 10000);
+  } else {
+    next();
+  }
+};
+app.use(tarpitMiddleware);
+
 app.use(express.json({ limit: "1mb" }));
 app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
