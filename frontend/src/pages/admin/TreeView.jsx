@@ -215,9 +215,9 @@ export default function TreeView() {
             initialDepth={isExpanded ? 50 : 1}
             data={treeData} 
             orientation="vertical"
-            pathFunc="step"
+            pathFunc="straight"
             translate={translate}
-            nodeSize={{ x: 320, y: 180 }}
+            nodeSize={{ x: 220, y: 220 }}
             pathClassFunc={getPathClass}
             renderCustomNodeElement={({ nodeDatum, toggleNode }) => {
               const isTarget = searchQuery.length > 3 && (
