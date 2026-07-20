@@ -39,7 +39,7 @@ export default function UserDashboard() {
         const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
         const tokenAddress = await contract.launchpadToken();
         
-        if (tokenAddress && tokenAddress !== ethers.constants.AddressZero) {
+        if (tokenAddress && tokenAddress !== ethers.ZeroAddress) {
           const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
           const bal = await tokenContract.balanceOf(account);
           setOxiBalance(ethers.formatEther(bal));
