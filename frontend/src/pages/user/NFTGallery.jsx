@@ -4,7 +4,7 @@ import { ethers } from 'ethers';
 import { ERC20_ABI, CONTRACT_ADDRESS, CONTRACT_ABI } from '../../utils/contract';
 
 // Placeholder NFT Contract Address (User must deploy and update this later)
-const NFT_CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS || "0x0000000000000000000000000000000000000000";
+const NFT_CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS || "0x518c5844c48A2E2a3B87ACE3a676b6A3745aEbE3";
 
 const NFT_ABI = [
   "function mint() external",
