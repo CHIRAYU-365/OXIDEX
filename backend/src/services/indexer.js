@@ -191,17 +191,26 @@ const startIndexer = (io) => {
       try {
         const txHash = event.log.transactionHash;
         const buyerLower = buyer.toLowerCase();
+        const tokensInEther = ethers.formatEther(tokenAmount);
 
-        await prisma.transaction.create({
-          data: {
-            txHash,
-            userAddress: buyerLower,
-            eventType: "TokensPurchased",
-            amount: ethSpent.toString(),
-            tokensAmount: tokenAmount.toString(),
-            blockNumber: event.log.blockNumber,
-            blockTimestamp: new Date(),
-          },
+        await prisma.$transaction(async (tx) => {
+          await tx.transaction.create({
+            data: {
+              txHash,
+              userAddress: buyerLower,
+              eventType: "TokensPurchased",
+              amount: ethSpent.toString(),
+              tokensAmount: tokenAmount.toString(),
+              blockNumber: event.log.blockNumber,
+              blockTimestamp: new Date(),
+            },
+          });
+
+          // Update user's OXI token balance in DB
+          await tx.user.updateMany({
+            where: { walletAddress: buyerLower },
+            data: { oxiTokenBalance: { increment: tokensInEther } }
+          });
         });
 
         io.emit("ws:event", {
