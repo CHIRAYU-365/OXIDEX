@@ -8,6 +8,7 @@ const Web3Context = createContext(null);
 export const Web3Provider = ({ children }) => {
   const [account, setAccount] = useState(null);
   const [chainId, setChainId] = useState(null);
+  const [provider, setProvider] = useState(null);
   const [token, setToken] = useState(localStorage.getItem("token"));
   const [user, setUser] = useState(null);
   const [socket, setSocket] = useState(null);
@@ -29,11 +30,12 @@ export const Web3Provider = ({ children }) => {
 
       const init = async () => {
         try {
-          const provider = new ethers.BrowserProvider(window.ethereum);
-          const network = await provider.getNetwork();
+          const prov = new ethers.BrowserProvider(window.ethereum);
+          setProvider(prov);
+          const network = await prov.getNetwork();
           setChainId(network.chainId.toString());
 
-          const accounts = await provider.listAccounts();
+          const accounts = await prov.listAccounts();
           if (accounts.length > 0) {
             const currentAddress = accounts[0].address.toLowerCase();
             setAccount(currentAddress);
@@ -139,8 +141,9 @@ export const Web3Provider = ({ children }) => {
     setError(null);
 
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const network = await provider.getNetwork();
+      const prov = new ethers.BrowserProvider(window.ethereum);
+      setProvider(prov);
+      const network = await prov.getNetwork();
       if (network.chainId.toString() !== "11155111") {
         await switchNetwork();
       }
@@ -271,6 +274,7 @@ export const Web3Provider = ({ children }) => {
       value={{
         account,
         chainId,
+        provider,
         token,
         user,
         socket,
@@ -283,6 +287,7 @@ export const Web3Provider = ({ children }) => {
         previewAccount,
         previewUser,
         isViewOnly,
+        isPreviewMode: isViewOnly,
         activeAccount,
         activeUser,
         enterPreviewMode,

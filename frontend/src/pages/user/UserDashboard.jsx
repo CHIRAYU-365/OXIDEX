@@ -1,15 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useWeb3 } from '../../context/Web3Context';
 import { ethers } from 'ethers';
-import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../../utils/contract';
-
-// ERC20 minimum ABI to get balance
-const ERC20_ABI = [
-  "function balanceOf(address owner) view returns (uint256)"
-];
+import { CONTRACT_ADDRESS, CONTRACT_ABI, ERC20_ABI } from '../../utils/contract';
 
 export default function UserDashboard() {
-  const { account, user } = useWeb3();
+  const { account, user, provider } = useWeb3();
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [oxiBalance, setOxiBalance] = useState("0.00");
@@ -20,7 +15,7 @@ export default function UserDashboard() {
   useEffect(() => {
     const fetchPartners = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/users/${account}/partners`);
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/users/${account}/partners`);
         const data = await res.json();
         if (data.success) {
           setPartners(data.data);
@@ -33,9 +28,8 @@ export default function UserDashboard() {
     };
     
     const fetchOxiBalance = async () => {
-      if (!window.ethereum) return;
+      if (!provider || !account) return;
       try {
-        const provider = new ethers.BrowserProvider(window.ethereum);
         const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
         const tokenAddress = await contract.launchpadToken();
         
@@ -53,7 +47,7 @@ export default function UserDashboard() {
       fetchPartners();
       fetchOxiBalance();
     }
-  }, [account]);
+  }, [account, provider]);
 
   const copyLink = () => {
     navigator.clipboard.writeText(referralLink);
