@@ -222,6 +222,7 @@ export default function TreeView() {
             nodeSize={{ x: 240, y: 190 }}
             pathClassFunc={getPathClass}
             renderCustomNodeElement={({ nodeDatum, toggleNode }) => {
+              const isRoot = nodeDatum.name === treeData.name || (nodeDatum.attributes?.Level !== undefined && Number(nodeDatum.attributes.Level) === 0);
               const isTarget = searchQuery.length > 3 && (
                 (nodeDatum.attributes?.FullAddress && nodeDatum.attributes.FullAddress.toLowerCase().includes(searchQuery.toLowerCase())) ||
                 nodeDatum.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -230,45 +231,95 @@ export default function TreeView() {
               const isPath = highlightedPath.has(nodeDatum.name);
               const levelColors = ['#38bdf8', '#34d399', '#f472b6', '#fbbf24', '#a78bfa'];
               const depth = nodeDatum.attributes?.Level !== undefined ? Number(nodeDatum.attributes.Level) : 0;
-              const nodeColor = isTarget ? "#ef4444" : isPath ? "#ffffff" : levelColors[depth % levelColors.length];
+              const nodeColor = isRoot ? "#f59e0b" : isTarget ? "#ef4444" : isPath ? "#ffffff" : levelColors[depth % levelColors.length];
 
               return (
                 <g>
-                  {/* Glowing halo for target node */}
-                  {isTarget && (
+                  {/* --- HIGHLIGHTED ROOT HUB (Star Topology Center) --- */}
+                  {isRoot && (
+                    <g>
+                      {/* Outer Spinning Radar Ring */}
+                      <circle 
+                        r="52" 
+                        fill="none" 
+                        stroke="#f59e0b" 
+                        strokeWidth="2" 
+                        strokeDasharray="8 6" 
+                        className="animate-spin" 
+                        style={{ animationDuration: '15s', opacity: 0.7 }} 
+                      />
+                      {/* Pulsing Glowing Aura */}
+                      <circle 
+                        r="38" 
+                        fill="rgba(245, 158, 11, 0.15)" 
+                        stroke="#fbbf24" 
+                        strokeWidth="2.5" 
+                        className="animate-pulse" 
+                        style={{ filter: 'drop-shadow(0px 0px 25px rgba(245,158,11,0.9))' }} 
+                      />
+                      {/* "ROOT HUB" Floating Badge */}
+                      <g transform="translate(0, -52)">
+                        <rect x="-42" y="-12" width="84" height="20" rx="10" fill="#f59e0b" />
+                        <text x="0" y="2" textAnchor="middle" fill="#000000" fontSize="9" fontWeight="900" style={{ letterSpacing: '0.12em' }}>
+                          ★ ROOT HUB ★
+                        </text>
+                      </g>
+                    </g>
+                  )}
+
+                  {/* Glowing halo for target search node */}
+                  {isTarget && !isRoot && (
                     <circle r="35" fill="none" stroke="#ef4444" strokeWidth="2" className="animate-pulse" style={{ filter: 'drop-shadow(0px 0px 15px rgba(239,68,68,0.8))' }} />
                   )}
                   
+                  {/* Main Node Circle */}
                   <circle 
-                    r={isTarget ? "22" : "18"} 
-                    fill="#18181b" 
+                    r={isRoot ? "28" : isTarget ? "22" : "18"} 
+                    fill={isRoot ? "#1c1917" : "#18181b"} 
                     stroke={nodeColor}
-                    strokeWidth={isTarget ? "4" : isPath ? "4" : "3"}
+                    strokeWidth={isRoot ? "4" : isTarget ? "4" : isPath ? "4" : "3"}
                     onClick={() => {
                       toggleNode();
                       setSelectedNode(nodeDatum);
                     }} 
                     className="cursor-pointer transition-all duration-300 hover:scale-125" 
-                    style={{ filter: `drop-shadow(0px 0px 10px ${nodeColor})` }}
+                    style={{ filter: `drop-shadow(0px 0px ${isRoot ? '18px' : '10px'} ${nodeColor})` }}
                   />
+
+                  {/* Icon inside Root Node */}
+                  {isRoot && (
+                    <text 
+                      x="0" y="6" 
+                      textAnchor="middle" 
+                      fontSize="16" 
+                      fill="#fbbf24" 
+                      className="pointer-events-none select-none"
+                    >
+                      👑
+                    </text>
+                  )}
                   
-                  {(isTarget || selectedNode?.name === nodeDatum.name) && (
+                  {/* Node Label Card */}
+                  {(isRoot || isTarget || selectedNode?.name === nodeDatum.name) && (
                     <g>
-                      {/* Background plate for highly visible text */}
                       <rect 
-                        x="25" y="-14" 
-                        width="145" height="42" 
+                        x={isRoot ? "-75" : "25"} 
+                        y={isRoot ? "36" : "-14"} 
+                        width="150" height="42" 
                         fill="#000000" 
-                        fillOpacity="0.75" 
-                        rx="6" 
-                        stroke={isTarget ? "#ef4444" : "rgba(255,255,255,0.1)"}
+                        fillOpacity="0.85" 
+                        rx="8" 
+                        stroke={isRoot ? "#f59e0b" : isTarget ? "#ef4444" : "rgba(255,255,255,0.15)"}
+                        strokeWidth="1.5"
                       />
                       
                       <text 
-                        fill={isTarget ? "#f87171" : "#ffffff"}
-                        fontSize="15"
+                        fill={isRoot ? "#fbbf24" : isTarget ? "#f87171" : "#ffffff"}
+                        fontSize="13"
                         fontWeight="900"
-                        x="33" y="2" 
+                        x={isRoot ? "0" : "33"} 
+                        y={isRoot ? "53" : "2"} 
+                        textAnchor={isRoot ? "middle" : "start"}
                         fontFamily="monospace"
                         style={{ letterSpacing: '0.05em' }}
                       >
@@ -277,10 +328,12 @@ export default function TreeView() {
                       
                       {nodeDatum.attributes?.Partners !== undefined && (
                         <text 
-                          fill="#fbbf24"
-                          fontSize="11"
+                          fill={isRoot ? "#f59e0b" : "#fbbf24"}
+                          fontSize="10"
                           fontWeight="bold"
-                          x="33" y="18"
+                          x={isRoot ? "0" : "33"} 
+                          y={isRoot ? "69" : "18"}
+                          textAnchor={isRoot ? "middle" : "start"}
                           style={{ letterSpacing: '0.1em' }}
                         >
                           PARTNERS: {nodeDatum.attributes.Partners}
@@ -289,12 +342,14 @@ export default function TreeView() {
                       {nodeDatum.attributes?.Roots !== undefined && (
                         <text 
                           fill="#fbbf24"
-                          fontSize="11"
+                          fontSize="10"
                           fontWeight="bold"
-                          x="33" y="18"
+                          x={isRoot ? "0" : "33"} 
+                          y={isRoot ? "69" : "18"}
+                          textAnchor={isRoot ? "middle" : "start"}
                           style={{ letterSpacing: '0.1em' }}
                         >
-                          ROOTS: {nodeDatum.attributes.Roots}
+                          ROOT BRANCHES: {nodeDatum.attributes.Roots}
                         </text>
                       )}
                     </g>
