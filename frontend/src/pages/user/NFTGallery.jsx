@@ -20,19 +20,20 @@ export default function NFTGallery() {
   const [oxiBalance, setOxiBalance] = useState('0');
   
   const fetchBalances = async () => {
-    if (!provider || !account || isPreviewMode) return;
+    const activeProvider = provider || (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+    if (!activeProvider || !account || isPreviewMode) return;
     try {
-      const baseContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+      const baseContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, activeProvider);
       const tokenAddress = await baseContract.launchpadToken();
       
       if (tokenAddress && tokenAddress !== ethers.ZeroAddress) {
-        const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+        const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, activeProvider);
         const bal = await tokenContract.balanceOf(account);
         setOxiBalance(ethers.formatEther(bal));
       }
       
       if (NFT_CONTRACT_ADDRESS !== ethers.ZeroAddress) {
-        const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, provider);
+        const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, activeProvider);
         const nftBal = await nftContract.balanceOf(account);
         setNftBalance(Number(nftBal));
       }

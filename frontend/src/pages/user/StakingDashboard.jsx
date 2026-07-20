@@ -17,9 +17,10 @@ export default function StakingDashboard() {
   const [error, setError] = useState('');
 
   const fetchStakingData = async () => {
-    if (!provider || !account || isPreviewMode) return;
+    const activeProvider = provider || (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
+    if (!activeProvider || !account || isPreviewMode) return;
     try {
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, activeProvider);
       
       const aprRaw = await contract.rewardAPR();
       setApr(aprRaw.toString());
