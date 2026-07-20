@@ -11,6 +11,9 @@ export default function UserLayout({ children }) {
   const navLinks = [
     { name: 'Dashboard', path: '/user' },
     { name: 'Token Launchpad', path: '/user/launchpad' },
+    { name: 'Staking Vault', path: '/user/staking' },
+    { name: 'Market Analytics', path: '/user/market' },
+    { name: 'Buy Crypto (Fiat)', path: '/user/buy' },
     { name: 'History & Statements', path: '/user/history' },
     { name: 'Smart Contract', path: '/user/contract' },
   ];

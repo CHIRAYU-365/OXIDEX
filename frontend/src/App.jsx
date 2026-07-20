@@ -1,18 +1,21 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense, lazy } from "react";
 import { HashRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { useWeb3 } from "./context/Web3Context";
 import Login from "./pages/Login";
 
-import AdminLayout from "./components/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
-import TreeView from "./pages/admin/TreeView";
-import CommissionSettings from "./pages/admin/CommissionSettings";
+const AdminLayout = lazy(() => import("./components/AdminLayout"));
+const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
+const TreeView = lazy(() => import("./pages/admin/TreeView"));
+const CommissionSettings = lazy(() => import("./pages/admin/CommissionSettings"));
 
-import UserLayout from "./components/UserLayout";
-import UserDashboard from "./pages/user/UserDashboard";
-import TokenLaunchpad from "./pages/user/TokenLaunchpad";
-import TransactionHistory from "./pages/user/TransactionHistory";
-import SmartContractView from "./pages/user/SmartContractView";
+const UserLayout = lazy(() => import("./components/UserLayout"));
+const UserDashboard = lazy(() => import("./pages/user/UserDashboard"));
+const TokenLaunchpad = lazy(() => import("./pages/user/TokenLaunchpad"));
+const TransactionHistory = lazy(() => import("./pages/user/TransactionHistory"));
+const SmartContractView = lazy(() => import("./pages/user/SmartContractView"));
+const StakingDashboard = lazy(() => import("./pages/user/StakingDashboard"));
+const MarketAnalytics = lazy(() => import("./pages/user/MarketAnalytics"));
+const FiatOnramp = lazy(() => import("./pages/user/FiatOnramp"));
 
 function PageTransition({ children }) {
   const location = useLocation();
@@ -27,12 +30,14 @@ function PageTransition({ children }) {
     else if (path.includes("contract")) setTransitionText("Establishing Secure Node...");
     else if (path.includes("history")) setTransitionText("Syncing On-Chain Ledger...");
     else if (path.includes("tree")) setTransitionText("Indexing Network Topology...");
+    else if (path.includes("market")) setTransitionText("Initializing Trading Engine...");
+    else if (path.includes("buy")) setTransitionText("Securing Fiat Gateway...");
     else if (path.includes("admin")) setTransitionText("Verifying Administrative Cryptography...");
     else setTransitionText("Decrypting Wallet Signature...");
 
     const timer = setTimeout(() => {
       setIsTransitioning(false);
-    }, 600);
+    }, 5500);
 
     return () => clearTimeout(timer);
   }, [location.pathname]);
@@ -106,28 +111,35 @@ function AdminRoutes() {
   }
 
   return (
-    <AdminLayout>
-      <Routes>
-        <Route path="/" element={<AdminDashboard />} />
-        <Route path="/tree" element={<TreeView />} />
-        <Route path="/commissions" element={<CommissionSettings />} />
-        <Route path="*" element={<Navigate to="/admin" replace />} />
-      </Routes>
-    </AdminLayout>
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-t-emerald-500 border-r-transparent border-b-emerald-500 border-l-transparent rounded-full animate-spin"></div></div>}>
+      <AdminLayout>
+        <Routes>
+          <Route path="/" element={<AdminDashboard />} />
+          <Route path="/tree" element={<TreeView />} />
+          <Route path="/commissions" element={<CommissionSettings />} />
+          <Route path="*" element={<Navigate to="/admin" replace />} />
+        </Routes>
+      </AdminLayout>
+    </Suspense>
   );
 }
 
 function UserRoutes() {
   return (
-    <UserLayout>
-      <Routes>
-        <Route path="/" element={<UserDashboard />} />
-        <Route path="/launchpad" element={<TokenLaunchpad />} />
-        <Route path="/history" element={<TransactionHistory />} />
-        <Route path="/contract" element={<SmartContractView />} />
-        <Route path="*" element={<Navigate to="/user" replace />} />
-      </Routes>
-    </UserLayout>
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950 flex items-center justify-center"><div className="w-8 h-8 border-4 border-t-emerald-500 border-r-transparent border-b-emerald-500 border-l-transparent rounded-full animate-spin"></div></div>}>
+      <UserLayout>
+        <Routes>
+          <Route path="/" element={<UserDashboard />} />
+          <Route path="/launchpad" element={<TokenLaunchpad />} />
+          <Route path="/staking" element={<StakingDashboard />} />
+          <Route path="/market" element={<MarketAnalytics />} />
+          <Route path="/buy" element={<FiatOnramp />} />
+          <Route path="/history" element={<TransactionHistory />} />
+          <Route path="/contract" element={<SmartContractView />} />
+          <Route path="*" element={<Navigate to="/user" replace />} />
+        </Routes>
+      </UserLayout>
+    </Suspense>
   );
 }
 
