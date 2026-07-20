@@ -246,6 +246,53 @@ const getPlatformStats = async (req, res) => {
   }
 };
 
+const getUserHistory = async (req, res) => {
+  try {
+    const { idOrAddress } = req.params;
+    let walletAddress = idOrAddress.toLowerCase();
+    
+    if (!idOrAddress.startsWith("0x")) {
+      const user = await prisma.user.findUnique({ where: { onChainId: parseInt(idOrAddress, 10) } });
+      if (user) walletAddress = user.walletAddress;
+      else return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    const earnings = await prisma.earning.findMany({
+      where: { userAddress: walletAddress },
+      orderBy: { earnedAt: "desc" },
+    });
+    
+    const transactions = await prisma.transaction.findMany({
+      where: { userAddress: walletAddress },
+      orderBy: { blockTimestamp: "desc" },
+    });
+
+    const history = [
+      ...earnings.map(e => ({
+        date: e.earnedAt,
+        recordType: 'earning',
+        amount: e.amount,
+        fromAddress: e.fromAddress,
+        level: e.level,
+        txHash: e.txHash
+      })),
+      ...transactions.map(t => ({
+        date: t.blockTimestamp,
+        recordType: 'transaction',
+        amount: t.amount,
+        tokensAmount: t.tokensAmount,
+        eventType: t.eventType,
+        txHash: t.txHash
+      }))
+    ].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    return res.json({ success: true, data: history });
+  } catch (error) {
+    console.error("Error fetching user history:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
 module.exports = {
   getUserProfile,
   getUserPartners,
@@ -256,5 +303,6 @@ module.exports = {
   unbanUser,
   getCommissions,
   setCommissions,
-  generateStatementPDF
+  generateStatementPDF,
+  getUserHistory
 };

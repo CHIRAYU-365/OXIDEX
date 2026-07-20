@@ -14,7 +14,8 @@ const {
   unbanUser,
   getCommissions,
   setCommissions,
-  generateStatementPDF
+  generateStatementPDF,
+  getUserHistory
 } = require("./controllers/userController");
 
 const app = express();
@@ -94,6 +95,7 @@ app.post("/api/auth/mock-register", mockRegister);
 
 app.get("/api/users/:idOrAddress", getUserProfile);
 app.get("/api/users/:idOrAddress/partners", getUserPartners); 
+app.get("/api/users/:idOrAddress/history", getUserHistory);
 app.get("/api/users/:idOrAddress/statement/pdf", generateStatementPDF); 
 
 
