@@ -1,35 +1,27 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import Tree from 'react-d3-tree';
-import { Search } from 'lucide-react';
+import React, { useEffect, useState, useRef } from 'react';
+import { Search, ZoomIn, ZoomOut, RefreshCw, Layers, Server, Globe, Cpu } from 'lucide-react';
 
 export default function TreeView() {
   const [treeData, setTreeData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [translate, setTranslate] = useState({ x: 0, y: 0 });
   const [searchQuery, setSearchQuery] = useState('');
   const [highlightedPath, setHighlightedPath] = useState(new Set());
   const [selectedNode, setSelectedNode] = useState(null);
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [treeKey, setTreeKey] = useState(0);
 
-  // Dynamically calculate the center of the container when it mounts or resizes
-  const containerRef = useCallback((containerElem) => {
-    if (containerElem !== null) {
-      const { width } = containerElem.getBoundingClientRect();
-      setTranslate({
-        x: width / 2,
-        y: 100 // Top padding
-      });
-    }
-  }, []);
+  // Pan and Zoom viewport state
+  const [zoom, setZoom] = useState(0.85);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const containerRef = useRef(null);
 
   useEffect(() => {
     const fetchTree = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/admin/tree`);
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/tree`);
         const data = await res.json();
         if (data.success && data.data.length > 0) {
-          setTreeData(buildTree(data.data));
+          setTreeData(buildTreeData(data.data));
         } else {
           setTreeData(null);
         }
@@ -42,14 +34,14 @@ export default function TreeView() {
     fetchTree();
   }, []);
 
-  const buildTree = (users) => {
+  const buildTreeData = (users) => {
     const nodeMap = {};
     users.forEach(user => {
-      
       nodeMap[user.walletAddress] = {
+        id: user.walletAddress,
         name: `${user.walletAddress.substring(0,6)}...${user.walletAddress.substring(38)}`,
         attributes: {
-          Partners: user.partnersCount,
+          Partners: user.partnersCount || 0,
           FullAddress: user.walletAddress,
           Earnings: user.totalEarnings ? parseFloat(user.totalEarnings).toFixed(4) + ' ETH' : '0.0000 ETH',
           Joined: user.registeredAt ? new Date(user.registeredAt).toLocaleDateString() : 'Unknown'
@@ -67,45 +59,19 @@ export default function TreeView() {
       }
     });
 
-    let finalTree = roots[0];
+    let root = roots[0];
     if (roots.length > 1) {
-      finalTree = {
-        name: 'Launchpad Protocol',
+      root = {
+        id: 'protocol-root',
+        name: 'OxideX Protocol Centroid',
         attributes: { Roots: roots.length, FullAddress: 'protocol' },
         children: roots
       };
     }
-
-    
-    
-    function pruneTree(root, maxDepth) {
-      if (!root) return;
-      const queue = [{ node: root, depth: 1 }];
-      
-      while (queue.length > 0) {
-        const { node, depth } = queue.shift();
-        
-        if (depth >= maxDepth) {
-          if (node.children && node.children.length > 0) {
-            node.attributes = { 
-              ...node.attributes, 
-              Status: 'Network Pruned (EVM Gas Cap)' 
-            };
-          }
-          node.children = []; 
-        } else if (node.children) {
-          for (const child of node.children) {
-            queue.push({ node: child, depth: depth + 1 });
-          }
-        }
-      }
-    }
-
-    pruneTree(finalTree, 50);
-    return finalTree;
+    return root;
   };
 
-  
+  // Search path highlighter
   useEffect(() => {
     if (!treeData || searchQuery.length < 4) {
       setHighlightedPath(new Set());
@@ -114,302 +80,362 @@ export default function TreeView() {
 
     const query = searchQuery.toLowerCase();
     
-    function findPath(root, query) {
-      const stack = [{ node: root, path: [] }];
-      
-      while (stack.length > 0) {
-        const { node, path } = stack.pop();
-        const currentPath = [...path, node.name];
-        
-        if (
-          (node.attributes?.FullAddress && node.attributes.FullAddress.toLowerCase().includes(query)) ||
-          node.name.toLowerCase().includes(query)
-        ) {
-          return currentPath;
-        }
-        
-        if (node.children) {
-          
-          for (let i = node.children.length - 1; i >= 0; i--) {
-            stack.push({ node: node.children[i], path: currentPath });
-          }
+    function findPath(node, query, path = []) {
+      const currentPath = [...path, node.id];
+      if (
+        (node.attributes?.FullAddress && node.attributes.FullAddress.toLowerCase().includes(query)) ||
+        node.name.toLowerCase().includes(query)
+      ) {
+        return currentPath;
+      }
+      if (node.children) {
+        for (const child of node.children) {
+          const res = findPath(child, query, currentPath);
+          if (res) return res;
         }
       }
       return null;
     }
 
-    const resultPath = findPath(treeData, query);
-    if (resultPath) {
-      setHighlightedPath(new Set(resultPath));
-    } else {
-      setHighlightedPath(new Set());
-    }
+    const resPath = findPath(treeData, query);
+    setHighlightedPath(new Set(resPath || []));
   }, [searchQuery, treeData]);
 
-  const getPathClass = ({ target }) => {
-    if (highlightedPath.has(target.data.name)) {
-      return 'custom-link-highlighted';
+  // Compute 360-Degree Radial Polar Coordinates centered at (0,0)
+  const computeRadialLayout = (root) => {
+    if (!root) return { nodes: [], links: [] };
+
+    const nodes = [];
+    const links = [];
+
+    function layoutNode(node, parent, level, startAngle, endAngle) {
+      let radius = 0;
+      if (level === 1) radius = 240;
+      else if (level === 2) radius = 440;
+      else if (level === 3) radius = 620;
+      else if (level > 3) radius = 620 + (level - 3) * 180;
+
+      const angle = (startAngle + endAngle) / 2;
+      const x = level === 0 ? 0 : Math.round(radius * Math.cos(angle));
+      const y = level === 0 ? 0 : Math.round(radius * Math.sin(angle));
+
+      const nodeObj = {
+        ...node,
+        level,
+        x,
+        y,
+        angle,
+        parent
+      };
+      nodes.push(nodeObj);
+
+      if (parent) {
+        links.push({
+          source: parent,
+          target: nodeObj,
+          level
+        });
+      }
+
+      if (node.children && node.children.length > 0) {
+        const count = node.children.length;
+        const step = (endAngle - startAngle) / count;
+        node.children.forEach((child, idx) => {
+          const childStart = startAngle + idx * step;
+          const childEnd = startAngle + (idx + 1) * step;
+          layoutNode(child, nodeObj, level + 1, childStart, childEnd);
+        });
+      }
     }
-    const depth = target.depth || 1;
-    const colorIndex = ((depth - 1) % 5) + 1;
-    return `custom-link link-depth-${colorIndex}`;
+
+    layoutNode(root, null, 0, 0, 2 * Math.PI);
+    return { nodes, links };
   };
+
+  const { nodes, links } = computeRadialLayout(treeData);
+
+  // Mouse pan & zoom event handlers
+  const handleMouseDown = (e) => {
+    if (e.button !== 0) return; // Left click only
+    setIsDragging(true);
+    dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isDragging) return;
+    setPan({
+      x: e.clientX - dragStart.current.x,
+      y: e.clientY - dragStart.current.y
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleWheel = (e) => {
+    e.preventDefault();
+    const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+    setZoom((prev) => Math.min(Math.max(prev * zoomFactor, 0.3), 3.0));
+  };
+
+  const resetView = () => {
+    setZoom(0.85);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const categoryColors = [
+    { name: 'Root Centroid', bg: '#f59e0b', stroke: '#fbbf24' },
+    { name: 'Primary Hubs', bg: '#38bdf8', stroke: '#0284c7' },
+    { name: 'Sub-Routers', bg: '#34d399', stroke: '#059669' },
+    { name: 'Network Nodes', bg: '#f472b6', stroke: '#db2777' },
+    { name: 'Peripherals', bg: '#a78bfa', stroke: '#7c3aed' }
+  ];
 
   return (
     <div className="space-y-6 flex flex-col h-[calc(100vh-6rem)]">
+      {/* Header Controls */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500 pb-2">
-            Network Topology
+          <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-sky-400 to-emerald-400 pb-2">
+            360° Radial Centroid Topology
           </h1>
-          <p className="text-gray-400 mt-2">Interactive visualization of the multi-level affiliation tree.</p>
+          <p className="text-gray-400 mt-1 text-sm">
+            Interactive 360-degree radial network map with the Root Node as the central protocol centroid.
+          </p>
         </div>
-        
-        {}
-        <div className="flex flex-col md:items-end gap-2 w-full md:w-96">
-          <div className="flex gap-2 w-full">
-            <div className="relative w-full">
+
+        {/* Search Bar & Viewport Actions */}
+        <div className="flex flex-col md:items-end gap-3 w-full md:w-auto">
+          <div className="flex gap-2 w-full md:w-96">
+            <div className="relative flex-1">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <Search className="h-5 w-5 text-amber-500/50" />
+                <Search className="h-4 w-4 text-amber-400" />
               </div>
               <input
                 type="text"
-                className="w-full bg-black/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500/50 shadow-inner transition-colors font-mono text-sm"
-                placeholder="Search wallet..."
+                className="w-full bg-black/60 border border-white/10 rounded-xl py-2.5 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500/50 text-xs font-mono"
+                placeholder="Search node address..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <button 
-              onClick={() => {
-                setIsExpanded(!isExpanded);
-                setTreeKey(k => k + 1);
-              }}
-              className="px-4 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-500/50 rounded-xl text-amber-400 font-bold uppercase tracking-wider text-xs whitespace-nowrap transition-colors"
+            
+            <button
+              onClick={resetView}
+              className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-amber-400 transition-colors"
+              title="Reset View"
             >
-              {isExpanded ? 'Collapse' : 'Expand'}
+              <RefreshCw className="h-4 w-4" />
             </button>
           </div>
-          
+
           {highlightedPath.size > 0 && searchQuery.length > 3 && (
-            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-1.5 rounded-lg text-xs font-bold shadow-[0_0_10px_rgba(239,68,68,0.2)] flex items-center gap-2 w-full md:w-auto">
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-red-400 animate-ping"></div>
-              Target Located: {highlightedPath.size - 1} node{highlightedPath.size - 1 !== 1 ? 's' : ''} from root
+              Target Path Located: {highlightedPath.size - 1} hops from Centroid
             </div>
           )}
         </div>
       </div>
-      
-      <div 
+
+      {/* Main Radial Viewport */}
+      <div
         ref={containerRef}
-        className="flex-1 bg-black/50 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_0_20px_rgba(245,158,11,0.05)] relative overflow-hidden"
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseUp}
+        onWheel={handleWheel}
+        className="flex-1 bg-[#090b10] rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden cursor-grab active:cursor-grabbing"
       >
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500 z-10"></div>
-        
+        {/* Legend Overlay */}
+        <div className="absolute top-4 left-4 z-20 bg-black/70 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex flex-col gap-2">
+          <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Topology Legend</span>
+          <div className="flex flex-col gap-1.5">
+            {categoryColors.map((cat, idx) => (
+              <div key={idx} className="flex items-center gap-2 text-xs text-gray-300">
+                <span className="w-3 h-3 rounded-full" style={{ backgroundColor: cat.bg }}></span>
+                <span>{cat.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Zoom Controls */}
+        <div className="absolute bottom-4 right-4 z-20 flex gap-2 bg-black/70 backdrop-blur-md p-1.5 rounded-2xl border border-white/10">
+          <button onClick={() => setZoom(z => Math.min(z * 1.2, 3))} className="p-2 text-white hover:text-amber-400"><ZoomIn className="w-4 h-4" /></button>
+          <button onClick={() => setZoom(z => Math.max(z * 0.8, 0.3))} className="p-2 text-white hover:text-amber-400"><ZoomOut className="w-4 h-4" /></button>
+        </div>
+
         {loading ? (
           <div className="flex h-full items-center justify-center">
-            <p className="text-amber-500/60 animate-pulse text-lg uppercase tracking-widest font-bold">Scanning Network...</p>
+            <p className="text-amber-400 animate-pulse font-bold tracking-widest uppercase">Calculating 360° Radial Centroid Map...</p>
           </div>
         ) : treeData ? (
-          <Tree 
-            key={treeKey}
-            initialDepth={isExpanded ? 50 : 1}
-            data={treeData} 
-            orientation="vertical"
-            pathFunc="diagonal"
-            translate={translate}
-            separation={{ siblings: 1.5, nonSiblings: 2 }}
-            nodeSize={{ x: 240, y: 190 }}
-            pathClassFunc={getPathClass}
-            renderCustomNodeElement={({ nodeDatum, toggleNode }) => {
-              const isRoot = nodeDatum.name === treeData.name || (nodeDatum.attributes?.Level !== undefined && Number(nodeDatum.attributes.Level) === 0);
-              const isTarget = searchQuery.length > 3 && (
-                (nodeDatum.attributes?.FullAddress && nodeDatum.attributes.FullAddress.toLowerCase().includes(searchQuery.toLowerCase())) ||
-                nodeDatum.name.toLowerCase().includes(searchQuery.toLowerCase())
-              );
-              
-              const isPath = highlightedPath.has(nodeDatum.name);
-              const levelColors = ['#38bdf8', '#34d399', '#f472b6', '#fbbf24', '#a78bfa'];
-              const depth = nodeDatum.attributes?.Level !== undefined ? Number(nodeDatum.attributes.Level) : 0;
-              const nodeColor = isRoot ? "#f59e0b" : isTarget ? "#ef4444" : isPath ? "#ffffff" : levelColors[depth % levelColors.length];
+          <svg className="w-full h-full select-none">
+            <defs>
+              <radialGradient id="centroidGlow" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.4" />
+                <stop offset="100%" stopColor="#f59e0b" stopOpacity="0" />
+              </radialGradient>
+            </defs>
 
-              return (
-                <g>
-                  {/* --- HIGHLIGHTED ROOT HUB (Star Topology Center) --- */}
-                  {isRoot && (
-                    <g>
-                      {/* Outer Spinning Radar Ring */}
-                      <circle 
-                        r="52" 
-                        fill="none" 
-                        stroke="#f59e0b" 
-                        strokeWidth="2" 
-                        strokeDasharray="8 6" 
-                        className="animate-spin" 
-                        style={{ animationDuration: '15s', opacity: 0.7 }} 
-                      />
-                      {/* Pulsing Glowing Aura */}
-                      <circle 
-                        r="38" 
-                        fill="rgba(245, 158, 11, 0.15)" 
-                        stroke="#fbbf24" 
-                        strokeWidth="2.5" 
-                        className="animate-pulse" 
-                        style={{ filter: 'drop-shadow(0px 0px 25px rgba(245,158,11,0.9))' }} 
-                      />
-                      {/* "ROOT HUB" Floating Badge */}
-                      <g transform="translate(0, -52)">
-                        <rect x="-42" y="-12" width="84" height="20" rx="10" fill="#f59e0b" />
-                        <text x="0" y="2" textAnchor="middle" fill="#000000" fontSize="9" fontWeight="900" style={{ letterSpacing: '0.12em' }}>
-                          ★ ROOT HUB ★
+            {/* Transform Group for Pan & Zoom */}
+            <g transform={`translate(${containerRef.current ? containerRef.current.clientWidth / 2 + pan.x : pan.x}, ${containerRef.current ? containerRef.current.clientHeight / 2 + pan.y : pan.y}) scale(${zoom})`}>
+
+              {/* 360° Concentric Orbital Rings */}
+              <circle r="240" fill="none" stroke="rgba(255, 255, 255, 0.04)" strokeDasharray="4 4" />
+              <circle r="440" fill="none" stroke="rgba(255, 255, 255, 0.03)" strokeDasharray="6 6" />
+              <circle r="620" fill="none" stroke="rgba(255, 255, 255, 0.02)" strokeDasharray="8 8" />
+
+              {/* Network Connections (Stepped Orthogonal Lines matching Reference Picture) */}
+              {links.map((link, i) => {
+                const isHighlight = highlightedPath.has(link.source.id) && highlightedPath.has(link.target.id);
+                const midX = (link.source.x + link.target.x) / 2;
+
+                // Orthogonal stepped line path (matching reference network map)
+                const d = `M ${link.source.x} ${link.source.y} L ${midX} ${link.source.y} L ${midX} ${link.target.y} L ${link.target.x} ${link.target.y}`;
+                
+                const levelColors = ['#f59e0b', '#38bdf8', '#34d399', '#f472b6', '#a78bfa'];
+                const strokeColor = isHighlight ? '#ef4444' : levelColors[link.level % levelColors.length];
+
+                return (
+                  <path
+                    key={i}
+                    d={d}
+                    fill="none"
+                    stroke={strokeColor}
+                    strokeWidth={isHighlight ? 4 : 2}
+                    strokeOpacity={isHighlight ? 1 : 0.6}
+                    style={{
+                      filter: isHighlight ? 'drop-shadow(0px 0px 8px #ef4444)' : 'none',
+                      transition: 'all 0.3s'
+                    }}
+                  />
+                );
+              })}
+
+              {/* Nodes Rendering */}
+              {nodes.map((node) => {
+                const isRoot = node.level === 0;
+                const isTarget = searchQuery.length > 3 && (
+                  (node.attributes?.FullAddress && node.attributes.FullAddress.toLowerCase().includes(searchQuery.toLowerCase())) ||
+                  node.name.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+                const isPath = highlightedPath.has(node.id);
+
+                const levelColors = ['#f59e0b', '#38bdf8', '#34d399', '#f472b6', '#a78bfa'];
+                const color = isRoot ? '#f59e0b' : isTarget ? '#ef4444' : isPath ? '#ffffff' : levelColors[node.level % levelColors.length];
+
+                return (
+                  <g
+                    key={node.id}
+                    transform={`translate(${node.x}, ${node.y})`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedNode(node);
+                    }}
+                    className="cursor-pointer group"
+                  >
+                    {/* --- CENTRAL ROOT CENTROID (ROOT NODE) --- */}
+                    {isRoot ? (
+                      <g>
+                        {/* Outer Glowing Background */}
+                        <circle r="75" fill="url(#centroidGlow)" />
+                        {/* Spinning Outer Orbit Ring */}
+                        <circle r="48" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="8 6" className="animate-spin" style={{ animationDuration: '20s' }} />
+                        {/* Pulsing Aura Ring */}
+                        <circle r="36" fill="rgba(245, 158, 11, 0.2)" stroke="#fbbf24" strokeWidth="3" className="animate-pulse" />
+                        {/* Core Hub Badge */}
+                        <circle r="26" fill="#18181b" stroke="#f59e0b" strokeWidth="4" />
+                        <text x="0" y="6" textAnchor="middle" fontSize="18" fill="#fbbf24">🌐</text>
+                        
+                        {/* Floating Centroid Title Badge */}
+                        <g transform="translate(0, -52)">
+                          <rect x="-60" y="-12" width="120" height="22" rx="11" fill="#f59e0b" />
+                          <text x="0" y="2" textAnchor="middle" fill="#000000" fontSize="10" fontWeight="900" style={{ letterSpacing: '0.12em' }}>
+                            CENTROID HUB
+                          </text>
+                        </g>
+
+                        {/* Centroid Name Label */}
+                        <rect x="-80" y="38" width="160" height="38" rx="8" fill="#000" fillOpacity="0.85" stroke="#f59e0b" strokeWidth="1.5" />
+                        <text x="0" y="54" textAnchor="middle" fill="#fbbf24" fontSize="12" fontWeight="900" fontFamily="monospace">
+                          {node.name}
+                        </text>
+                        <text x="0" y="69" textAnchor="middle" fill="#aaa" fontSize="9" fontWeight="bold">
+                          ROOT PROTOCOL CORE
                         </text>
                       </g>
-                    </g>
-                  )}
+                    ) : (
+                      /* --- BRANCH NODES (LEVEL 1+) --- */
+                      <g>
+                        {/* Target Halo */}
+                        {isTarget && (
+                          <circle r="32" fill="none" stroke="#ef4444" strokeWidth="2.5" className="animate-ping" />
+                        )}
 
-                  {/* Glowing halo for target search node */}
-                  {isTarget && !isRoot && (
-                    <circle r="35" fill="none" stroke="#ef4444" strokeWidth="2" className="animate-pulse" style={{ filter: 'drop-shadow(0px 0px 15px rgba(239,68,68,0.8))' }} />
-                  )}
-                  
-                  {/* Main Node Circle */}
-                  <circle 
-                    r={isRoot ? "28" : isTarget ? "22" : "18"} 
-                    fill={isRoot ? "#1c1917" : "#18181b"} 
-                    stroke={nodeColor}
-                    strokeWidth={isRoot ? "4" : isTarget ? "4" : isPath ? "4" : "3"}
-                    onClick={() => {
-                      toggleNode();
-                      setSelectedNode(nodeDatum);
-                    }} 
-                    className="cursor-pointer transition-all duration-300 hover:scale-125" 
-                    style={{ filter: `drop-shadow(0px 0px ${isRoot ? '18px' : '10px'} ${nodeColor})` }}
-                  />
+                        {/* Node Circle */}
+                        <circle
+                          r={isTarget ? 22 : 18}
+                          fill="#12161f"
+                          stroke={color}
+                          strokeWidth={isTarget ? 4 : 3}
+                          className="transition-transform duration-300 group-hover:scale-125"
+                          style={{ filter: `drop-shadow(0px 0px 8px ${color})` }}
+                        />
 
-                  {/* Icon inside Root Node */}
-                  {isRoot && (
-                    <text 
-                      x="0" y="6" 
-                      textAnchor="middle" 
-                      fontSize="16" 
-                      fill="#fbbf24" 
-                      className="pointer-events-none select-none"
-                    >
-                      👑
-                    </text>
-                  )}
-                  
-                  {/* Node Label Card */}
-                  {(isRoot || isTarget || selectedNode?.name === nodeDatum.name) && (
-                    <g>
-                      <rect 
-                        x={isRoot ? "-75" : "25"} 
-                        y={isRoot ? "36" : "-14"} 
-                        width="150" height="42" 
-                        fill="#000000" 
-                        fillOpacity="0.85" 
-                        rx="8" 
-                        stroke={isRoot ? "#f59e0b" : isTarget ? "#ef4444" : "rgba(255,255,255,0.15)"}
-                        strokeWidth="1.5"
-                      />
-                      
-                      <text 
-                        fill={isRoot ? "#fbbf24" : isTarget ? "#f87171" : "#ffffff"}
-                        fontSize="13"
-                        fontWeight="900"
-                        x={isRoot ? "0" : "33"} 
-                        y={isRoot ? "53" : "2"} 
-                        textAnchor={isRoot ? "middle" : "start"}
-                        fontFamily="monospace"
-                        style={{ letterSpacing: '0.05em' }}
-                      >
-                        {nodeDatum.name}
-                      </text>
-                      
-                      {nodeDatum.attributes?.Partners !== undefined && (
-                        <text 
-                          fill={isRoot ? "#f59e0b" : "#fbbf24"}
-                          fontSize="10"
-                          fontWeight="bold"
-                          x={isRoot ? "0" : "33"} 
-                          y={isRoot ? "69" : "18"}
-                          textAnchor={isRoot ? "middle" : "start"}
-                          style={{ letterSpacing: '0.1em' }}
-                        >
-                          PARTNERS: {nodeDatum.attributes.Partners}
+                        {/* Node Symbol */}
+                        <text x="0" y="4" textAnchor="middle" fontSize="10" fill="#fff" className="pointer-events-none">
+                          {node.level === 1 ? '🖥️' : '💻'}
                         </text>
-                      )}
-                      {nodeDatum.attributes?.Roots !== undefined && (
-                        <text 
-                          fill="#fbbf24"
-                          fontSize="10"
-                          fontWeight="bold"
-                          x={isRoot ? "0" : "33"} 
-                          y={isRoot ? "69" : "18"}
-                          textAnchor={isRoot ? "middle" : "start"}
-                          style={{ letterSpacing: '0.1em' }}
-                        >
-                          ROOT BRANCHES: {nodeDatum.attributes.Roots}
-                        </text>
-                      )}
-                    </g>
-                  )}
-                </g>
-              )
-            }}
-          />
+
+                        {/* Node Label Plate */}
+                        <g transform="translate(0, 26)">
+                          <rect x="-65" y="0" width="130" height="32" rx="6" fill="#0a0c10" fillOpacity="0.9" stroke={color} strokeWidth="1" />
+                          <text x="0" y="14" textAnchor="middle" fill={isTarget ? '#f87171' : '#ffffff'} fontSize="11" fontWeight="bold" fontFamily="monospace">
+                            {node.name}
+                          </text>
+                          <text x="0" y="25" textAnchor="middle" fill="#888" fontSize="8">
+                            PARTNERS: {node.attributes?.Partners || 0}
+                          </text>
+                        </g>
+                      </g>
+                    )}
+                  </g>
+                );
+              })}
+            </g>
+          </svg>
         ) : (
           <div className="flex h-full items-center justify-center">
-            <p className="text-gray-500 uppercase tracking-widest text-sm">No users found in the protocol.</p>
+            <p className="text-gray-500 uppercase tracking-widest text-sm">No protocol nodes found.</p>
           </div>
         )}
       </div>
 
-      {}
+      {/* Selected Node Modal */}
       {selectedNode && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedNode(null)}>
-          <div className="bg-zinc-950 border border-amber-500/20 rounded-2xl p-6 w-full max-w-md shadow-[0_0_30px_rgba(245,158,11,0.15)] transform transition-transform" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setSelectedNode(null)}>
+          <div className="bg-[#12161f] border border-amber-500/30 rounded-3xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>
             <div className="flex justify-between items-start mb-6">
-              <h3 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500">
-                Network Node Details
-              </h3>
-              <button onClick={() => setSelectedNode(null)} className="text-gray-400 hover:text-white text-2xl leading-none">&times;</button>
-            </div>
-            
-            <div className="space-y-5">
               <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1.5 font-bold">Wallet Address</p>
-                <div className="flex items-center gap-2">
-                  <p className="font-mono text-amber-400 break-all bg-amber-500/10 p-3 rounded-xl border border-amber-500/20 text-sm flex-1">
-                    {selectedNode.attributes?.FullAddress || selectedNode.name}
-                  </p>
-                </div>
+                <h3 className="text-xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-sky-400">
+                  Node Specifications
+                </h3>
+                <p className="text-gray-400 text-xs font-mono mt-1">{selectedNode.attributes?.FullAddress}</p>
               </div>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <div className="bg-white/5 p-4 rounded-xl border border-white/10 shadow-inner">
-                  <p className="text-[10px] text-gray-500 uppercase font-bold tracking-widest">Direct Partners</p>
-                  <p className="text-3xl font-black text-white mt-1">{selectedNode.attributes?.Partners || 0}</p>
-                </div>
-                <div className="bg-emerald-500/5 p-4 rounded-xl border border-emerald-500/10 shadow-inner">
-                  <p className="text-[10px] text-emerald-500/70 uppercase font-bold tracking-widest">Total Earnings</p>
-                  <p className="text-xl font-black text-emerald-400 mt-1 truncate">{selectedNode.attributes?.Earnings || '0.0000 ETH'}</p>
-                </div>
-              </div>
-              
-              <div>
-                <p className="text-[10px] text-gray-500 uppercase tracking-widest mb-1 font-bold">Registration Date</p>
-                <p className="text-gray-300 bg-white/5 inline-block px-3 py-1.5 rounded-lg text-sm">{selectedNode.attributes?.Joined || 'Protocol Genesis'}</p>
-              </div>
+              <button onClick={() => setSelectedNode(null)} className="text-gray-400 hover:text-white text-xl font-bold">✕</button>
             </div>
-            
-            <div className="mt-8">
-               <button 
-                 onClick={() => { navigator.clipboard.writeText(selectedNode.attributes?.FullAddress || ''); alert('Wallet Address Copied!'); }} 
-                 className="w-full py-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 rounded-xl text-white font-black uppercase tracking-widest transition-all duration-300 shadow-lg text-sm"
-               >
-                 Copy Full Address
-               </button>
+
+            <div className="space-y-4 text-sm">
+              <div className="bg-black/50 p-4 rounded-2xl border border-white/5 space-y-2">
+                <div className="flex justify-between"><span className="text-gray-400">Node Level:</span><span className="text-amber-400 font-bold">Level {selectedNode.level}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Direct Partners:</span><span className="text-white font-bold">{selectedNode.attributes?.Partners || 0}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Total Earnings:</span><span className="text-emerald-400 font-bold">{selectedNode.attributes?.Earnings || '0.0000 ETH'}</span></div>
+                <div className="flex justify-between"><span className="text-gray-400">Joined Date:</span><span className="text-gray-300 font-bold">{selectedNode.attributes?.Joined || 'N/A'}</span></div>
+              </div>
             </div>
           </div>
         </div>
