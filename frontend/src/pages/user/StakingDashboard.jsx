@@ -25,16 +25,16 @@ export default function StakingDashboard() {
       setApr(aprRaw.toString());
 
       const stakeData = await contract.stakers(account);
-      setStakedBalance(ethers.utils.formatEther(stakeData.amount));
+      setStakedBalance(ethers.formatEther(stakeData.amount));
 
       const yieldRaw = await contract.getPendingYield(account);
-      setPendingYield(ethers.utils.formatEther(yieldRaw));
+      setPendingYield(ethers.formatEther(yieldRaw));
 
       const tokenAddress = await contract.launchpadToken();
-      if (tokenAddress && tokenAddress !== ethers.constants.AddressZero) {
+      if (tokenAddress && tokenAddress !== ethers.ZeroAddress) {
         const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
         const bal = await tokenContract.balanceOf(account);
-        setOxiBalance(ethers.utils.formatEther(bal));
+        setOxiBalance(ethers.formatEther(bal));
       }
     } catch (err) {
       console.error("Error fetching staking data:", err);
@@ -55,7 +55,7 @@ export default function StakingDashboard() {
     setLoading(true);
     setError('');
     try {
-      const signer = provider.getSigner();
+      const signer = await provider.getSigner();
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
       
       if (actionType === 'stake') {
@@ -63,11 +63,11 @@ export default function StakingDashboard() {
         const tokenAddress = await contract.launchpadToken();
         const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
         
-        const amountWei = ethers.utils.parseEther(stakeAmount.toString());
+        const amountWei = ethers.parseEther(stakeAmount.toString());
         
         const allowance = await tokenContract.allowance(account, CONTRACT_ADDRESS);
-        if (allowance.lt(amountWei)) {
-          const txApprove = await tokenContract.approve(CONTRACT_ADDRESS, ethers.constants.MaxUint256);
+        if (allowance < amountWei) {
+          const txApprove = await tokenContract.approve(CONTRACT_ADDRESS, ethers.MaxUint256);
           await txApprove.wait();
         }
         
@@ -77,7 +77,7 @@ export default function StakingDashboard() {
         
       } else if (actionType === 'unstake') {
         if (!unstakeAmount || parseFloat(unstakeAmount) <= 0) throw new Error("Enter valid amount");
-        const amountWei = ethers.utils.parseEther(unstakeAmount.toString());
+        const amountWei = ethers.parseEther(unstakeAmount.toString());
         const tx = await contract.unstake(amountWei);
         await tx.wait();
         setUnstakeAmount('');

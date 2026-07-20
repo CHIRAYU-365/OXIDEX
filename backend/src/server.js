@@ -21,11 +21,7 @@ const allowedOrigins = process.env.CORS_ORIGIN
 const io = new Server(server, {
   cors: {
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes("*") || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(null, false);
-      }
+      callback(null, origin || true);
     },
     methods: ["GET", "POST"],
     credentials: true,
