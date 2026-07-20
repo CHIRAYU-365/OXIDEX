@@ -110,7 +110,7 @@ export default function TokenLaunchpad() {
           )}
         </div>
       </div>
-      
+    </div>
       <div className="mt-8 text-center px-4">
         <p className="text-gray-500 text-sm font-medium">Every purchase contributes to the MLM reward pool. Refer friends to earn commissions up to 6 levels deep!</p>
       </div>
