@@ -147,11 +147,12 @@ export default function TreeView() {
   }, [searchQuery, treeData]);
 
   const getPathClass = ({ target }) => {
-    
     if (highlightedPath.has(target.data.name)) {
       return 'custom-link-highlighted';
     }
-    return 'custom-link';
+    const depth = target.depth || 1;
+    const colorIndex = ((depth - 1) % 5) + 1;
+    return `custom-link link-depth-${colorIndex}`;
   };
 
   return (
@@ -215,9 +216,10 @@ export default function TreeView() {
             initialDepth={isExpanded ? 50 : 1}
             data={treeData} 
             orientation="vertical"
-            pathFunc="straight"
+            pathFunc="diagonal"
             translate={translate}
-            nodeSize={{ x: 220, y: 220 }}
+            separation={{ siblings: 1.5, nonSiblings: 2 }}
+            nodeSize={{ x: 240, y: 190 }}
             pathClassFunc={getPathClass}
             renderCustomNodeElement={({ nodeDatum, toggleNode }) => {
               const isTarget = searchQuery.length > 3 && (
@@ -226,6 +228,9 @@ export default function TreeView() {
               );
               
               const isPath = highlightedPath.has(nodeDatum.name);
+              const levelColors = ['#38bdf8', '#34d399', '#f472b6', '#fbbf24', '#a78bfa'];
+              const depth = nodeDatum.attributes?.Level !== undefined ? Number(nodeDatum.attributes.Level) : 0;
+              const nodeColor = isTarget ? "#ef4444" : isPath ? "#ffffff" : levelColors[depth % levelColors.length];
 
               return (
                 <g>
@@ -237,14 +242,14 @@ export default function TreeView() {
                   <circle 
                     r={isTarget ? "22" : "18"} 
                     fill="#18181b" 
-                    stroke={isTarget ? "#ef4444" : isPath ? "#fbbf24" : "#f59e0b"}
-                    strokeWidth={isTarget ? "4" : isPath ? "3" : "2"}
+                    stroke={nodeColor}
+                    strokeWidth={isTarget ? "4" : isPath ? "4" : "3"}
                     onClick={() => {
                       toggleNode();
                       setSelectedNode(nodeDatum);
                     }} 
-                    className="cursor-pointer transition-all duration-300 hover:stroke-[#fbbf24]" 
-                    style={{ filter: isTarget ? 'drop-shadow(0px 0px 10px rgba(239,68,68,0.6))' : 'drop-shadow(0px 0px 8px rgba(245,158,11,0.5))' }}
+                    className="cursor-pointer transition-all duration-300 hover:scale-125" 
+                    style={{ filter: `drop-shadow(0px 0px 10px ${nodeColor})` }}
                   />
                   
                   {(isTarget || selectedNode?.name === nodeDatum.name) && (

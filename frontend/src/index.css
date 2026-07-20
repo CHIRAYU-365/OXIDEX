@@ -118,21 +118,28 @@
 /* D3 Tree Custom Link Style - using !important to override defaults */
 .custom-link, path.custom-link, .rd3t-link {
   fill: none !important;
-  stroke: rgba(245, 158, 11, 0.4) !important; 
   stroke-width: 3px !important;
   transition: all 0.3s ease;
+  stroke-linecap: round;
 }
 .custom-link:hover, path.custom-link:hover {
-  stroke: rgba(245, 158, 11, 0.8) !important;
   stroke-width: 5px !important;
+  filter: drop-shadow(0px 0px 8px currentColor) !important;
 }
+
+/* Multi-colored topology branch links */
+.link-depth-1, path.link-depth-1 { stroke: #38bdf8 !important; } /* Cyan */
+.link-depth-2, path.link-depth-2 { stroke: #34d399 !important; } /* Emerald */
+.link-depth-3, path.link-depth-3 { stroke: #f472b6 !important; } /* Pink */
+.link-depth-4, path.link-depth-4 { stroke: #fbbf24 !important; } /* Amber */
+.link-depth-5, path.link-depth-5 { stroke: #a78bfa !important; } /* Purple */
 
 /* Highlighted Path Link */
 .custom-link-highlighted, path.custom-link-highlighted {
   fill: none !important;
   stroke: #ef4444 !important; /* Red */
   stroke-width: 5px !important;
-  filter: drop-shadow(0px 0px 8px rgba(239, 68, 68, 0.6)) !important;
+  filter: drop-shadow(0px 0px 10px rgba(239, 68, 68, 0.8)) !important;
   transition: all 0.3s ease;
   z-index: 10;
 }
