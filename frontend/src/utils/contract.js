@@ -1,6 +1,8 @@
 import { ethers } from "ethers";
 
-export const CONTRACT_ADDRESS = import.meta.env.VITE_CONTRACT_ADDRESS || "0xe15c36c9867ebC0c72bc8e830dB3323aaC1046D0";
+export const CONTRACT_ADDRESS = (import.meta.env.VITE_CONTRACT_ADDRESS || "0xe15c36c9867ebC0c72bc8e830dB3323aaC1046D0").trim();
+export const OXI_TOKEN_ADDRESS = (import.meta.env.VITE_OXI_TOKEN_ADDRESS || "0x083E9CddC5808680B550cb6FE6838f7ad586F177").trim();
+export const OXI_NFT_ADDRESS = (import.meta.env.VITE_NFT_CONTRACT_ADDRESS || "0x518c5844c48A2E2a3B87ACE3a676b6A3745aEbE3").trim();
 
 export const CONTRACT_ABI = [
   "event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId)",

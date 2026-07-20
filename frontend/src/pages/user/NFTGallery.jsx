@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useWeb3 } from '../../context/Web3Context';
 import { ethers } from 'ethers';
-import { ERC20_ABI, CONTRACT_ADDRESS, CONTRACT_ABI } from '../../utils/contract';
+import { ERC20_ABI, CONTRACT_ADDRESS, CONTRACT_ABI, OXI_TOKEN_ADDRESS, OXI_NFT_ADDRESS } from '../../utils/contract';
 
-// Placeholder NFT Contract Address (User must deploy and update this later)
-const NFT_CONTRACT_ADDRESS = import.meta.env.VITE_NFT_CONTRACT_ADDRESS || "0x518c5844c48A2E2a3B87ACE3a676b6A3745aEbE3";
+const NFT_CONTRACT_ADDRESS = OXI_NFT_ADDRESS;
 
 const NFT_ABI = [
   "function mint() external",
@@ -23,16 +22,22 @@ export default function NFTGallery() {
     const activeProvider = provider || (window.ethereum ? new ethers.BrowserProvider(window.ethereum) : null);
     if (!activeProvider || !account || isPreviewMode) return;
     try {
-      const baseContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, activeProvider);
-      const tokenAddress = await baseContract.launchpadToken();
-      
-      if (tokenAddress && tokenAddress !== ethers.ZeroAddress) {
-        const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, activeProvider);
-        const bal = await tokenContract.balanceOf(account);
-        setOxiBalance(ethers.formatEther(bal));
+      let tokenAddr = OXI_TOKEN_ADDRESS;
+      try {
+        const baseContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, activeProvider);
+        const fetchedToken = await baseContract.launchpadToken();
+        if (fetchedToken && fetchedToken !== ethers.ZeroAddress) {
+          tokenAddr = fetchedToken;
+        }
+      } catch (e) {
+        console.warn("Could not query launchpadToken, using default OXI address:", e);
       }
       
-      if (NFT_CONTRACT_ADDRESS !== ethers.ZeroAddress) {
+      const tokenContract = new ethers.Contract(tokenAddr, ERC20_ABI, activeProvider);
+      const bal = await tokenContract.balanceOf(account);
+      setOxiBalance(ethers.formatEther(bal));
+      
+      if (NFT_CONTRACT_ADDRESS && NFT_CONTRACT_ADDRESS !== ethers.ZeroAddress) {
         const nftContract = new ethers.Contract(NFT_CONTRACT_ADDRESS, NFT_ABI, activeProvider);
         const nftBal = await nftContract.balanceOf(account);
         setNftBalance(Number(nftBal));
@@ -67,9 +72,18 @@ export default function NFTGallery() {
     try {
       const signer = await provider.getSigner();
       
-      const baseContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-      const tokenAddress = await baseContract.launchpadToken();
-      const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
+      let tokenAddr = OXI_TOKEN_ADDRESS;
+      try {
+        const baseContract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
+        const fetchedToken = await baseContract.launchpadToken();
+        if (fetchedToken && fetchedToken !== ethers.ZeroAddress) {
+          tokenAddr = fetchedToken;
+        }
+      } catch (e) {
+        console.warn("Using default OXI token address for mint approval");
+      }
+
+      const tokenContract = new ethers.Contract(tokenAddr, ERC20_ABI, signer);
       
       const mintCostWei = ethers.parseEther("1000");
       
