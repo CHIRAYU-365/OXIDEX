@@ -2,14 +2,20 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 interface IOxiToken {
     function rewardUser(address to, uint256 amount) external;
 }
 
-contract OxideXBase {
+interface IOxideXNFT {
+    function balanceOf(address owner) external view returns (uint256);
+}
+
+contract OxideXBase is ReentrancyGuard {
     address public owner;
     IOxiToken public launchpadToken;
+    IOxideXNFT public nftContract;
     uint256 public tokenPrice = 0.0001 ether; 
     
     struct User {
@@ -69,6 +75,10 @@ contract OxideXBase {
     
     function setToken(address _token) external onlyOwner {
         launchpadToken = IOxiToken(_token);
+    }
+    
+    function setNFTContract(address _nft) external onlyOwner {
+        nftContract = IOxideXNFT(_nft);
     }
     
     function setTokenPrice(uint256 _price) external onlyOwner {
@@ -158,7 +168,7 @@ contract OxideXBase {
         }
     }
     
-    function buyLaunchpadTokens(address referrer) external payable {
+    function buyLaunchpadTokens(address referrer) external payable nonReentrant {
         require(msg.value > 0, "Must send ETH");
         require(address(launchpadToken) != address(0), "Token not set");
         
@@ -177,7 +187,7 @@ contract OxideXBase {
         emit TokensPurchased(msg.sender, tokensToTransfer, msg.value);
     }
     
-    function withdrawEth(uint256 amount) external onlyOwner {
+    function withdrawEth(uint256 amount) external onlyOwner nonReentrant {
         require(amount <= address(this).balance, "Insufficient balance");
         (bool success, ) = payable(owner).call{value: amount}("");
         require(success, "Transfer failed");
@@ -189,7 +199,7 @@ contract OxideXBase {
         rewardAPR = _apr;
     }
 
-    function stake(uint256 amount) external {
+    function stake(uint256 amount) external nonReentrant {
         require(amount > 0, "Cannot stake 0");
         require(address(launchpadToken) != address(0), "Token not set");
         
@@ -204,7 +214,7 @@ contract OxideXBase {
         emit Staked(msg.sender, amount);
     }
     
-    function unstake(uint256 amount) external {
+    function unstake(uint256 amount) external nonReentrant {
         require(amount > 0, "Cannot unstake 0");
         require(stakers[msg.sender].amount >= amount, "Insufficient staked amount");
         
@@ -218,7 +228,7 @@ contract OxideXBase {
         emit Unstaked(msg.sender, amount);
     }
     
-    function claimYield() external {
+    function claimYield() external nonReentrant {
         _claimYield(msg.sender);
     }
     
@@ -227,7 +237,12 @@ contract OxideXBase {
         if (userStake.amount > 0) {
             uint256 timeElapsed = block.timestamp - userStake.lastClaimTime;
             if (timeElapsed > 0) {
-                uint256 reward = (userStake.amount * rewardAPR * timeElapsed) / (100 * SECONDS_IN_YEAR);
+                uint256 effectiveAPR = rewardAPR;
+                if (address(nftContract) != address(0) && nftContract.balanceOf(_user) > 0) {
+                    effectiveAPR = rewardAPR * 2; // 2x Boost for VIP NFT Holders
+                }
+                
+                uint256 reward = (userStake.amount * effectiveAPR * timeElapsed) / (100 * SECONDS_IN_YEAR);
                 userStake.lastClaimTime = block.timestamp;
                 if (reward > 0) {
                     launchpadToken.rewardUser(_user, reward);
@@ -244,6 +259,12 @@ contract OxideXBase {
         if (userStake.amount == 0) return 0;
         
         uint256 timeElapsed = block.timestamp - userStake.lastClaimTime;
-        return (userStake.amount * rewardAPR * timeElapsed) / (100 * SECONDS_IN_YEAR);
+        
+        uint256 effectiveAPR = rewardAPR;
+        if (address(nftContract) != address(0) && nftContract.balanceOf(_user) > 0) {
+            effectiveAPR = rewardAPR * 2; // 2x Boost for VIP NFT Holders
+        }
+        
+        return (userStake.amount * effectiveAPR * timeElapsed) / (100 * SECONDS_IN_YEAR);
     }
 }

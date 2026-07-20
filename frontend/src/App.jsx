@@ -15,6 +15,7 @@ import StakingDashboard from "./pages/user/StakingDashboard";
 import MarketAnalytics from "./pages/user/MarketAnalytics";
 import FiatOnramp from "./pages/user/FiatOnramp";
 import TokenLaunchpad from "./pages/user/TokenLaunchpad";
+import NFTGallery from "./pages/user/NFTGallery";
 
 
 function AdminRoutes() {
@@ -81,6 +82,7 @@ function UserRoutes() {
         <Route path="/market" element={<MarketAnalytics />} />
         <Route path="/buy" element={<FiatOnramp />} />
         <Route path="/history" element={<TransactionHistory />} />
+        <Route path="/nft" element={<NFTGallery />} />
         <Route path="*" element={<Navigate to="/user" replace />} />
       </Routes>
     </UserLayout>
