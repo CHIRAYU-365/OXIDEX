@@ -15,6 +15,7 @@ model User {
   partnersCount   Int      @default(0)
   totalEarnings   Decimal  @default(0)
   refCode         String?  @unique
+  isBanned        Boolean  @default(false)
   registeredAt    DateTime @default(now())
   lastSeenAt      DateTime @default(now())
 }

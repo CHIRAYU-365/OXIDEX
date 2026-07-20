@@ -5,7 +5,7 @@ import { Menu, X, LogOut } from 'lucide-react';
 
 export default function UserLayout({ children }) {
   const location = useLocation();
-  const { account, logout, isViewOnly, exitPreviewMode } = useWeb3();
+  const { account, logout, isViewOnly, exitPreviewMode, activeUser } = useWeb3();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -14,6 +14,35 @@ export default function UserLayout({ children }) {
     { name: 'History & Statements', path: '/user/history' },
     { name: 'Smart Contract', path: '/user/contract' },
   ];
+
+  if (activeUser?.isBanned) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-4">
+        <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 max-w-lg w-full text-center shadow-[0_0_50px_rgba(239,68,68,0.15)] relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-600 to-rose-600"></div>
+          <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <X className="w-10 h-10 text-red-500" />
+          </div>
+          <h1 className="text-3xl font-black text-white mb-2 tracking-tight">Account Suspended</h1>
+          <p className="text-red-400 mb-8 font-mono text-sm leading-relaxed">
+            Your access to the OXIDEX platform has been revoked by an administrator. 
+            You can no longer access the dashboard or interact with the smart contract interface.
+          </p>
+          <div className="space-y-4">
+            <div className="bg-black/50 rounded-xl p-4 border border-white/5 font-mono text-xs text-gray-500 break-all text-left">
+              Wallet: {activeUser.walletAddress}
+            </div>
+            <button 
+              onClick={isViewOnly ? exitPreviewMode : logout}
+              className="w-full bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-4 rounded-xl transition-colors tracking-wide uppercase text-sm"
+            >
+              {isViewOnly ? 'Exit Preview Mode' : 'Disconnect Wallet'}
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen bg-zinc-950 text-gray-200 font-sans">

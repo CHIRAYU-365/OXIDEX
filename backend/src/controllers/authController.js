@@ -82,6 +82,10 @@ const verifySignature = async (req, res) => {
       where: { walletAddress: lowercaseAddress },
     });
 
+    if (user && user.isBanned) {
+      return res.status(403).json({ success: false, error: "Account suspended" });
+    }
+
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) {
       console.error("FATAL: JWT_SECRET environment variable is not set.");

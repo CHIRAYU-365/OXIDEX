@@ -92,6 +92,57 @@ const getAdminTree = async (req, res) => {
   }
 };
 
+const getAdminUsersList = async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      take: 20,
+      orderBy: { registeredAt: 'desc' },
+      select: {
+        id: true,
+        onChainId: true,
+        walletAddress: true,
+        referrerAddress: true,
+        partnersCount: true,
+        totalEarnings: true,
+        registeredAt: true,
+        isBanned: true,
+      }
+    });
+    return res.json({ success: true, data: users });
+  } catch (error) {
+    console.error("Error fetching admin users list:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+const banUser = async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    await prisma.user.update({
+      where: { walletAddress: walletAddress.toLowerCase() },
+      data: { isBanned: true }
+    });
+    return res.json({ success: true, message: "User banned successfully" });
+  } catch (error) {
+    console.error("Error banning user:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
+const unbanUser = async (req, res) => {
+  try {
+    const { walletAddress } = req.params;
+    await prisma.user.update({
+      where: { walletAddress: walletAddress.toLowerCase() },
+      data: { isBanned: false }
+    });
+    return res.json({ success: true, message: "User access restored" });
+  } catch (error) {
+    console.error("Error unbanning user:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
 const getCommissions = async (req, res) => {
   try {
     const configs = await prisma.adminConfig.findMany({
@@ -200,6 +251,9 @@ module.exports = {
   getUserPartners,
   getPlatformStats,
   getAdminTree,
+  getAdminUsersList,
+  banUser,
+  unbanUser,
   getCommissions,
   setCommissions,
   generateStatementPDF

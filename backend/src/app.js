@@ -9,6 +9,9 @@ const {
   getUserPartners,
   getPlatformStats,
   getAdminTree,
+  getAdminUsersList,
+  banUser,
+  unbanUser,
   getCommissions,
   setCommissions,
   generateStatementPDF
@@ -77,6 +80,9 @@ app.get("/api/users/:idOrAddress/statement/pdf", generateStatementPDF);
 
 
 app.get("/api/admin/tree", getAdminTree); 
+app.get("/api/admin/users", getAdminUsersList);
+app.post("/api/admin/users/:walletAddress/ban", banUser);
+app.post("/api/admin/users/:walletAddress/unban", unbanUser);
 app.get("/api/admin/commissions", getCommissions);
 app.post("/api/admin/commissions", setCommissions);
 
