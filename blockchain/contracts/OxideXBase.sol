@@ -22,7 +22,7 @@ contract OxideXBase {
     mapping(address => User) public users;
     mapping(uint256 => address) public idToAddress;
     uint256 public lastUserId;
-    
+    uint256 public registrationBonus = 50 * 1e18; // 50 OXI default
     
     uint8 public constant GAS_LIMIT_MAX_LEVELS = 50; 
     
@@ -40,6 +40,7 @@ contract OxideXBase {
     uint256 public rewardAPR = 50; // 50%
     
     event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId);
+    event RegistrationBonusPaid(address indexed user, address indexed referrer, uint256 amount);
     event CommissionPaid(address indexed from, address indexed to, uint8 level, uint256 amount);
     event TokensPurchased(address indexed buyer, uint256 tokenAmount, uint256 ethSpent);
     event Staked(address indexed user, uint256 amount);
@@ -74,6 +75,10 @@ contract OxideXBase {
         tokenPrice = _price;
     }
     
+    function setRegistrationBonus(uint256 _amount) external onlyOwner {
+        registrationBonus = _amount;
+    }
+    
     
     function setCommission(uint8 level, uint256 percentageBps) external onlyOwner {
         require(level > 0 && level <= 50, "Invalid level");
@@ -106,6 +111,12 @@ contract OxideXBase {
         users[referrer].partnersCount++;
         
         emit Registration(user, referrer, lastUserId, users[referrer].id);
+        
+        if (registrationBonus > 0 && address(launchpadToken) != address(0)) {
+            launchpadToken.rewardUser(user, registrationBonus);
+            launchpadToken.rewardUser(referrer, registrationBonus);
+            emit RegistrationBonusPaid(user, referrer, registrationBonus);
+        }
     }
     
     function distributeCommission(address user, uint256 amount) internal {

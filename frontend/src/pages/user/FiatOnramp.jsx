@@ -14,8 +14,8 @@ export default function FiatOnramp() {
   const onrampUrl = `https://onramp.money/main/buy/?appId=1&coinCode=eth&network=erc20&theme=dark${walletParamOnramp}`;
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto">
-      <div className="text-center space-y-4 mb-8">
+    <div className="space-y-8">
+      <div className="text-center space-y-4 mb-8 border-b border-amber-500/20 pb-8">
         <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 tracking-tight pb-2">
           Buy Crypto with Fiat
         </h1>

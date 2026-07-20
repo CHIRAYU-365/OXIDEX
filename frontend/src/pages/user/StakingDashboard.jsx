@@ -97,44 +97,44 @@ export default function StakingDashboard() {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto">
-      <div className="border-b border-emerald-500/20 pb-6 flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
+    <div className="space-y-8">
+      <div className="border-b border-amber-500/20 pb-6 flex flex-col md:flex-row items-start md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-600 tracking-tight pb-2">
+          <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 tracking-tight pb-2">
             Staking Vault
           </h1>
           <p className="text-gray-400 max-w-2xl text-sm">
             Lock your OXI tokens in the decentralized vault to earn a compounding yield. Harvest your rewards at any time.
           </p>
         </div>
-        <div className="bg-emerald-950/40 border border-emerald-500/20 px-6 py-3 rounded-2xl flex flex-col items-end shadow-[0_0_20px_rgba(16,185,129,0.1)]">
-          <span className="text-emerald-500 text-xs font-bold uppercase tracking-widest">Current APR</span>
-          <span className="text-2xl font-black text-white">{apr}% <span className="text-sm text-emerald-400">Yield</span></span>
+        <div className="bg-amber-950/40 border border-amber-500/20 px-6 py-3 rounded-2xl flex flex-col items-end shadow-[0_0_20px_rgba(245,158,11,0.1)]">
+          <span className="text-amber-500 text-xs font-bold uppercase tracking-widest">Current APR</span>
+          <span className="text-2xl font-black text-white">{apr}% <span className="text-sm text-amber-400">Yield</span></span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white/5 backdrop-blur-xl border border-white/10 p-6 rounded-3xl">
           <div className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Available to Stake</div>
-          <div className="text-3xl font-mono text-white font-bold">{parseFloat(oxiBalance).toFixed(2)} <span className="text-sm text-emerald-500">OXI</span></div>
+          <div className="text-3xl font-mono text-white font-bold">{parseFloat(oxiBalance).toFixed(2)} <span className="text-sm text-amber-500">OXI</span></div>
         </div>
         
-        <div className="bg-gradient-to-br from-emerald-900/40 to-black backdrop-blur-xl border border-emerald-500/30 p-6 rounded-3xl shadow-[0_0_30px_rgba(16,185,129,0.05)] relative overflow-hidden">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/20 rounded-full blur-2xl"></div>
-          <div className="text-emerald-400 text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Total Staked</div>
-          <div className="text-3xl font-mono text-white font-bold relative z-10">{parseFloat(stakedBalance).toFixed(2)} <span className="text-sm text-emerald-500">OXI</span></div>
+        <div className="bg-gradient-to-br from-amber-900/40 to-black backdrop-blur-xl border border-amber-500/30 p-6 rounded-3xl shadow-[0_0_30px_rgba(245,158,11,0.05)] relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-amber-500/20 rounded-full blur-2xl"></div>
+          <div className="text-amber-400 text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Total Staked</div>
+          <div className="text-3xl font-mono text-white font-bold relative z-10">{parseFloat(stakedBalance).toFixed(2)} <span className="text-sm text-amber-500">OXI</span></div>
         </div>
 
-        <div className="bg-gradient-to-br from-teal-900/40 to-black backdrop-blur-xl border border-teal-500/30 p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between">
-          <div className="absolute -left-4 -bottom-4 w-24 h-24 bg-teal-500/20 rounded-full blur-2xl"></div>
+        <div className="bg-gradient-to-br from-orange-900/40 to-black backdrop-blur-xl border border-orange-500/30 p-6 rounded-3xl relative overflow-hidden flex flex-col justify-between">
+          <div className="absolute -left-4 -bottom-4 w-24 h-24 bg-orange-500/20 rounded-full blur-2xl"></div>
           <div>
-            <div className="text-teal-400 text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Pending Yield</div>
-            <div className="text-3xl font-mono text-white font-bold relative z-10">{parseFloat(pendingYield).toFixed(4)} <span className="text-sm text-teal-500">OXI</span></div>
+            <div className="text-orange-400 text-xs font-bold uppercase tracking-widest mb-1 relative z-10">Pending Yield</div>
+            <div className="text-3xl font-mono text-white font-bold relative z-10">{parseFloat(pendingYield).toFixed(4)} <span className="text-sm text-orange-500">OXI</span></div>
           </div>
           <button 
             onClick={() => handleAction('harvest')}
             disabled={loading || parseFloat(pendingYield) <= 0}
-            className="mt-4 w-full bg-teal-500 hover:bg-teal-400 text-black font-black uppercase text-sm py-2 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(20,184,166,0.3)]"
+            className="mt-4 w-full bg-orange-500 hover:bg-orange-400 text-black font-black uppercase text-sm py-2 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(249,115,22,0.3)]"
           >
             {loading ? "Processing..." : "Harvest Yield"}
           </button>
@@ -145,13 +145,13 @@ export default function StakingDashboard() {
         <div className="flex space-x-2 mb-8 bg-black/50 p-1.5 rounded-2xl border border-white/5 w-fit">
           <button 
             onClick={() => setActiveTab('stake')}
-            className={`px-8 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all ${activeTab === 'stake' ? 'bg-emerald-500 text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+            className={`px-8 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all ${activeTab === 'stake' ? 'bg-amber-500 text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
           >
             Stake
           </button>
           <button 
             onClick={() => setActiveTab('unstake')}
-            className={`px-8 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all ${activeTab === 'unstake' ? 'bg-zinc-800 text-white shadow-lg border border-white/10' : 'text-gray-400 hover:text-white'}`}
+            className={`px-8 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all ${activeTab === 'unstake' ? 'bg-zinc-800 text-amber-500 shadow-lg border border-white/10' : 'text-gray-400 hover:text-white'}`}
           >
             Unstake
           </button>
@@ -169,11 +169,11 @@ export default function StakingDashboard() {
                   value={stakeAmount}
                   onChange={(e) => setStakeAmount(e.target.value)}
                   placeholder="0.00"
-                  className="w-full bg-black border border-white/10 rounded-2xl px-6 py-4 text-2xl font-mono text-white focus:outline-none focus:border-emerald-500/50 transition-colors"
+                  className="w-full bg-black border border-white/10 rounded-2xl px-6 py-4 text-2xl font-mono text-white focus:outline-none focus:border-amber-500/50 transition-colors"
                 />
                 <button 
                   onClick={() => setStakeAmount(oxiBalance)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-500 hover:text-emerald-400 uppercase tracking-widest bg-emerald-500/10 px-3 py-1.5 rounded-lg"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-amber-500 hover:text-amber-400 uppercase tracking-widest bg-amber-500/10 px-3 py-1.5 rounded-lg"
                 >
                   Max
                 </button>
@@ -182,7 +182,7 @@ export default function StakingDashboard() {
             <button 
               onClick={() => handleAction('stake')}
               disabled={loading || !stakeAmount || parseFloat(stakeAmount) <= 0}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-black text-lg uppercase tracking-widest py-4 rounded-2xl transition-all disabled:opacity-50 shadow-[0_0_30px_rgba(16,185,129,0.2)] hover:shadow-[0_0_40px_rgba(16,185,129,0.4)]"
+              className="w-full bg-amber-500 hover:bg-amber-400 text-black font-black text-lg uppercase tracking-widest py-4 rounded-2xl transition-all disabled:opacity-50 shadow-[0_0_30px_rgba(245,158,11,0.2)] hover:shadow-[0_0_40px_rgba(245,158,11,0.4)]"
             >
               {loading ? "Processing Transaction..." : "Stake Tokens"}
             </button>

@@ -1,10 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useWeb3 } from '../../context/Web3Context';
+import { ethers } from 'ethers';
+import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../../utils/contract';
+
+// ERC20 minimum ABI to get balance
+const ERC20_ABI = [
+  "function balanceOf(address owner) view returns (uint256)"
+];
 
 export default function UserDashboard() {
   const { account, user } = useWeb3();
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [oxiBalance, setOxiBalance] = useState("0.00");
 
   
   const referralLink = `${window.location.origin}${window.location.pathname}#/?ref=${account}`;
@@ -23,7 +31,28 @@ export default function UserDashboard() {
         setLoading(false);
       }
     };
-    if (account) fetchPartners();
+    
+    const fetchOxiBalance = async () => {
+      if (!window.ethereum) return;
+      try {
+        const provider = new ethers.BrowserProvider(window.ethereum);
+        const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
+        const tokenAddress = await contract.launchpadToken();
+        
+        if (tokenAddress && tokenAddress !== ethers.constants.AddressZero) {
+          const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, provider);
+          const bal = await tokenContract.balanceOf(account);
+          setOxiBalance(ethers.formatEther(bal));
+        }
+      } catch (err) {
+        console.error("Failed to fetch OXI balance:", err);
+      }
+    };
+
+    if (account) {
+      fetchPartners();
+      fetchOxiBalance();
+    }
   }, [account]);
 
   const copyLink = () => {
@@ -33,26 +62,44 @@ export default function UserDashboard() {
 
   return (
     <div className="space-y-8">
-      <div>
-        <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500 pb-2">
-          Dashboard Overview
-        </h1>
-        <p className="text-gray-400 mt-2">Track your revenue and network growth.</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-amber-500/20 pb-4">
+        <div>
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500 pb-2">
+            Dashboard Overview
+          </h1>
+          <p className="text-gray-400 mt-2">Track your revenue and network growth.</p>
+        </div>
+        <a 
+          href={`https://sepolia.etherscan.io/address/${CONTRACT_ADDRESS}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="bg-white/5 border border-white/10 hover:border-amber-500/50 hover:bg-amber-500/10 text-gray-300 hover:text-amber-500 px-6 py-2.5 rounded-xl font-bold text-sm tracking-wider uppercase transition-all shadow-[0_0_15px_rgba(245,158,11,0)] hover:shadow-[0_0_20px_rgba(245,158,11,0.2)] flex items-center gap-2"
+        >
+          View Smart Contract <span className="text-lg">↗</span>
+        </a>
       </div>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="group bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(245,158,11,0.05)] hover:border-amber-500/30 hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] transition-all duration-500 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
           <h2 className="text-gray-400 font-semibold mb-2 uppercase tracking-wider text-sm">Total Revenue</h2>
-          <p className="text-5xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
-            {user?.totalEarnings ? parseFloat(user.totalEarnings).toFixed(4) : "0.0000"} <span className="text-lg text-amber-500/50 font-normal">ETH</span>
+          <p className="text-4xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
+            {user?.totalEarnings ? parseFloat(user.totalEarnings).toFixed(4) : "0.0000"} <span className="text-sm text-amber-500/50 font-normal">ETH</span>
           </p>
         </div>
         
         <div className="group bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(245,158,11,0.05)] hover:border-amber-500/30 hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] transition-all duration-500 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-500 to-amber-400 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <h2 className="text-gray-400 font-semibold mb-2 uppercase tracking-wider text-sm">OXI Tokens</h2>
+          <p className="text-4xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
+            {parseFloat(oxiBalance).toFixed(2)} <span className="text-sm text-orange-500/50 font-normal">OXI</span>
+          </p>
+        </div>
+
+        <div className="group bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(245,158,11,0.05)] hover:border-amber-500/30 hover:shadow-[0_0_30px_rgba(245,158,11,0.15)] transition-all duration-500 relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-yellow-500 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
           <h2 className="text-gray-400 font-semibold mb-2 uppercase tracking-wider text-sm">Direct Partners</h2>
-          <p className="text-5xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
+          <p className="text-4xl font-black text-white group-hover:scale-105 transform origin-left transition-transform duration-500">
             {user?.partnersCount || 0}
           </p>
         </div>

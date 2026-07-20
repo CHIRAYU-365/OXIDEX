@@ -15,7 +15,6 @@ export default function UserLayout({ children }) {
     { name: 'Market Analytics', path: '/user/market' },
     { name: 'Buy Crypto (Fiat)', path: '/user/buy' },
     { name: 'History & Statements', path: '/user/history' },
-    { name: 'Smart Contract', path: '/user/contract' },
   ];
 
   if (activeUser?.isBanned) {
