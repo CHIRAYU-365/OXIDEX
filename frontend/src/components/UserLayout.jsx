@@ -51,7 +51,7 @@ export default function UserLayout({ children }) {
       
       {}
       <div className="md:hidden fixed top-0 left-0 right-0 h-16 bg-zinc-900/80 backdrop-blur-md border-b border-white/5 flex items-center justify-between px-4 z-50">
-        <div className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500">
+        <div className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-sky-500">
           OXI Launchpad
         </div>
         <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gray-300">
@@ -65,7 +65,7 @@ export default function UserLayout({ children }) {
         transform transition-transform duration-300 ease-in-out flex flex-col pt-16 md:pt-4 p-4
         ${mobileMenuOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        <div className="text-2xl font-bold mb-8 hidden md:block bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500">
+        <div className="text-2xl font-bold mb-8 hidden md:block bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-sky-500">
           OXI Launchpad
         </div>
         
@@ -79,7 +79,7 @@ export default function UserLayout({ children }) {
                 onClick={() => setMobileMenuOpen(false)}
                 className={`block p-3 rounded-xl transition-all duration-300 ${
                   isActive 
-                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/30 shadow-[0_0_15px_rgba(245,158,11,0.15)]' 
+                  ? 'bg-blue-500/10 text-blue-400 border border-blue-500/30 shadow-[0_0_15px_rgba(99,102,241,0.15)]' 
                   : 'hover:bg-white/5 text-gray-400 hover:text-gray-200'
                 }`}
               >
@@ -90,7 +90,7 @@ export default function UserLayout({ children }) {
         </nav>
         
         <div className="mt-auto pt-4 border-t border-white/5 space-y-3">
-          <p className="text-xs text-amber-500/60 truncate font-mono bg-amber-500/5 p-2 rounded-lg border border-amber-500/10">
+          <p className="text-xs text-blue-500/60 truncate font-mono bg-blue-500/5 p-2 rounded-lg border border-blue-500/10">
             {isViewOnly ? `Preview: ${account}` : account}
           </p>
           <button 

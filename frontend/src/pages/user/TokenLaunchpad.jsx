@@ -45,9 +45,9 @@ export default function TokenLaunchpad() {
   return (
     <div className="max-w-2xl mx-auto mt-6">
       <div className="bg-white/5 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_0_20px_rgba(245,158,11,0.05)] overflow-hidden">
-        <div className="p-8 text-center border-b border-white/5 bg-gradient-to-b from-amber-500/10 to-transparent relative">
-          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-400 to-orange-500"></div>
-          <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500 mb-2 tracking-tight">
+        <div className="p-8 text-center border-b border-white/5 bg-gradient-to-b from-blue-500/10 to-transparent relative">
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-sky-500"></div>
+          <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-sky-500 mb-2 tracking-tight">
             OXI Token Presale
           </h1>
           <p className="text-gray-400 text-sm md:text-base">Join the future of decentralized finance. Secure your tokens today.</p>
@@ -56,7 +56,7 @@ export default function TokenLaunchpad() {
         <div className="p-6 md:p-8 space-y-8">
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-400 font-semibold uppercase tracking-wider">Current Price</span>
-            <span className="font-bold text-amber-400 px-3 py-1 bg-amber-500/10 rounded-full border border-amber-500/20">
+            <span className="font-bold text-blue-400 px-3 py-1 bg-blue-500/10 rounded-full border border-blue-500/20">
               1 OXI = 0.0001 ETH
             </span>
           </div>
@@ -68,20 +68,20 @@ export default function TokenLaunchpad() {
                 type="number" 
                 value={amountEth}
                 onChange={(e) => setAmountEth(e.target.value)}
-                className="w-full bg-black/50 border border-white/10 rounded-xl p-4 pl-12 text-white font-mono text-xl focus:outline-none focus:border-amber-500/50 transition-colors group-hover:border-white/20 shadow-inner"
+                className="w-full bg-black/50 border border-white/10 rounded-xl p-4 pl-12 text-white font-mono text-xl focus:outline-none focus:border-blue-500/50 transition-colors group-hover:border-white/20 shadow-inner"
                 placeholder="0.1"
                 min="0"
                 step="0.01"
               />
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 font-bold text-xl">Ξ</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-blue-500 font-bold text-xl">Ξ</span>
             </div>
           </div>
           
-          <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/5 p-6 rounded-xl flex justify-between items-center border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
+          <div className="bg-gradient-to-r from-blue-500/10 to-sky-500/5 p-6 rounded-xl flex justify-between items-center border border-blue-500/20 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
             <span className="text-gray-300 text-sm font-semibold uppercase tracking-wider">You will receive approx:</span>
             <span className="text-3xl font-black text-white">
               {amountEth && !isNaN(amountEth) ? (parseFloat(amountEth) / 0.0001).toLocaleString() : '0'} 
-              <span className="text-amber-500 text-sm ml-2 font-bold uppercase tracking-widest">OXI</span>
+              <span className="text-blue-500 text-sm ml-2 font-bold uppercase tracking-widest">OXI</span>
             </span>
           </div>
 
@@ -91,7 +91,7 @@ export default function TokenLaunchpad() {
             className={`w-full py-4 rounded-xl font-black uppercase tracking-widest text-lg transition-all transform active:scale-95 ${
               loading 
               ? 'bg-zinc-800 text-gray-500 cursor-not-allowed border border-white/5' 
-              : 'bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:shadow-[0_0_30px_rgba(245,158,11,0.6)] border border-amber-400/50'
+              : 'bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white shadow-[0_0_20px_rgba(245,158,11,0.4)] hover:shadow-[0_0_30px_rgba(245,158,11,0.6)] border border-blue-400/50'
             }`}
           >
             {loading ? 'Processing Transaction...' : 'Buy OXI Tokens'}
@@ -99,7 +99,7 @@ export default function TokenLaunchpad() {
           
           {txHash && (
             <div className="mt-4 text-center">
-              <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-amber-400 hover:text-amber-300 hover:underline transition-colors text-sm font-semibold bg-amber-500/10 px-4 py-2 rounded-full border border-amber-500/20">
+              <a href={`https://sepolia.etherscan.io/tx/${txHash}`} target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline transition-colors text-sm font-semibold bg-blue-500/10 px-4 py-2 rounded-full border border-blue-500/20">
                 <span>View Transaction on Etherscan</span>
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
               </a>

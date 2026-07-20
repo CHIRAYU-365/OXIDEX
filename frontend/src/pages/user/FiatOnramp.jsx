@@ -15,8 +15,9 @@ export default function FiatOnramp() {
 
   return (
     <div className="space-y-8">
-      <div className="text-center space-y-4 mb-8 border-b border-amber-500/20 pb-8">
-        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500 tracking-tight pb-2">
+      <div className="text-center space-y-4 mb-8 border-b border-blue-500/20 pb-8">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-sky-500 opacity-50 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-sky-500 tracking-tight pb-2">
           Buy Crypto with Fiat
         </h1>
         <p className="text-gray-400 max-w-2xl mx-auto">
@@ -28,7 +29,7 @@ export default function FiatOnramp() {
         <div className="bg-black/50 p-1.5 rounded-2xl border border-white/5 inline-flex">
           <button 
             onClick={() => setProvider('global')}
-            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${provider === 'global' ? 'bg-amber-500 text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all ${provider === 'global' ? 'bg-blue-500 text-black shadow-lg' : 'text-gray-400 hover:text-white'}`}
           >
             Global (Cards / Apple Pay)
           </button>
@@ -44,8 +45,8 @@ export default function FiatOnramp() {
       <div className="bg-black/50 border border-white/10 p-2 rounded-[2rem] shadow-[0_0_50px_rgba(245,158,11,0.1)] mx-auto max-w-md relative overflow-hidden">
         {/* Loading Spinner underneath iframe */}
         <div className="absolute inset-0 flex flex-col items-center justify-center -z-10">
-          <div className={`w-8 h-8 border-4 rounded-full animate-spin mb-4 ${provider === 'global' ? 'border-amber-500/20 border-t-amber-500' : 'border-blue-500/20 border-t-blue-500'}`}></div>
-          <span className={`${provider === 'global' ? 'text-amber-500/50' : 'text-blue-500/50'} text-sm font-mono animate-pulse`}>Initializing Secure Gateway...</span>
+          <div className={`w-8 h-8 border-4 rounded-full animate-spin mb-4 ${provider === 'global' ? 'border-blue-500/20 border-t-blue-500' : 'border-blue-500/20 border-t-blue-500'}`}></div>
+          <span className={`${provider === 'global' ? 'text-blue-500/50' : 'text-blue-500/50'} text-sm font-mono animate-pulse`}>Initializing Secure Gateway...</span>
         </div>
 
         <iframe 

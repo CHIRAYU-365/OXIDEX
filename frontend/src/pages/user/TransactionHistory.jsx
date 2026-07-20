@@ -29,16 +29,16 @@ export default function TransactionHistory() {
 
   return (
     <div className="space-y-8">
-      <div className="border-b border-amber-500/20 pb-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+      <div className="border-b border-blue-500/20 pb-6 mb-8 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-amber-300 to-orange-500 pb-2">
+          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-300 to-sky-500 pb-2">
             History & Statements
           </h1>
           <p className="text-gray-400 mt-2">View all your transactions, token purchases, and commission payouts.</p>
         </div>
         <button 
           onClick={downloadPDF}
-          className="bg-zinc-800 hover:bg-zinc-700 text-amber-400 border border-amber-500/30 hover:border-amber-400/60 font-semibold py-3 px-6 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.1)] transition-all flex items-center gap-3 whitespace-nowrap"
+          className="bg-zinc-800 hover:bg-zinc-700 text-blue-400 border border-blue-500/30 hover:border-blue-400/60 font-semibold py-3 px-6 rounded-xl shadow-[0_0_15px_rgba(245,158,11,0.1)] transition-all flex items-center gap-3 whitespace-nowrap"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -49,7 +49,7 @@ export default function TransactionHistory() {
 
       <div className="bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
         {loading ? (
-          <p className="text-amber-500/60 animate-pulse text-center py-10">Loading history data...</p>
+          <p className="text-blue-500/60 animate-pulse text-center py-10">Loading history data...</p>
         ) : history.length > 0 ? (
           <div className="overflow-x-auto rounded-xl border border-white/5">
             <table className="w-full text-left border-collapse">
@@ -68,13 +68,13 @@ export default function TransactionHistory() {
                     <td className="p-4">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                         record.recordType === 'earning' 
-                        ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' 
-                        : 'bg-orange-500/10 text-orange-400 border border-orange-500/20'
+                        ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' 
+                        : 'bg-sky-500/10 text-sky-400 border border-sky-500/20'
                       }`}>
                         {record.recordType.toUpperCase()}
                       </span>
                     </td>
-                    <td className={`p-4 font-mono text-right whitespace-nowrap font-medium ${record.recordType === 'earning' ? 'text-amber-400' : 'text-gray-300'}`}>
+                    <td className={`p-4 font-mono text-right whitespace-nowrap font-medium ${record.recordType === 'earning' ? 'text-blue-400' : 'text-gray-300'}`}>
                       {record.recordType === 'earning' ? `+${record.amount} ETH` : `${record.amount || record.tokensAmount || '-'} ETH`}
                     </td>
                     <td className="p-4 text-sm text-gray-400 font-mono truncate max-w-xs md:max-w-md">
