@@ -49,7 +49,6 @@ export default function FiatOnramp() {
         </div>
 
         <iframe 
-        <iframe 
           src={provider === 'global' ? transakUrl : onrampUrl} 
           width="100%" 
           height="650px" 
