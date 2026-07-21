@@ -3,58 +3,41 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
-const { getNonce, verifySignature, mockRegister } = require("./controllers/authController");
-const {
-  getUserProfile,
-  getUserPartners,
-  getPlatformStats,
-  getAdminTree,
-  getAdminUsersList,
-  banUser,
-  unbanUser,
-  getCommissions,
-  setCommissions,
-  generateStatementPDF,
-  getUserHistory
-} = require("./controllers/userController");
+
+const authRoutes = require("./routes/authRoutes");
+const userRoutes = require("./routes/userRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const platformRoutes = require("./routes/platformRoutes");
+
+const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 app.set("trust proxy", 1);
 
 app.use(helmet());
 
-const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(",").map(o => {
-      try {
-        const url = new URL(o.trim());
-        return `${url.protocol}//${url.host}`;
-      } catch (_) {
-        return o.trim().replace(/\/$/, "");
-      }
-    })
-  : ["*"];
-app.use(cors({
-  origin: function (origin, callback) {
-    // Echo the requested origin to allow dynamic Vercel preview URLs
-    callback(null, origin || true);
-  },
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true,
-}));
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      callback(null, origin || true);
+    },
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true,
+  })
+);
 
 app.use(morgan("dev"));
 
 const tarpitMiddleware = (req, res, next) => {
-  const badPaths = ['.env', 'wp-admin', 'phpmyadmin', 'db-admin', 'config.php', 'sql', 'dump'];
-  const isMalicious = badPaths.some(p => req.path.toLowerCase().includes(p));
-  
+  const badPaths = [".env", "wp-admin", "phpmyadmin", "db-admin", "config.php", "sql", "dump"];
+  const isMalicious = badPaths.some((p) => req.path.toLowerCase().includes(p));
+
   if (isMalicious) {
     console.warn(`[TARPIT] Caught potential scanner from ${req.ip} targeting ${req.path}`);
-    res.writeHead(200, { 'Content-Type': 'text/plain', 'Connection': 'keep-alive' });
-    
-    
+    res.writeHead(200, { "Content-Type": "text/plain", Connection: "keep-alive" });
     setInterval(() => {
-      res.write(' ');
+      res.write(" ");
     }, 10000);
   } else {
     next();
@@ -67,18 +50,18 @@ app.use(express.urlencoded({ extended: true, limit: "1mb" }));
 
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 300,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, error: "Too many requests from this IP, please try again after 15 minutes" },
+  message: { success: false, error: "Too many requests from this IP, please try again after 15 minutes." },
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 30,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { success: false, error: "Too many authentication requests, please try again after 15 minutes" },
+  message: { success: false, error: "Too many authentication attempts, please try again after 15 minutes." },
 });
 
 app.use("/api/", apiLimiter);
@@ -88,34 +71,13 @@ app.get("/api/health", (req, res) => {
   res.json({ success: true, status: "healthy", timestamp: Date.now() });
 });
 
-app.post("/api/auth/nonce", getNonce);
-app.post("/api/auth/verify", verifySignature);
-app.post("/api/auth/mock-register", mockRegister);
+app.use("/api/auth", authRoutes);
+app.use("/api/users", userRoutes);
+app.use("/api/notifications", notificationRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/platform", platformRoutes);
 
-
-app.get("/api/users/:idOrAddress", getUserProfile);
-app.get("/api/users/:idOrAddress/partners", getUserPartners); 
-app.get("/api/users/:idOrAddress/history", getUserHistory);
-app.get("/api/users/:idOrAddress/statement/pdf", generateStatementPDF); 
-
-
-app.get("/api/admin/tree", getAdminTree); 
-app.get("/api/admin/users", getAdminUsersList);
-app.post("/api/admin/users/:walletAddress/ban", banUser);
-app.post("/api/admin/users/:walletAddress/unban", unbanUser);
-app.get("/api/admin/commissions", getCommissions);
-app.post("/api/admin/commissions", setCommissions);
-
-app.get("/api/platform/stats", getPlatformStats);
-
-
-app.use((req, res, next) => {
-  res.status(404).json({ success: false, error: "Resource not found" });
-});
-
-app.use((err, req, res, next) => {
-  console.error("Unhandle exception:", err);
-  res.status(500).json({ success: false, error: "Internal server error" });
-});
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 module.exports = app;

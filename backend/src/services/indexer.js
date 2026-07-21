@@ -1,7 +1,6 @@
 const { ethers } = require("ethers");
-const { PrismaClient } = require("@prisma/client");
+const prisma = require("../utils/prisma");
 const { sendTelegramAlert } = require("./telegramBot");
-const prisma = new PrismaClient();
 
 
 const OXIDEX_ABI = [

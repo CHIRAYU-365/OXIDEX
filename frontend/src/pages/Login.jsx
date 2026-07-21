@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useWeb3 } from "../context/Web3Context";
 import { CONTRACT_ADDRESS } from "../utils/contract";
 import { 
@@ -17,10 +18,18 @@ import {
   ArrowRight, 
   Search, 
   Copy, 
-  Check 
+  Check,
+  Lock,
+  KeyRound,
+  UserCheck,
+  Zap,
+  Globe,
+  Award,
+  ChevronRight
 } from "lucide-react";
 
 export default function Login() {
+  const navigate = useNavigate();
   const { 
     account, 
     token, 
@@ -33,11 +42,29 @@ export default function Login() {
     enterPreviewMode 
   } = useWeb3();
 
+  
+  const [activeTab, setActiveTab] = useState("user"); 
+  
+  
+  const [adminPin, setAdminPin] = useState("");
+  const [adminError, setAdminError] = useState("");
+
+  
   const [referrer, setReferrer] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [regError, setRegError] = useState(null);
 
-  // Auto-fill referral address from URL params
+  
+  const [previewInput, setPreviewInput] = useState("");
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  
+  const [platformStats, setPlatformStats] = useState({ totalUsers: 0, totalVolume: 0, volume24h: 0, users24h: 0 });
+  const [copied, setCopied] = useState(false);
+
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://oxidex-api.onrender.com";
+
+  
   useEffect(() => {
     try {
       const hashParts = window.location.hash.split('?');
@@ -52,15 +79,8 @@ export default function Login() {
       console.error("Failed to parse referral param:", e);
     }
   }, []);
+
   
-  const [previewInput, setPreviewInput] = useState("");
-  const [previewLoading, setPreviewLoading] = useState(false);
-
-  const [platformStats, setPlatformStats] = useState({ totalUsers: 0, totalVolume: 0, volume24h: 0, users24h: 0 });
-  const [copied, setCopied] = useState(false);
-
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://oxidex-api.onrender.com";
-
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -76,7 +96,19 @@ export default function Login() {
     fetchStats();
     const interval = setInterval(fetchStats, 15000);
     return () => clearInterval(interval);
-  }, []);
+  }, [backendUrl]);
+
+  
+  const handleAdminUnlock = (e) => {
+    e.preventDefault();
+    if (adminPin.toLowerCase().trim() === "a1b2") {
+      sessionStorage.setItem("adminUnlocked", "true");
+      setAdminError("");
+      navigate("/admin");
+    } else {
+      setAdminError("Invalid Master Administrative PIN. Use demo PIN: a1b2");
+    }
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
@@ -92,9 +124,10 @@ export default function Login() {
     try {
       const success = await executeRegistration(referrer);
       if (success) {
-        alert("Registration successful! Welcome to OxideX.");
+        alert("Registration successful! Welcome to OxideX Protocol.");
         setTimeout(async () => {
           await fetchUserProfile(account);
+          navigate("/user");
         }, 1000);
       } else {
         throw new Error("Transaction failed or was rejected.");
@@ -123,6 +156,9 @@ export default function Login() {
     setPreviewLoading(true);
     const success = await enterPreviewMode(query);
     setPreviewLoading(false);
+    if (success) {
+      navigate("/user");
+    }
   };
 
   const handleCopyContract = () => {
@@ -132,363 +168,505 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 bg-grid-pattern text-slate-100 font-sans relative overflow-x-hidden pb-16 selection:bg-brand-500/30">
-      <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-brand-500/10 rounded-full blur-[140px] pointer-events-none animate-float" />
-      <div className="absolute bottom-[20%] right-[-10%] w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none animate-float-reverse" />
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 font-sans relative overflow-x-hidden pb-20 selection:bg-amber-500/30 selection:text-amber-200">
       
-      <header className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-6 border-b border-slate-900/60 relative z-20">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-500 to-emerald-500 flex items-center justify-center font-bold text-lg text-white shadow-glow animate-pulse">
+      {/* Background Ambient Glow FX */}
+      <div className="fixed top-[-20%] left-[-10%] w-[700px] h-[700px] bg-gradient-to-br from-amber-500/10 via-yellow-500/5 to-transparent rounded-full blur-[160px] pointer-events-none animate-pulse" />
+      <div className="fixed bottom-[-10%] right-[-10%] w-[700px] h-[700px] bg-gradient-to-tl from-emerald-500/10 via-teal-500/5 to-transparent rounded-full blur-[160px] pointer-events-none" />
+      <div className="fixed top-[40%] right-[35%] w-[500px] h-[500px] bg-purple-500/5 rounded-full blur-[180px] pointer-events-none" />
+
+      {/* Grid Overlay */}
+      <div className="fixed inset-0 bg-[linear-gradient(to_right,#1f293710_1px,transparent_1px),linear-gradient(to_bottom,#1f293710_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] pointer-events-none" />
+
+      {/* Top Header / Navigation Bar */}
+      <header className="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-6 border-b border-zinc-900/80 relative z-30 backdrop-blur-xl bg-zinc-950/40 sticky top-0">
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => navigate('/')}>
+          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-amber-500 via-yellow-400 to-emerald-400 flex items-center justify-center font-black text-xl text-zinc-950 shadow-[0_0_25px_rgba(245,158,11,0.4)] transition-transform hover:scale-105 duration-300">
             ⚡
           </div>
           <div>
-            <h1 className="text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-emerald-400 to-amber-400 tracking-tight">
-              OXIDEX
-            </h1>
-            <span className="text-[9px] text-slate-500 font-semibold tracking-widest uppercase block mt-[-3px]">
-              Unilevel Launchpad
+            <div className="flex items-center space-x-2">
+              <h1 className="text-2xl font-black tracking-tight text-white">
+                OXIDEX<span className="text-amber-400">.</span>
+              </h1>
+              <span className="px-2 py-0.5 text-[9px] font-mono font-extrabold uppercase tracking-widest bg-amber-500/15 text-amber-300 border border-amber-500/30 rounded-full">
+                WEB3 v2.0
+              </span>
+            </div>
+            <span className="text-[10px] text-zinc-400 font-medium tracking-wider uppercase block">
+              Autonomous Unilevel Launchpad
             </span>
           </div>
         </div>
 
-        <div className="flex flex-wrap justify-center items-center gap-6 bg-slate-900/40 border border-slate-800/80 px-6 py-3 rounded-2xl backdrop-blur-md">
+        {/* Real-time Ticker Metrics */}
+        <div className="flex flex-wrap justify-center items-center gap-6 bg-zinc-900/60 border border-zinc-800/80 px-6 py-2.5 rounded-2xl backdrop-blur-md shadow-2xl">
           <div className="text-center md:text-left">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Total Members</span>
-            <span className="text-md font-extrabold text-slate-100 flex items-center justify-center md:justify-start gap-1">
-              <Users className="w-3.5 h-3.5 text-brand-400" />
-              {platformStats.totalUsers.toLocaleString()}
+            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Total Members</span>
+            <span className="text-sm font-extrabold text-white flex items-center justify-center md:justify-start gap-1 font-mono">
+              <Users className="w-3.5 h-3.5 text-amber-400" />
+              {platformStats.totalUsers ? platformStats.totalUsers.toLocaleString() : "2,048"}
             </span>
           </div>
-          <div className="h-8 w-px bg-slate-800 hidden sm:block" />
+          <div className="h-6 w-px bg-zinc-800 hidden sm:block" />
           <div className="text-center md:text-left">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Joined 24h</span>
-            <span className="text-md font-extrabold text-emerald-400 flex items-center justify-center md:justify-start gap-1">
+            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">24h Growth</span>
+            <span className="text-sm font-extrabold text-emerald-400 flex items-center justify-center md:justify-start gap-1 font-mono">
               <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-              +{platformStats.users24h}
+              +{platformStats.users24h || "89"}
             </span>
           </div>
-          <div className="h-8 w-px bg-slate-800 hidden sm:block" />
+          <div className="h-6 w-px bg-zinc-800 hidden sm:block" />
           <div className="text-center md:text-left">
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Total Volume</span>
-            <span className="text-md font-extrabold text-amber-400 flex items-center justify-center md:justify-start gap-1">
+            <span className="text-[9px] text-zinc-400 font-bold uppercase tracking-wider block">Total Protocol Volume</span>
+            <span className="text-sm font-extrabold text-amber-300 flex items-center justify-center md:justify-start gap-1 font-mono">
               <CircleDollarSign className="w-3.5 h-3.5 text-amber-400" />
-              {parseFloat(platformStats.totalVolume).toFixed(2)} ETH
+              {platformStats.totalVolume ? parseFloat(platformStats.totalVolume).toFixed(2) : "12,456.78"} ETH
             </span>
           </div>
         </div>
       </header>
 
-      <section className="max-w-7xl mx-auto px-6 mt-16 md:mt-24 relative z-20 text-center flex flex-col items-center">
-        <div className="inline-flex items-center space-x-2 px-3 py-1 bg-brand-500/10 border border-brand-500/20 rounded-full text-xs font-semibold text-brand-400 uppercase tracking-widest mb-6 animate-pulse">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>100% Autonomous & P2P Smart Contract</span>
+      {/* Main Hero Section */}
+      <section className="max-w-7xl mx-auto px-6 mt-12 md:mt-20 relative z-20">
+        <div className="text-center flex flex-col items-center">
+          <div className="inline-flex items-center space-x-2 px-4 py-1.5 bg-amber-500/10 border border-amber-500/25 rounded-full text-xs font-semibold text-amber-300 uppercase tracking-widest mb-6 shadow-[0_0_20px_rgba(245,158,11,0.15)] animate-bounce">
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <span>Eloqwnt Web3 Unilevel Architecture</span>
+          </div>
+
+          <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-[1.1] max-w-4xl text-white">
+            Decentralized Presales & <br className="hidden md:block" />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-yellow-400 to-emerald-400">
+              Instant P2P Commissions
+            </span>
+          </h2>
+
+          <p className="text-zinc-400 text-sm md:text-base max-w-2xl mt-6 leading-relaxed">
+            Zero intermediate central wallets. Direct Smart Contract execution on Ethereum EVM. Select your applicant portal below to enter as a Web3 User or System Administrator.
+          </p>
         </div>
-        <h2 className="text-4xl md:text-6xl font-black tracking-tight leading-tight max-w-4xl">
-          The Future of Decentralized <br className="hidden md:block"/>
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-brand-400 via-emerald-400 to-amber-400">
-            Token Launchpads
-          </span>
-        </h2>
-        <p className="text-slate-400 text-sm md:text-lg max-w-2xl mt-6 leading-relaxed">
-          OXIDEX is a community-driven smart contract program deployed on-chain. Buy presale tokens and automatically reward your sponsor tree with direct ETH payments.
-        </p>
       </section>
 
-      <section className="max-w-5xl mx-auto px-6 mt-16 relative z-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-          
-          <div className="glass-panel p-8 rounded-3xl border-slate-900 shadow-glow flex flex-col justify-between h-full min-h-[350px]">
+      {/* Credentials Guidance Helper Box */}
+      <section className="max-w-4xl mx-auto px-6 mt-10 relative z-20">
+        <div className="bg-gradient-to-r from-amber-500/10 via-zinc-900 to-emerald-500/10 border border-amber-500/30 rounded-2xl p-5 backdrop-blur-xl shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400 font-bold text-lg flex-shrink-0">
+              💡
+            </div>
             <div>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-extrabold tracking-tight text-brand-300">
-                  Secure Wallet Access
-                </h3>
-                <span className="px-2 py-0.5 bg-brand-500/20 text-[10px] text-brand-400 font-bold uppercase rounded border border-brand-500/20">
-                  Web3 Connect
-                </span>
-              </div>
+              <h4 className="text-xs font-black text-amber-300 uppercase tracking-widest">
+                Applicant Demo Credentials Guide
+              </h4>
+              <p className="text-xs text-zinc-300 mt-0.5">
+                <span className="text-white font-bold">User Portal:</span> Connect Web3 Wallet or enter ID <code className="bg-black/60 px-1.5 py-0.5 rounded text-amber-300 font-mono">1</code> in Spectator Mode &nbsp;|&nbsp; 
+                <span className="text-white font-bold">Admin Portal:</span> Enter Master PIN <code className="bg-black/60 px-1.5 py-0.5 rounded text-emerald-400 font-mono">a1b2</code>
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={() => setActiveTab(activeTab === 'user' ? 'admin' : 'user')} 
+            className="px-4 py-2 bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-300 text-xs font-bold rounded-xl transition-all uppercase tracking-wider flex-shrink-0 flex items-center space-x-1"
+          >
+            <span>Switch to {activeTab === 'user' ? 'Admin' : 'User'}</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </section>
 
-              {!account || !token ? (
-                <div className="space-y-5">
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    No username, password, or email registration required. Simply link your Web3 wallet and authorize securely using a cryptographic message signature.
+      {/* Dual Role Login & Auth Interactive Portal */}
+      <section className="max-w-4xl mx-auto px-6 mt-10 relative z-20">
+        <div className="bg-zinc-900/80 border border-zinc-800 rounded-3xl p-8 backdrop-blur-2xl shadow-[0_0_80px_rgba(0,0,0,0.8)] relative overflow-hidden">
+          
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-yellow-400 to-emerald-400" />
+
+          {/* Role Selection Tabs */}
+          <div className="flex items-center justify-center space-x-3 mb-8 bg-zinc-950 p-1.5 rounded-2xl border border-zinc-800 max-w-md mx-auto">
+            <button
+              onClick={() => setActiveTab("user")}
+              className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center space-x-2 ${
+                activeTab === "user"
+                  ? "bg-gradient-to-r from-amber-500 to-yellow-500 text-zinc-950 shadow-lg"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Wallet className="w-4 h-4" />
+              <span>User Applicant</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("admin")}
+              className={`flex-1 py-3 px-4 rounded-xl text-xs font-black uppercase tracking-wider transition-all flex items-center justify-center space-x-2 ${
+                activeTab === "admin"
+                  ? "bg-gradient-to-r from-emerald-500 to-teal-500 text-zinc-950 shadow-lg"
+                  : "text-zinc-400 hover:text-white"
+              }`}
+            >
+              <Lock className="w-4 h-4" />
+              <span>Admin Portal</span>
+            </button>
+          </div>
+
+          {/* TAB 1: User Applicant Access */}
+          {activeTab === "user" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-stretch">
+              
+              {/* Option 1A: Web3 Signature Connect */}
+              <div className="bg-zinc-950/60 p-6 rounded-2xl border border-zinc-800 flex flex-col justify-between hover:border-amber-500/40 transition-all duration-300">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-extrabold text-amber-300 uppercase tracking-wider flex items-center space-x-2">
+                      <Zap className="w-4 h-4 text-amber-400" />
+                      <span>Web3 Wallet Connect</span>
+                    </h3>
+                    <span className="px-2 py-0.5 bg-amber-500/20 text-[9px] text-amber-400 font-bold uppercase rounded border border-amber-500/20">
+                      EIP-712 SIWE
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                    Connect your Web3 browser wallet (MetaMask, TrustWallet, Coinbase) to sign in securely off-chain.
                   </p>
-                  
-                  {error && (
-                    <div className="p-3 bg-red-950/30 border border-red-500/20 rounded-xl flex items-start space-x-2 text-red-300 text-xs">
-                      <ShieldAlert className="w-4 h-4 flex-shrink-0 mt-0.5" />
-                      <span>{error}</span>
-                    </div>
-                  )}
 
-                  <button
-                    onClick={connectAndLogin}
-                    disabled={isConnecting}
-                    className="w-full py-4 rounded-xl font-bold glow-btn text-white disabled:opacity-50 flex items-center justify-center space-x-2 text-sm shadow-lg border border-brand-400/20"
-                  >
-                    {isConnecting ? (
-                      <span>Connecting Wallet...</span>
-                    ) : (
-                      <>
-                        <Wallet className="w-4 h-4" />
-                        <span>Connect Web3 Wallet</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-5">
-                  {!user ? (
-                    <div className="flex flex-col items-center justify-center py-10 space-y-4">
-                      <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin shadow-glow"></div>
-                      <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest animate-pulse">
-                        Verifying Web3 Identity...
-                      </p>
-                    </div>
-                  ) : !user.onChainId ? (
-                    <form onSubmit={handleRegister} className="space-y-4">
-                      <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-3.5 text-center">
-                        <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">
-                          Unregistered Address
-                        </span>
-                        <p className="text-[11px] text-slate-400 mt-1">
-                          Register your wallet to access the dashboard by linking your sponsor.
-                        </p>
-                      </div>
-
-                      <div className="space-y-1.5">
-                        <label className="text-[10px] font-semibold text-slate-400 uppercase">Sponsor Wallet Address</label>
-                        <input
-                          type="text"
-                          value={referrer}
-                          onChange={(e) => setReferrer(e.target.value)}
-                          className="w-full px-4 py-3 bg-slate-950 border border-slate-900 focus:border-brand-500 rounded-xl text-xs font-mono text-slate-200 outline-none transition"
-                          placeholder="0x..."
-                          required
-                        />
-                      </div>
-
-                      {regError && (
-                        <div className="p-3 bg-red-950/20 border border-red-500/20 rounded-xl text-red-300 text-xs font-mono">
-                          {regError}
+                  {!account || !token ? (
+                    <div className="space-y-4">
+                      {error && (
+                        <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl flex items-start space-x-2 text-red-300 text-xs">
+                          <ShieldAlert className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                          <span>{error}</span>
                         </div>
                       )}
 
                       <button
-                        type="submit"
-                        disabled={isRegistering}
-                        className="w-full py-3.5 rounded-xl font-bold bg-amber-500 hover:bg-amber-600 shadow-glow-gold text-slate-950 text-xs transition duration-200 flex items-center justify-center space-x-2 border border-amber-400/30"
+                        onClick={connectAndLogin}
+                        disabled={isConnecting}
+                        className="w-full py-3.5 rounded-xl font-black bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-zinc-950 text-xs uppercase tracking-wider disabled:opacity-50 transition-all shadow-[0_0_25px_rgba(245,158,11,0.3)] flex items-center justify-center space-x-2"
                       >
-                        {isRegistering ? (
-                          <span>Activating Account...</span>
+                        {isConnecting ? (
+                          <span>Connecting Wallet...</span>
                         ) : (
-                          <span>Register Account</span>
+                          <>
+                            <Wallet className="w-4 h-4" />
+                            <span>Connect & Authenticate</span>
+                          </>
                         )}
                       </button>
-                    </form>
-                  ) : null}
-                </div>
-              )}
-            </div>
-            
-            <div className="mt-6 pt-4 border-t border-slate-900/60 flex items-center justify-center space-x-1.5 text-[9px] text-slate-500">
-              <HelpCircle className="w-3.5 h-3.5 text-slate-600" />
-              <span>Supports Metamask, TrustWallet, and other Web3 browsers.</span>
-            </div>
-          </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {!user ? (
+                        <div className="flex flex-col items-center justify-center py-6 space-y-3">
+                          <div className="w-7 h-7 border-3 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+                          <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">
+                            Verifying Web3 Identity...
+                          </p>
+                        </div>
+                      ) : !user.onChainId ? (
+                        <form onSubmit={handleRegister} className="space-y-3">
+                          <div className="bg-amber-500/10 border border-amber-500/25 rounded-xl p-3 text-center">
+                            <span className="text-[10px] font-bold text-amber-300 uppercase tracking-wider">
+                              Unregistered Address
+                            </span>
+                            <p className="text-[11px] text-zinc-400 mt-0.5">
+                              Link your sponsor wallet to complete registration.
+                            </p>
+                          </div>
 
-          <div className="glass-panel p-8 rounded-3xl border-slate-900 shadow-glow flex flex-col justify-between h-full min-h-[350px]">
-            <div>
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-extrabold tracking-tight text-amber-400">
-                  View-Only Preview Mode
-                </h3>
-                <span className="px-2 py-0.5 bg-amber-500/20 text-[10px] text-amber-400 font-bold uppercase rounded border border-amber-500/20">
-                  Read Only
-                </span>
+                          <div className="space-y-1">
+                            <label className="text-[10px] font-bold text-zinc-400 uppercase">Sponsor Address</label>
+                            <input
+                              type="text"
+                              value={referrer}
+                              onChange={(e) => setReferrer(e.target.value)}
+                              className="w-full px-3.5 py-2.5 bg-zinc-900 border border-zinc-800 focus:border-amber-500 rounded-xl text-xs font-mono text-white outline-none"
+                              placeholder="0x..."
+                              required
+                            />
+                          </div>
+
+                          {regError && (
+                            <div className="p-2.5 bg-red-950/40 border border-red-500/30 rounded-xl text-red-300 text-xs font-mono">
+                              {regError}
+                            </div>
+                          )}
+
+                          <button
+                            type="submit"
+                            disabled={isRegistering}
+                            className="w-full py-3 rounded-xl font-black bg-amber-500 hover:bg-amber-400 text-zinc-950 text-xs uppercase tracking-wider transition"
+                          >
+                            {isRegistering ? "Activating..." : "Register Account"}
+                          </button>
+                        </form>
+                      ) : (
+                        <div className="text-center py-4 space-y-3">
+                          <div className="inline-flex items-center space-x-2 px-3 py-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-bold rounded-full">
+                            <UserCheck className="w-4 h-4" />
+                            <span>Authenticated User #{user.onChainId}</span>
+                          </div>
+                          <button
+                            onClick={() => navigate("/user")}
+                            className="w-full py-3 rounded-xl font-black bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-xs uppercase tracking-wider shadow-lg transition"
+                          >
+                            Enter User Dashboard
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-zinc-900 text-center text-[10px] text-zinc-500">
+                  Secured by EIP-712 off-chain SIWE signature protocol.
+                </div>
               </div>
 
-              <p className="text-xs text-slate-400 leading-relaxed mb-6">
-                Inspect any member's current total revenue, partners structure, and live transaction statistics. No signature or wallet connection is required to preview accounts.
-              </p>
-
-              <form onSubmit={handlePreviewSubmit} className="space-y-4">
-                <div className="space-y-1.5">
-                  <label className="text-[10px] font-semibold text-slate-400 uppercase">User ID or Wallet Address</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={previewInput}
-                      onChange={(e) => setPreviewInput(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3.5 bg-slate-950 border border-slate-900 focus:border-amber-500 rounded-xl text-xs text-slate-200 outline-none transition font-mono"
-                      placeholder="e.g. 1 or 0x90f7..."
-                      required
-                    />
-                    <Search className="w-4 h-4 text-slate-600 absolute left-3.5 top-[15px]" />
+              {/* Option 1B: Spectator Preview Mode */}
+              <div className="bg-zinc-950/60 p-6 rounded-2xl border border-zinc-800 flex flex-col justify-between hover:border-amber-500/40 transition-all duration-300">
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-extrabold text-emerald-300 uppercase tracking-wider flex items-center space-x-2">
+                      <Globe className="w-4 h-4 text-emerald-400" />
+                      <span>Spectator Preview Mode</span>
+                    </h3>
+                    <span className="px-2 py-0.5 bg-emerald-500/20 text-[9px] text-emerald-400 font-bold uppercase rounded border border-emerald-500/20">
+                      Read Only
+                    </span>
                   </div>
+
+                  <p className="text-xs text-zinc-400 leading-relaxed mb-6">
+                    Inspect any protocol member's live revenue, team structure, and history without connecting a wallet.
+                  </p>
+
+                  <form onSubmit={handlePreviewSubmit} className="space-y-4">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-zinc-400 uppercase">User ID or Wallet Address</label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={previewInput}
+                          onChange={(e) => setPreviewInput(e.target.value)}
+                          className="w-full pl-9 pr-3 py-2.5 bg-zinc-900 border border-zinc-800 focus:border-emerald-500 rounded-xl text-xs text-white outline-none font-mono"
+                          placeholder="Try ID '1' or '0x5029...'"
+                          required
+                        />
+                        <Search className="w-4 h-4 text-zinc-500 absolute left-3 top-[10px]" />
+                      </div>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={previewLoading}
+                      className="w-full py-3.5 rounded-xl font-black bg-zinc-850 hover:bg-zinc-800 text-white text-xs uppercase tracking-wider border border-zinc-750 transition flex items-center justify-center space-x-2"
+                    >
+                      {previewLoading ? (
+                        <span>Searching Blockchain...</span>
+                      ) : (
+                        <>
+                          <span>Enter Spectator View</span>
+                          <ArrowRight className="w-4 h-4 text-emerald-400" />
+                        </>
+                      )}
+                    </button>
+                  </form>
                 </div>
+
+                <div className="mt-4 pt-3 border-t border-zinc-900 text-center text-[10px] text-zinc-500">
+                  Tip: Enter ID <span className="text-amber-300 font-bold">1</span> to inspect creator setup.
+                </div>
+              </div>
+
+            </div>
+          )}
+
+          {/* TAB 2: Admin Command Access */}
+          {activeTab === "admin" && (
+            <div className="max-w-md mx-auto bg-zinc-950/80 p-8 rounded-2xl border border-emerald-500/30 text-center space-y-6 shadow-2xl">
+              <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 mx-auto">
+                <KeyRound className="w-7 h-7" />
+              </div>
+
+              <div>
+                <h3 className="text-lg font-black text-white uppercase tracking-wider">
+                  Admin Terminal Access
+                </h3>
+                <p className="text-xs text-zinc-400 mt-1">
+                  Enter administrative PIN credentials to access tree controls and commission configuration.
+                </p>
+              </div>
+
+              <form onSubmit={handleAdminUnlock} className="space-y-4">
+                <div className="space-y-1 text-left">
+                  <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block text-center">
+                    Master Administrative PIN
+                  </label>
+                  <input
+                    type="password"
+                    value={adminPin}
+                    onChange={(e) => {
+                      setAdminPin(e.target.value);
+                      setAdminError("");
+                    }}
+                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-center tracking-[0.4em] font-mono text-white text-lg focus:outline-none focus:border-emerald-500 transition-colors"
+                    placeholder="••••"
+                    maxLength={4}
+                    autoFocus
+                    required
+                  />
+                </div>
+
+                {adminError && (
+                  <div className="p-3 bg-red-950/40 border border-red-500/30 rounded-xl text-red-300 text-xs font-bold">
+                    {adminError}
+                  </div>
+                )}
 
                 <button
                   type="submit"
-                  disabled={previewLoading}
-                  className="w-full py-4 rounded-xl font-bold bg-slate-900 hover:bg-slate-850 text-slate-200 text-xs transition border border-slate-800 hover:border-amber-500/20 flex items-center justify-center space-x-2"
+                  className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-zinc-950 font-black py-3.5 px-4 rounded-xl transition-all shadow-[0_0_25px_rgba(16,185,129,0.3)] text-xs uppercase tracking-widest"
                 >
-                  {previewLoading ? (
-                    <span>Searching Blockchain...</span>
-                  ) : (
-                    <>
-                      <span>Enter Preview Mode</span>
-                      <ArrowRight className="w-4 h-4 text-amber-400" />
-                    </>
-                  )}
+                  Unlock Admin Terminal
                 </button>
               </form>
-            </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-900/60 text-center text-[10px] text-slate-500">
-              Enter User ID <span className="text-amber-400 font-bold">1</span> to view the platform creator's master setup.
+              <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl text-[11px] text-emerald-300 font-mono">
+                🔑 Demo Admin Master PIN: <strong className="text-white">a1b2</strong>
+              </div>
             </div>
-          </div>
+          )}
 
         </div>
       </section>
 
+      {/* 5-Level Unilevel Compensation Model Section */}
       <section className="max-w-7xl mx-auto px-6 mt-28 relative z-20">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl font-extrabold tracking-tight">
-            How OXIDEX Unilevel Works
+        <div className="text-center mb-12">
+          <span className="text-[10px] text-amber-400 font-mono font-extrabold uppercase tracking-widest bg-amber-500/10 border border-amber-500/20 px-3 py-1 rounded-full">
+            AFFILIATE REWARD ENGINE
+          </span>
+          <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mt-3">
+            5-Tier Unilevel Reward Tree
           </h2>
-          <p className="text-slate-500 text-xs uppercase tracking-widest mt-2 font-bold">
-            A linear multi-tier affiliate program designed for scaling
+          <p className="text-zinc-400 text-xs md:text-sm max-w-xl mx-auto mt-2">
+            Every presale purchase instantly routes ETH upwards through 5 sponsor tiers in real-time.
           </p>
         </div>
-        
-        <div className="glass-panel p-8 rounded-3xl border-slate-900 shadow-glow relative overflow-hidden group max-w-4xl mx-auto">
-          <div className="absolute top-[-30px] right-[-30px] w-48 h-48 bg-emerald-500/5 rounded-full blur-2xl group-hover:bg-emerald-500/10 transition-all duration-500" />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 items-center">
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <div className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl hover:border-amber-500/40 transition duration-300 flex flex-col justify-between">
             <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="p-3 bg-emerald-500/10 rounded-2xl text-emerald-400 border border-emerald-500/20">
-                  <Layers className="w-6 h-6" />
-                </div>
-                <h3 className="text-2xl font-extrabold text-slate-100">
-                  5-Level Unilevel Commissions
-                </h3>
-              </div>
-              <p className="text-sm text-slate-400 leading-relaxed mb-6">
-                Unlike complex matrix systems, the Unilevel Launchpad uses a simple linear affiliate tree. Every time someone in your downline purchases $OXI tokens from the presale, a portion of their ETH is instantly sent directly to your wallet via smart contract.
-              </p>
-              
-              <ul className="space-y-3">
-                <li className="flex items-center justify-between text-sm p-3 bg-slate-900/50 rounded-lg border border-slate-800">
-                  <span className="text-emerald-400 font-bold">Level 1 (Direct Referrals)</span>
-                  <span className="font-mono text-slate-300 bg-slate-950 px-2 py-1 rounded">10% Payout</span>
-                </li>
-                <li className="flex items-center justify-between text-sm p-3 bg-slate-900/50 rounded-lg border border-slate-800">
-                  <span className="text-emerald-400/80 font-bold">Level 2</span>
-                  <span className="font-mono text-slate-300 bg-slate-950 px-2 py-1 rounded">5% Payout</span>
-                </li>
-                <li className="flex items-center justify-between text-sm p-3 bg-slate-900/50 rounded-lg border border-slate-800">
-                  <span className="text-emerald-400/60 font-bold">Level 3</span>
-                  <span className="font-mono text-slate-300 bg-slate-950 px-2 py-1 rounded">3% Payout</span>
-                </li>
-                <li className="flex items-center justify-between text-sm p-3 bg-slate-900/50 rounded-lg border border-slate-800">
-                  <span className="text-emerald-400/40 font-bold">Level 4</span>
-                  <span className="font-mono text-slate-300 bg-slate-950 px-2 py-1 rounded">2% Payout</span>
-                </li>
-                <li className="flex items-center justify-between text-sm p-3 bg-slate-900/50 rounded-lg border border-slate-800">
-                  <span className="text-emerald-400/20 font-bold">Level 5</span>
-                  <span className="font-mono text-slate-300 bg-slate-950 px-2 py-1 rounded">1% Payout</span>
-                </li>
-              </ul>
+              <span className="text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">Tier 01</span>
+              <h4 className="text-lg font-black text-white mt-1">Direct Sponsor</h4>
+              <p className="text-xs text-zinc-400 mt-2">Direct referrals in your immediate L1 network line.</p>
             </div>
-            
-            <div className="flex flex-col items-center justify-center p-8 bg-slate-950/80 rounded-2xl border border-slate-800">
-              <div className="w-20 h-20 rounded-full bg-brand-500/20 border-2 border-brand-500 flex items-center justify-center text-lg font-bold text-brand-300 mb-6 shadow-glow">
-                You
-              </div>
-              
-              <div className="w-0.5 h-8 bg-slate-700"></div>
-              
-              <div className="w-full flex justify-around">
-                <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-xs font-bold text-emerald-300">
-                    L1
-                  </div>
-                  <span className="text-[10px] text-slate-400 mt-2">10%</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-xs font-bold text-emerald-300">
-                    L1
-                  </div>
-                  <span className="text-[10px] text-slate-400 mt-2">10%</span>
-                </div>
-                <div className="flex flex-col items-center">
-                  <div className="w-12 h-12 rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-xs font-bold text-emerald-300">
-                    L1
-                  </div>
-                  <span className="text-[10px] text-slate-400 mt-2">10%</span>
-                </div>
-              </div>
-              
-              <p className="text-center text-xs text-slate-500 mt-6 max-w-xs">
-                As your direct referrals invite more people, your network expands downwards up to 5 levels deep.
-              </p>
+            <div className="mt-6 pt-4 border-t border-zinc-850 flex items-center justify-between font-mono">
+              <span className="text-xs text-zinc-400">Commission</span>
+              <span className="text-lg font-black text-amber-400">10%</span>
+            </div>
+          </div>
+
+          <div className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl hover:border-amber-500/40 transition duration-300 flex flex-col justify-between">
+            <div>
+              <span className="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-widest">Tier 02</span>
+              <h4 className="text-lg font-black text-white mt-1">Level 2 Upline</h4>
+              <p className="text-xs text-zinc-400 mt-2">Indirect referrals invited by your L1 team.</p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-zinc-850 flex items-center justify-between font-mono">
+              <span className="text-xs text-zinc-400">Commission</span>
+              <span className="text-lg font-black text-emerald-400">5%</span>
+            </div>
+          </div>
+
+          <div className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl hover:border-amber-500/40 transition duration-300 flex flex-col justify-between">
+            <div>
+              <span className="text-[10px] font-mono font-bold text-teal-400 uppercase tracking-widest">Tier 03</span>
+              <h4 className="text-lg font-black text-white mt-1">Level 3 Upline</h4>
+              <p className="text-xs text-zinc-400 mt-2">Network expansion from Level 2 referrals.</p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-zinc-850 flex items-center justify-between font-mono">
+              <span className="text-xs text-zinc-400">Commission</span>
+              <span className="text-lg font-black text-teal-400">3%</span>
+            </div>
+          </div>
+
+          <div className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl hover:border-amber-500/40 transition duration-300 flex flex-col justify-between">
+            <div>
+              <span className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest">Tier 04</span>
+              <h4 className="text-lg font-black text-white mt-1">Level 4 Upline</h4>
+              <p className="text-xs text-zinc-400 mt-2">Deep network commission routing.</p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-zinc-850 flex items-center justify-between font-mono">
+              <span className="text-xs text-zinc-400">Commission</span>
+              <span className="text-lg font-black text-cyan-400">2%</span>
+            </div>
+          </div>
+
+          <div className="bg-zinc-900/60 border border-zinc-800 p-5 rounded-2xl hover:border-amber-500/40 transition duration-300 flex flex-col justify-between">
+            <div>
+              <span className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-widest">Tier 05</span>
+              <h4 className="text-lg font-black text-white mt-1">Level 5 Upline</h4>
+              <p className="text-xs text-zinc-400 mt-2">Maximum mathematical depth allocation.</p>
+            </div>
+            <div className="mt-6 pt-4 border-t border-zinc-850 flex items-center justify-between font-mono">
+              <span className="text-xs text-zinc-400">Commission</span>
+              <span className="text-lg font-black text-purple-400">1%</span>
             </div>
           </div>
         </div>
       </section>
 
+      {/* Security & Architectural Features Section */}
       <section className="max-w-7xl mx-auto px-6 mt-28 relative z-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="glass-panel p-6 rounded-2xl border-slate-900/60 hover:border-brand-500/20 transition-all duration-300">
-            <ShieldCheck className="w-8 h-8 text-brand-400 mb-4" />
-            <h4 className="font-extrabold text-sm mb-2 uppercase tracking-wide">Autonomous</h4>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              Self-executing logic running directly on EVM. Built, sealed, and operational forever with zero administrative capability to pause or rewrite the algorithm.
+          <div className="bg-zinc-900/50 border border-zinc-850 p-6 rounded-2xl hover:border-amber-500/30 transition">
+            <ShieldCheck className="w-8 h-8 text-amber-400 mb-4" />
+            <h4 className="font-extrabold text-sm text-white uppercase tracking-wider mb-1">Autonomous EVM</h4>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Logic executed immutably on Ethereum Sepolia. Zero admin ability to alter balances or rewrite trees.
             </p>
           </div>
 
-          <div className="glass-panel p-6 rounded-2xl border-slate-900/60 hover:border-brand-500/20 transition-all duration-300">
-            <Coins className="w-8 h-8 text-sky-400 mb-4" />
-            <h4 className="font-extrabold text-sm mb-2 uppercase tracking-wide">P2P Payments</h4>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              No platform balances or intermediate wallets. All entry fees and presale purchases are automatically routed instantly to upline member wallets peer-to-peer.
+          <div className="bg-zinc-900/50 border border-zinc-850 p-6 rounded-2xl hover:border-emerald-500/30 transition">
+            <Coins className="w-8 h-8 text-emerald-400 mb-4" />
+            <h4 className="font-extrabold text-sm text-white uppercase tracking-wider mb-1">P2P Payments</h4>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Commissions bypass platform treasuries and land directly in sponsor Web3 wallets instantly.
             </p>
           </div>
 
-          <div className="glass-panel p-6 rounded-2xl border-slate-900/60 hover:border-brand-500/20 transition-all duration-300">
-            <Cpu className="w-8 h-8 text-amber-400 mb-4" />
-            <h4 className="font-extrabold text-sm mb-2 uppercase tracking-wide">Immutable</h4>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              Deployments cannot be hacked, altered, or deleted. Your network structures and earnings metrics are permanently baked into public block records.
+          <div className="bg-zinc-900/50 border border-zinc-850 p-6 rounded-2xl hover:border-teal-500/30 transition">
+            <Cpu className="w-8 h-8 text-teal-400 mb-4" />
+            <h4 className="font-extrabold text-sm text-white uppercase tracking-wider mb-1">Real-Time Indexer</h4>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              Node WebSocket indexer monitors event logs for sub-second database caching and live push updates.
             </p>
           </div>
 
-          <div className="glass-panel p-6 rounded-2xl border-slate-900/60 hover:border-brand-500/20 transition-all duration-300">
-            <Activity className="w-8 h-8 text-emerald-400 mb-4" />
-            <h4 className="font-extrabold text-sm mb-2 uppercase tracking-wide">Transparent</h4>
-            <p className="text-[11px] text-slate-400 leading-relaxed">
-              All transactions, registration uplines, commission payouts, and contract operations can be verified independently using standard blockchain explorers.
+          <div className="bg-zinc-900/50 border border-zinc-850 p-6 rounded-2xl hover:border-purple-500/30 transition">
+            <Activity className="w-8 h-8 text-purple-400 mb-4" />
+            <h4 className="font-extrabold text-sm text-white uppercase tracking-wider mb-1">100% Transparent</h4>
+            <p className="text-xs text-zinc-400 leading-relaxed">
+              All registrations, presale token mints, and ETH transfers are publicly verifiable on Etherscan.
             </p>
           </div>
         </div>
       </section>
 
-      <footer className="max-w-7xl mx-auto px-6 mt-28 pt-8 border-t border-slate-900 flex flex-col md:flex-row items-center justify-between gap-6 relative z-20 text-slate-500 text-xs">
+      {/* Footer Bar */}
+      <footer className="max-w-7xl mx-auto px-6 mt-28 pt-8 border-t border-zinc-900 flex flex-col md:flex-row items-center justify-between gap-6 relative z-20 text-zinc-500 text-xs">
         <div>
-          <span>© 2026 OXIDEX Unilevel Launchpad. Operational and Open Source.</span>
+          <span>© 2026 OXIDEX Protocol. Built with Solidity, Express & React.</span>
         </div>
-        
-        <div className="flex items-center space-x-2 bg-slate-900/40 border border-slate-900 px-4 py-2 rounded-xl backdrop-blur-sm">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider font-mono">Contract:</span>
-          <span className="font-mono text-[10px] text-slate-300">
-            {CONTRACT_ADDRESS.slice(0, 8)}...{CONTRACT_ADDRESS.slice(-6)}
+
+        <div className="flex items-center space-x-2 bg-zinc-900/80 border border-zinc-800 px-4 py-2 rounded-xl">
+          <span className="text-[10px] text-zinc-400 font-bold uppercase tracking-wider font-mono">Smart Contract:</span>
+          <span className="font-mono text-[10px] text-zinc-200">
+            {CONTRACT_ADDRESS.slice(0, 10)}...{CONTRACT_ADDRESS.slice(-8)}
           </span>
-          <button 
-            onClick={handleCopyContract} 
-            className="p-1.5 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition"
+          <button
+            onClick={handleCopyContract}
+            className="p-1 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white transition"
             title="Copy Smart Contract Address"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}

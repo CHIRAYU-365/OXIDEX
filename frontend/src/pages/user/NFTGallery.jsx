@@ -56,6 +56,11 @@ export default function NFTGallery() {
       setError("Connect wallet to mint your VIP Pass");
       return;
     }
+
+    if (nftBalance >= 1) {
+      setError("VIP Pass already issued to your address! Each person is limited to exactly 1 VIP Pass.");
+      return;
+    }
     
     if (NFT_CONTRACT_ADDRESS === ethers.ZeroAddress || NFT_CONTRACT_ADDRESS === "0x0000000000000000000000000000000000000000") {
       setError("NFT Contract has not been deployed yet. Please ask the administrator to deploy OxideXNFT.sol");
@@ -117,6 +122,12 @@ export default function NFTGallery() {
           </h1>
           <p className="text-gray-400 mt-2 text-base">Mint an exclusive VIP Pass to boost your Staking APR by 2x!</p>
         </div>
+        <div className="bg-blue-500/10 border border-blue-500/30 px-4 py-2 rounded-xl flex items-center space-x-2">
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-400 animate-pulse"></span>
+          <span className="text-xs font-bold font-mono text-blue-300 uppercase tracking-wider">
+            Strict Limit: 1 Pass Per Wallet
+          </span>
+        </div>
       </div>
 
       {error && <div className="mb-6 p-4 bg-red-950/50 border border-red-500/30 text-red-400 rounded-xl text-sm">{error}</div>}
@@ -126,11 +137,18 @@ export default function NFTGallery() {
         <div className="bg-white/5 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)] relative overflow-hidden flex flex-col justify-between">
           <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-400 to-sky-500"></div>
           <div>
-            <h2 className="text-3xl font-black text-white mb-4">Mint VIP Pass</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-3xl font-black text-white">Mint VIP Pass</h2>
+              {nftBalance >= 1 && (
+                <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-bold uppercase rounded-full">
+                  1/1 Issued
+                </span>
+              )}
+            </div>
             <p className="text-gray-400 mb-6">Burn 1000 OXI tokens to mint the exclusive OxideX VIP Pass. Holding this NFT in your wallet permanently doubles your Staking Yield!</p>
             
-            <div className="bg-black/50 p-6 rounded-2xl border border-white/5 mb-6">
-              <div className="flex justify-between items-center mb-2">
+            <div className="bg-black/50 p-6 rounded-2xl border border-white/5 mb-6 space-y-3">
+              <div className="flex justify-between items-center">
                 <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Mint Price</span>
                 <span className="text-white font-bold font-mono">1,000 OXI</span>
               </div>
@@ -138,19 +156,25 @@ export default function NFTGallery() {
                 <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Your Balance</span>
                 <span className="text-blue-400 font-bold font-mono">{parseFloat(oxiBalance).toFixed(2)} OXI</span>
               </div>
+              <div className="flex justify-between items-center pt-2 border-t border-white/5">
+                <span className="text-gray-400 text-sm font-semibold uppercase tracking-wider">Issuance Limit</span>
+                <span className="text-amber-300 font-bold font-mono">1 Pass / Address</span>
+              </div>
             </div>
           </div>
           
           <button 
             onClick={handleMint}
-            disabled={loading}
+            disabled={loading || nftBalance >= 1}
             className={`w-full py-5 rounded-2xl font-black uppercase tracking-widest text-lg transition-all transform active:scale-95 ${
-              loading 
+              nftBalance >= 1
+              ? 'bg-emerald-950/60 text-emerald-400 cursor-not-allowed border border-emerald-500/30 shadow-none'
+              : loading 
               ? 'bg-zinc-800 text-gray-500 cursor-not-allowed border border-white/5' 
               : 'bg-gradient-to-r from-blue-600 to-sky-600 hover:from-blue-500 hover:to-sky-500 text-white shadow-[0_0_20px_rgba(37,99,235,0.4)] hover:shadow-[0_0_30px_rgba(37,99,235,0.6)] border border-blue-400/50'
             }`}
           >
-            {loading ? 'Processing...' : 'Mint VIP Pass'}
+            {nftBalance >= 1 ? 'VIP Pass Issued (1/1 Max Limit)' : loading ? 'Processing...' : 'Mint VIP Pass'}
           </button>
         </div>
 

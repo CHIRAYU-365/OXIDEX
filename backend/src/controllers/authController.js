@@ -1,10 +1,9 @@
 const { generateNonce, SiweMessage } = require("siwe");
 const jwt = require("jsonwebtoken");
-const { PrismaClient } = require("@prisma/client");
-
-const prisma = new PrismaClient();
+const prisma = require("../utils/prisma");
 
 const NONCE_TTL_MS = 5 * 60 * 1000;
+
 class NonceStore {
   constructor() {
     this.store = new Map();
@@ -28,6 +27,7 @@ class NonceStore {
     }
   }
 }
+
 const nonces = new NonceStore();
 
 const getNonce = async (req, res) => {
@@ -118,6 +118,39 @@ const verifySignature = async (req, res) => {
   }
 };
 
+const getMe = async (req, res) => {
+  try {
+    if (!req.user || !req.user.address) {
+      return res.status(401).json({ success: false, error: "Unauthenticated" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { walletAddress: req.user.address.toLowerCase() },
+    });
+
+    if (!user) {
+      return res.json({
+        success: true,
+        data: {
+          walletAddress: req.user.address.toLowerCase(),
+          registered: false,
+        },
+      });
+    }
+
+    return res.json({
+      success: true,
+      data: {
+        ...user,
+        registered: true,
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching me profile:", error);
+    return res.status(500).json({ success: false, error: "Internal server error" });
+  }
+};
+
 const mockRegister = async (req, res) => {
   if (process.env.NODE_ENV === "production") {
     return res.status(403).json({ success: false, error: "Mock registration is disabled in production" });
@@ -143,12 +176,10 @@ const mockRegister = async (req, res) => {
         walletAddress: lowercaseAddress,
         onChainId: newOnChainId,
         referrerAddress: referrerAddress.toLowerCase(),
-      }
+      },
     });
 
-
-
-    return res.json({ success: true, message: "Mock registration successful" });
+    return res.json({ success: true, message: "Mock registration successful", data: user });
   } catch (error) {
     console.error("Mock register error:", error);
     return res.status(500).json({ success: false, error: "Internal server error" });
@@ -158,5 +189,6 @@ const mockRegister = async (req, res) => {
 module.exports = {
   getNonce,
   verifySignature,
+  getMe,
   mockRegister,
 };
