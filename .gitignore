@@ -31,6 +31,7 @@ backend/node_modules/
 backend/dist/
 backend/prisma/*.db
 backend/prisma/*.db-journal
+backend/prisma/seed200Users.js
 backend/seed.js
 
 

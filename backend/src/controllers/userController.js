@@ -95,7 +95,7 @@ const getAdminTree = async (req, res) => {
 const getAdminUsersList = async (req, res) => {
   try {
     const users = await prisma.user.findMany({
-      take: 20,
+      take: 200,
       orderBy: { registeredAt: 'desc' },
       select: {
         id: true,
