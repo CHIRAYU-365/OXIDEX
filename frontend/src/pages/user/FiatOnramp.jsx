@@ -5,7 +5,7 @@ export default function FiatOnramp() {
   const { account } = useWeb3();
   const [provider, setProvider] = useState('global');
 
-  // Transak for Global (Cards, Apple Pay, etc)
+  
   const walletParamTransak = account ? `&walletAddress=${account}` : '';
   const transakUrl = `https://global.transak.com/?cryptoCurrencyList=ETH,USDT&defaultCryptoCurrency=ETH&networks=ethereum,sepolia&themeColor=f59e0b${walletParamTransak}`;
 
@@ -43,7 +43,7 @@ export default function FiatOnramp() {
       </div>
 
       <div className="bg-black/50 border border-white/10 p-2 rounded-[2rem] shadow-[0_0_50px_rgba(245,158,11,0.1)] mx-auto max-w-md relative overflow-hidden">
-        {/* Loading Spinner underneath iframe */}
+        {}
         <div className="absolute inset-0 flex flex-col items-center justify-center -z-10">
           <div className={`w-8 h-8 border-4 rounded-full animate-spin mb-4 ${provider === 'global' ? 'border-blue-500/20 border-t-blue-500' : 'border-blue-500/20 border-t-blue-500'}`}></div>
           <span className={`${provider === 'global' ? 'text-blue-500/50' : 'text-blue-500/50'} text-sm font-mono animate-pulse`}>Initializing Secure Gateway...</span>

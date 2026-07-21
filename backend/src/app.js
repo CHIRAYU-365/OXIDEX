@@ -51,8 +51,8 @@ const tarpitMiddleware = (req, res, next) => {
   if (isMalicious) {
     console.warn(`[TARPIT] Caught potential scanner from ${req.ip} targeting ${req.path}`);
     res.writeHead(200, { 'Content-Type': 'text/plain', 'Connection': 'keep-alive' });
-    // Keep the connection open indefinitely by sending a single space every 10 seconds
-    // This wastes the hacker's scanner threads ("onion loop")
+    
+    
     setInterval(() => {
       res.write(' ');
     }, 10000);

@@ -154,7 +154,7 @@ export default function NFTGallery() {
           </button>
         </div>
 
-        {/* Gallery Section */}
+        {}
         <div className="bg-white/5 backdrop-blur-xl p-8 rounded-3xl border border-white/10 shadow-[0_0_15px_rgba(99,102,241,0.05)]">
           <h2 className="text-2xl font-black text-white mb-6">Your Collection</h2>
           

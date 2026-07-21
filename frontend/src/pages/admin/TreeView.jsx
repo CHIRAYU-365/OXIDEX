@@ -9,7 +9,7 @@ export default function TreeView() {
   const [selectedNode, setSelectedNode] = useState(null);
 
   // Pan and Zoom viewport state
-  const [zoom, setZoom] = useState(0.85);
+  const [zoom, setZoom] = useState(0.4);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
@@ -71,7 +71,7 @@ export default function TreeView() {
     return root;
   };
 
-  // Search path highlighter
+  
   useEffect(() => {
     if (!treeData || searchQuery.length < 4) {
       setHighlightedPath(new Set());
@@ -101,11 +101,11 @@ export default function TreeView() {
     setHighlightedPath(new Set(resPath || []));
   }, [searchQuery, treeData]);
 
-  // Compute 360-Degree Radial Polar Coordinates with Subtree Weighting & Staggered Spacing
+  
   const computeRadialLayout = (root) => {
     if (!root) return { nodes: [], links: [] };
 
-    // Step 1: Compute leaf count weight for every node to allocate proportional angle sectors
+    
     function computeWeights(node) {
       if (!node.children || node.children.length === 0) {
         node._weight = 1;
@@ -123,15 +123,15 @@ export default function TreeView() {
     const nodes = [];
     const links = [];
 
-    // Step 2: Radial layout using weighted angle allocation & staggered radii to prevent overlaps
+    
     function layoutNode(node, parent, level, startAngle, endAngle, childIndex = 0) {
-      // Dynamic level radial spacing: spacious 360° ring distances for 200+ nodes
-      const baseRadii = [0, 340, 680, 1020, 1360, 1700, 2040];
-      let radius = baseRadii[level] || (2040 + (level - 6) * 340);
+      
+      const baseRadii = [0, 480, 960, 1440, 1920, 2400, 2880];
+      let radius = baseRadii[level] || (2880 + (level - 6) * 480);
 
-      // Stagger radius for odd/even sibling nodes to completely prevent overlap collisions
-      if (level > 0 && childIndex % 2 === 1) {
-        radius += 75;
+      
+      if (level > 0) {
+        radius += (childIndex % 3) * 90;
       }
 
       const angle = (startAngle + endAngle) / 2;
@@ -177,9 +177,9 @@ export default function TreeView() {
 
   const { nodes, links } = computeRadialLayout(treeData);
 
-  // Mouse pan & zoom event handlers
+  
   const handleMouseDown = (e) => {
-    if (e.button !== 0) return; // Left click only
+    if (e.button !== 0) return; 
     setIsDragging(true);
     dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
   };
@@ -217,7 +217,7 @@ export default function TreeView() {
 
   return (
     <div className="space-y-6 flex flex-col h-[calc(100vh-6rem)]">
-      {/* Header Controls */}
+      {}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div>
           <h1 className="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-amber-300 via-sky-400 to-emerald-400 pb-2">
@@ -228,7 +228,7 @@ export default function TreeView() {
           </p>
         </div>
 
-        {/* Search Bar & Viewport Actions */}
+        {}
         <div className="flex flex-col md:items-end gap-3 w-full md:w-auto">
           <div className="flex gap-2 w-full md:w-96">
             <div className="relative flex-1">
@@ -262,7 +262,7 @@ export default function TreeView() {
         </div>
       </div>
 
-      {/* Main Radial Viewport */}
+      {}
       <div
         ref={containerRef}
         onMouseDown={handleMouseDown}
@@ -272,7 +272,7 @@ export default function TreeView() {
         onWheel={handleWheel}
         className="flex-1 bg-[#090b10] rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden cursor-grab active:cursor-grabbing"
       >
-        {/* Legend Overlay */}
+        {}
         <div className="absolute top-4 left-4 z-20 bg-black/70 backdrop-blur-md border border-white/10 p-3 rounded-2xl flex flex-col gap-2">
           <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Topology Legend</span>
           <div className="flex flex-col gap-1.5">
@@ -285,7 +285,7 @@ export default function TreeView() {
           </div>
         </div>
 
-        {/* Zoom Controls */}
+        {}
         <div className="absolute bottom-4 right-4 z-20 flex gap-2 bg-black/70 backdrop-blur-md p-1.5 rounded-2xl border border-white/10">
           <button onClick={() => setZoom(z => Math.min(z * 1.2, 3))} className="p-2 text-white hover:text-amber-400"><ZoomIn className="w-4 h-4" /></button>
           <button onClick={() => setZoom(z => Math.max(z * 0.8, 0.3))} className="p-2 text-white hover:text-amber-400"><ZoomOut className="w-4 h-4" /></button>
@@ -304,23 +304,23 @@ export default function TreeView() {
               </radialGradient>
             </defs>
 
-            {/* Transform Group for Pan & Zoom */}
+            {}
             <g transform={`translate(${containerRef.current ? containerRef.current.clientWidth / 2 + pan.x : pan.x}, ${containerRef.current ? containerRef.current.clientHeight / 2 + pan.y : pan.y}) scale(${zoom})`}>
 
-              {/* 360° Concentric Orbital Rings */}
-              <circle r="340" fill="none" stroke="rgba(255, 255, 255, 0.05)" strokeDasharray="6 6" />
-              <circle r="680" fill="none" stroke="rgba(255, 255, 255, 0.04)" strokeDasharray="8 8" />
-              <circle r="1020" fill="none" stroke="rgba(255, 255, 255, 0.03)" strokeDasharray="10 10" />
-              <circle r="1360" fill="none" stroke="rgba(255, 255, 255, 0.02)" strokeDasharray="12 12" />
-              <circle r="1700" fill="none" stroke="rgba(255, 255, 255, 0.02)" strokeDasharray="14 14" />
-              <circle r="2040" fill="none" stroke="rgba(255, 255, 255, 0.01)" strokeDasharray="16 16" />
+              {}
+              <circle r="480" fill="none" stroke="rgba(255, 255, 255, 0.05)" strokeDasharray="6 6" />
+              <circle r="960" fill="none" stroke="rgba(255, 255, 255, 0.04)" strokeDasharray="8 8" />
+              <circle r="1440" fill="none" stroke="rgba(255, 255, 255, 0.03)" strokeDasharray="10 10" />
+              <circle r="1920" fill="none" stroke="rgba(255, 255, 255, 0.02)" strokeDasharray="12 12" />
+              <circle r="2400" fill="none" stroke="rgba(255, 255, 255, 0.02)" strokeDasharray="14 14" />
+              <circle r="2880" fill="none" stroke="rgba(255, 255, 255, 0.01)" strokeDasharray="16 16" />
 
-              {/* Network Connections (Stepped Orthogonal Lines matching Reference Picture) */}
+              {}
               {links.map((link, i) => {
                 const isHighlight = highlightedPath.has(link.source.id) && highlightedPath.has(link.target.id);
                 const midX = (link.source.x + link.target.x) / 2;
 
-                // Orthogonal stepped line path (matching reference network map)
+                
                 const d = `M ${link.source.x} ${link.source.y} L ${midX} ${link.source.y} L ${midX} ${link.target.y} L ${link.target.x} ${link.target.y}`;
                 
                 const levelColors = ['#f59e0b', '#38bdf8', '#34d399', '#f472b6', '#a78bfa'];
@@ -342,7 +342,7 @@ export default function TreeView() {
                 );
               })}
 
-              {/* Nodes Rendering */}
+              {}
               {nodes.map((node) => {
                 const isRoot = node.level === 0;
                 const isTarget = searchQuery.length > 3 && (
@@ -364,20 +364,20 @@ export default function TreeView() {
                     }}
                     className="cursor-pointer group"
                   >
-                    {/* --- CENTRAL ROOT CENTROID (ROOT NODE) --- */}
+                    {}
                     {isRoot ? (
                       <g>
-                        {/* Outer Glowing Background */}
+                        {}
                         <circle r="75" fill="url(#centroidGlow)" />
-                        {/* Spinning Outer Orbit Ring */}
+                        {}
                         <circle r="48" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="8 6" className="animate-spin" style={{ animationDuration: '20s' }} />
-                        {/* Pulsing Aura Ring */}
+                        {}
                         <circle r="36" fill="rgba(245, 158, 11, 0.2)" stroke="#fbbf24" strokeWidth="3" className="animate-pulse" />
-                        {/* Core Hub Badge */}
+                        {}
                         <circle r="26" fill="#18181b" stroke="#f59e0b" strokeWidth="4" />
                         <text x="0" y="6" textAnchor="middle" fontSize="18" fill="#fbbf24">🌐</text>
                         
-                        {/* Floating Centroid Title Badge */}
+                        {}
                         <g transform="translate(0, -52)">
                           <rect x="-60" y="-12" width="120" height="22" rx="11" fill="#f59e0b" />
                           <text x="0" y="2" textAnchor="middle" fill="#000000" fontSize="10" fontWeight="900" style={{ letterSpacing: '0.12em' }}>
@@ -385,7 +385,7 @@ export default function TreeView() {
                           </text>
                         </g>
 
-                        {/* Centroid Name Label */}
+                        {}
                         <rect x="-80" y="38" width="160" height="38" rx="8" fill="#000" fillOpacity="0.85" stroke="#f59e0b" strokeWidth="1.5" />
                         <text x="0" y="54" textAnchor="middle" fill="#fbbf24" fontSize="12" fontWeight="900" fontFamily="monospace">
                           {node.name}
@@ -395,14 +395,13 @@ export default function TreeView() {
                         </text>
                       </g>
                     ) : (
-                      /* --- BRANCH NODES (LEVEL 1+) --- */
-                      <g>
-                        {/* Target Halo */}
+                                            <g>
+                        {}
                         {isTarget && (
                           <circle r="32" fill="none" stroke="#ef4444" strokeWidth="2.5" className="animate-ping" />
                         )}
 
-                        {/* Node Circle */}
+                        {}
                         <circle
                           r={isTarget ? 22 : 18}
                           fill="#12161f"
@@ -412,18 +411,30 @@ export default function TreeView() {
                           style={{ filter: `drop-shadow(0px 0px 8px ${color})` }}
                         />
 
-                        {/* Node Symbol */}
+                        {}
                         <text x="0" y="4" textAnchor="middle" fontSize="10" fill="#fff" className="pointer-events-none">
                           {node.level === 1 ? '🖥️' : '💻'}
                         </text>
 
-                        {/* Node Label Plate */}
+                        {}
                         <g transform="translate(0, 26)">
-                          <rect x="-65" y="0" width="130" height="32" rx="6" fill="#0a0c10" fillOpacity="0.9" stroke={color} strokeWidth="1" />
-                          <text x="0" y="14" textAnchor="middle" fill={isTarget ? '#f87171' : '#ffffff'} fontSize="11" fontWeight="bold" fontFamily="monospace">
+                          <text 
+                            x="0" y="0" 
+                            textAnchor="middle" 
+                            fill={isTarget ? '#f87171' : '#ffffff'} 
+                            fontSize="11" 
+                            fontWeight="bold" 
+                            fontFamily="monospace"
+                            className="pointer-events-none drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]"
+                          >
                             {node.name}
                           </text>
-                          <text x="0" y="25" textAnchor="middle" fill="#888" fontSize="8">
+                        </g>
+
+                        {}
+                        <g className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" transform="translate(0, 32)">
+                          <rect x="-60" y="0" width="120" height="26" rx="6" fill="#000000" fillOpacity="0.95" stroke={color} strokeWidth="1" />
+                          <text x="0" y="17" textAnchor="middle" fill="#fbbf24" fontSize="9" fontWeight="bold">
                             PARTNERS: {node.attributes?.Partners || 0}
                           </text>
                         </g>
@@ -441,7 +452,7 @@ export default function TreeView() {
         )}
       </div>
 
-      {/* Selected Node Modal */}
+      {}
       {selectedNode && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm" onClick={() => setSelectedNode(null)}>
           <div className="bg-[#12161f] border border-amber-500/30 rounded-3xl p-6 w-full max-w-md shadow-2xl" onClick={(e) => e.stopPropagation()}>

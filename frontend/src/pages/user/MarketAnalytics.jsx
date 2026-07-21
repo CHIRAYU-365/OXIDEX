@@ -37,7 +37,7 @@ export default function MarketAnalytics() {
       </div>
 
       <div className="h-[700px] w-full bg-black rounded-2xl border border-blue-500/20 overflow-hidden relative shadow-[0_0_30px_rgba(99,102,241,0.05)]">
-        {/* Placeholder Loading state before iframe loads */}
+        {}
         <div className="absolute inset-0 flex items-center justify-center -z-10 bg-zinc-950">
           <div className="w-10 h-10 border-4 border-blue-500/20 border-t-blue-500 rounded-full animate-spin"></div>
         </div>

@@ -28,7 +28,7 @@ contract OxideXBase is ReentrancyGuard {
     mapping(address => User) public users;
     mapping(uint256 => address) public idToAddress;
     uint256 public lastUserId;
-    uint256 public registrationBonus = 50 * 1e18; // 50 OXI default
+    uint256 public registrationBonus = 50 * 1e18; 
     
     uint8 public constant GAS_LIMIT_MAX_LEVELS = 50; 
     
@@ -36,14 +36,14 @@ contract OxideXBase is ReentrancyGuard {
     mapping(uint8 => uint256) public levelCommissions;
     uint8 public maxManualLevels;
     
-    // Staking Vault Variables
+    
     struct Stake {
         uint256 amount;
         uint256 lastClaimTime;
     }
     mapping(address => Stake) public stakers;
     uint256 public constant SECONDS_IN_YEAR = 31536000;
-    uint256 public rewardAPR = 50; // 50%
+    uint256 public rewardAPR = 50; 
     
     event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId);
     event RegistrationBonusPaid(address indexed user, address indexed referrer, uint256 amount);
@@ -193,7 +193,7 @@ contract OxideXBase is ReentrancyGuard {
         require(success, "Transfer failed");
     }
 
-    // --- STAKING VAULT ---
+    
     
     function setRewardAPR(uint256 _apr) external onlyOwner {
         rewardAPR = _apr;
@@ -239,7 +239,7 @@ contract OxideXBase is ReentrancyGuard {
             if (timeElapsed > 0) {
                 uint256 effectiveAPR = rewardAPR;
                 if (address(nftContract) != address(0) && nftContract.balanceOf(_user) > 0) {
-                    effectiveAPR = rewardAPR * 2; // 2x Boost for VIP NFT Holders
+                    effectiveAPR = rewardAPR * 2; 
                 }
                 
                 uint256 reward = (userStake.amount * effectiveAPR * timeElapsed) / (100 * SECONDS_IN_YEAR);
@@ -262,7 +262,7 @@ contract OxideXBase is ReentrancyGuard {
         
         uint256 effectiveAPR = rewardAPR;
         if (address(nftContract) != address(0) && nftContract.balanceOf(_user) > 0) {
-            effectiveAPR = rewardAPR * 2; // 2x Boost for VIP NFT Holders
+            effectiveAPR = rewardAPR * 2; 
         }
         
         return (userStake.amount * effectiveAPR * timeElapsed) / (100 * SECONDS_IN_YEAR);

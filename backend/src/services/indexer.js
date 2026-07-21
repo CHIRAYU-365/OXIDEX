@@ -206,7 +206,7 @@ const startIndexer = (io) => {
             },
           });
 
-          // Update user's OXI token balance in DB
+          
           await tx.user.updateMany({
             where: { walletAddress: buyerLower },
             data: { oxiTokenBalance: { increment: tokensInEther } }
