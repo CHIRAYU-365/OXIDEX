@@ -101,19 +101,38 @@ export default function TreeView() {
     setHighlightedPath(new Set(resPath || []));
   }, [searchQuery, treeData]);
 
-  // Compute 360-Degree Radial Polar Coordinates centered at (0,0)
+  // Compute 360-Degree Radial Polar Coordinates with Subtree Weighting & Staggered Spacing
   const computeRadialLayout = (root) => {
     if (!root) return { nodes: [], links: [] };
+
+    // Step 1: Compute leaf count weight for every node to allocate proportional angle sectors
+    function computeWeights(node) {
+      if (!node.children || node.children.length === 0) {
+        node._weight = 1;
+        return 1;
+      }
+      let weight = 0;
+      node.children.forEach(child => {
+        weight += computeWeights(child);
+      });
+      node._weight = Math.max(weight, 1);
+      return node._weight;
+    }
+    computeWeights(root);
 
     const nodes = [];
     const links = [];
 
-    function layoutNode(node, parent, level, startAngle, endAngle) {
-      let radius = 0;
-      if (level === 1) radius = 240;
-      else if (level === 2) radius = 440;
-      else if (level === 3) radius = 620;
-      else if (level > 3) radius = 620 + (level - 3) * 180;
+    // Step 2: Radial layout using weighted angle allocation & staggered radii to prevent overlaps
+    function layoutNode(node, parent, level, startAngle, endAngle, childIndex = 0) {
+      // Dynamic level radial spacing: spacious 360° ring distances for 200+ nodes
+      const baseRadii = [0, 340, 680, 1020, 1360, 1700, 2040];
+      let radius = baseRadii[level] || (2040 + (level - 6) * 340);
+
+      // Stagger radius for odd/even sibling nodes to completely prevent overlap collisions
+      if (level > 0 && childIndex % 2 === 1) {
+        radius += 75;
+      }
 
       const angle = (startAngle + endAngle) / 2;
       const x = level === 0 ? 0 : Math.round(radius * Math.cos(angle));
@@ -138,17 +157,21 @@ export default function TreeView() {
       }
 
       if (node.children && node.children.length > 0) {
-        const count = node.children.length;
-        const step = (endAngle - startAngle) / count;
+        const totalSubtreeWeight = node._weight;
+        let currentAngle = startAngle;
+        
         node.children.forEach((child, idx) => {
-          const childStart = startAngle + idx * step;
-          const childEnd = startAngle + (idx + 1) * step;
-          layoutNode(child, nodeObj, level + 1, childStart, childEnd);
+          const childAngleSpan = ((child._weight || 1) / totalSubtreeWeight) * (endAngle - startAngle);
+          const childStart = currentAngle;
+          const childEnd = currentAngle + childAngleSpan;
+          currentAngle = childEnd;
+          
+          layoutNode(child, nodeObj, level + 1, childStart, childEnd, idx);
         });
       }
     }
 
-    layoutNode(root, null, 0, 0, 2 * Math.PI);
+    layoutNode(root, null, 0, 0, 2 * Math.PI, 0);
     return { nodes, links };
   };
 
@@ -285,9 +308,12 @@ export default function TreeView() {
             <g transform={`translate(${containerRef.current ? containerRef.current.clientWidth / 2 + pan.x : pan.x}, ${containerRef.current ? containerRef.current.clientHeight / 2 + pan.y : pan.y}) scale(${zoom})`}>
 
               {/* 360° Concentric Orbital Rings */}
-              <circle r="240" fill="none" stroke="rgba(255, 255, 255, 0.04)" strokeDasharray="4 4" />
-              <circle r="440" fill="none" stroke="rgba(255, 255, 255, 0.03)" strokeDasharray="6 6" />
-              <circle r="620" fill="none" stroke="rgba(255, 255, 255, 0.02)" strokeDasharray="8 8" />
+              <circle r="340" fill="none" stroke="rgba(255, 255, 255, 0.05)" strokeDasharray="6 6" />
+              <circle r="680" fill="none" stroke="rgba(255, 255, 255, 0.04)" strokeDasharray="8 8" />
+              <circle r="1020" fill="none" stroke="rgba(255, 255, 255, 0.03)" strokeDasharray="10 10" />
+              <circle r="1360" fill="none" stroke="rgba(255, 255, 255, 0.02)" strokeDasharray="12 12" />
+              <circle r="1700" fill="none" stroke="rgba(255, 255, 255, 0.02)" strokeDasharray="14 14" />
+              <circle r="2040" fill="none" stroke="rgba(255, 255, 255, 0.01)" strokeDasharray="16 16" />
 
               {/* Network Connections (Stepped Orthogonal Lines matching Reference Picture) */}
               {links.map((link, i) => {
