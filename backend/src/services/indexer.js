@@ -68,59 +68,26 @@ const startIndexer = (io) => {
   isIndexRunning = true;
 
   const contractAddress = process.env.CONTRACT_ADDRESS;
-
   if (!contractAddress) {
     console.error("INDEXER ERROR: CONTRACT_ADDRESS is not defined in env.");
     return;
   }
 
-  
   const configuredRpc = process.env.RPC_URL;
-  const rpcList = configuredRpc && configuredRpc !== "https://sepolia.drpc.org"
-    ? [configuredRpc, ...PUBLIC_SEPOLIA_RPCS]
-    : PUBLIC_SEPOLIA_RPCS;
+  const rpcList = configuredRpc ? [configuredRpc, ...PUBLIC_SEPOLIA_RPCS] : PUBLIC_SEPOLIA_RPCS;
 
-  let activeProviderIndex = 0;
-  let provider = null;
-  let contract = null;
+  let activeRpcIndex = 0;
+  let lastProcessedBlock = null;
 
-  const initProviderAndContract = (index) => {
-    const currentRpc = rpcList[index % rpcList.length];
-    console.log(`[Indexer] Connecting to Sepolia RPC endpoint: ${currentRpc}`);
-
-    provider = new ethers.JsonRpcProvider(currentRpc, undefined, {
-      batchMaxCount: 1,
-      pollingInterval: 12000,
-    });
-
-    contract = new ethers.Contract(contractAddress, OXIDEX_ABI, provider);
-    attachListeners();
-  };
-
-  const attachListeners = () => {
-    try {
-      contract.removeAllListeners();
-
-      contract.on("Registration", handleRegistration);
-      contract.on("CommissionPaid", handleCommissionPaid);
-      contract.on("TokensPurchased", handleTokensPurchased);
-
-      provider.on("error", (error) => {
-        console.warn("[Indexer RPC Warning] Provider error encountered. Switching endpoint...", error?.message || error);
-        activeProviderIndex++;
-        setTimeout(() => initProviderAndContract(activeProviderIndex), 5000);
-      });
-    } catch (err) {
-      console.warn("[Indexer Listener Warning] Could not attach contract listeners:", err?.message || err);
-      activeProviderIndex++;
-      setTimeout(() => initProviderAndContract(activeProviderIndex), 5000);
-    }
+  const getActiveProvider = () => {
+    const rpc = rpcList[activeRpcIndex % rpcList.length];
+    return new ethers.JsonRpcProvider(rpc, undefined, { batchMaxCount: 1 });
   };
 
   const handleRegistration = async (user, referrer, userId, referrerId, event) => {
     await dbMutex.runExclusive("db", async () => {
       try {
-        const txHash = event.log.transactionHash;
+        const txHash = event.transactionHash;
         const userLower = user.toLowerCase();
         const referrerLower = referrer.toLowerCase();
 
@@ -147,12 +114,14 @@ const startIndexer = (io) => {
             });
           }
 
-          await tx.transaction.create({
-            data: {
+          await tx.transaction.upsert({
+            where: { txHash },
+            update: {},
+            create: {
               txHash,
               userAddress: userLower,
               eventType: "Registration",
-              blockNumber: event.log.blockNumber,
+              blockNumber: event.blockNumber,
               blockTimestamp: new Date(),
             },
           });
@@ -175,7 +144,7 @@ const startIndexer = (io) => {
           );
         }
       } catch (err) {
-        console.error("Error processing Registration event:", err);
+        console.error("Error processing Registration event:", err.message || err);
       }
     });
   };
@@ -183,7 +152,7 @@ const startIndexer = (io) => {
   const handleCommissionPaid = async (from, to, level, amount, event) => {
     await dbMutex.runExclusive("db", async () => {
       try {
-        const txHash = event.log.transactionHash;
+        const txHash = event.transactionHash;
         const fromLower = from.toLowerCase();
         const toLower = to.toLowerCase();
         const val = ethers.formatEther(amount);
@@ -191,29 +160,36 @@ const startIndexer = (io) => {
         const ethVal = amount.toString();
 
         await prisma.$transaction(async (tx) => {
-          await tx.earning.create({
-            data: {
-              userAddress: toLower,
-              level: lvl,
-              amount: ethVal,
-              fromAddress: fromLower,
-              txHash,
-            },
+          
+          const existing = await prisma.earning.findFirst({
+            where: { txHash, userAddress: toLower, level: lvl },
           });
 
-          await tx.notification.create({
-            data: {
-              userAddress: toLower,
-              type: "earning",
-              title: "New Commission Received!",
-              body: `You received ${val} ETH from partner in Level ${lvl}.`,
-            },
-          });
+          if (!existing) {
+            await tx.earning.create({
+              data: {
+                userAddress: toLower,
+                level: lvl,
+                amount: ethVal,
+                fromAddress: fromLower,
+                txHash,
+              },
+            });
 
-          await tx.user.updateMany({
-            where: { walletAddress: toLower },
-            data: { totalEarnings: { increment: ethVal } },
-          });
+            await tx.notification.create({
+              data: {
+                userAddress: toLower,
+                type: "earning",
+                title: "New Commission Received!",
+                body: `You received ${val} ETH from partner in Level ${lvl}.`,
+              },
+            });
+
+            await tx.user.updateMany({
+              where: { walletAddress: toLower },
+              data: { totalEarnings: { increment: ethVal } },
+            });
+          }
         });
 
         io.emit(`ws:earning:${toLower}`, {
@@ -223,7 +199,7 @@ const startIndexer = (io) => {
           timestamp: Date.now(),
         });
       } catch (err) {
-        console.error("Error processing CommissionPaid event:", err);
+        console.error("Error processing CommissionPaid event:", err.message || err);
       }
     });
   };
@@ -231,19 +207,21 @@ const startIndexer = (io) => {
   const handleTokensPurchased = async (buyer, tokenAmount, ethSpent, event) => {
     await dbMutex.runExclusive("db", async () => {
       try {
-        const txHash = event.log.transactionHash;
+        const txHash = event.transactionHash;
         const buyerLower = buyer.toLowerCase();
         const tokensInEther = ethers.formatEther(tokenAmount);
 
         await prisma.$transaction(async (tx) => {
-          await tx.transaction.create({
-            data: {
+          await tx.transaction.upsert({
+            where: { txHash },
+            update: {},
+            create: {
               txHash,
               userAddress: buyerLower,
               eventType: "TokensPurchased",
               amount: ethSpent.toString(),
               tokensAmount: tokenAmount.toString(),
-              blockNumber: event.log.blockNumber,
+              blockNumber: event.blockNumber,
               blockTimestamp: new Date(),
             },
           });
@@ -265,13 +243,65 @@ const startIndexer = (io) => {
           },
         });
       } catch (err) {
-        console.error("Error processing TokensPurchased event:", err);
+        console.error("Error processing TokensPurchased event:", err.message || err);
       }
     });
   };
 
   
-  initProviderAndContract(0);
+  const pollEvents = async () => {
+    try {
+      const provider = getActiveProvider();
+      const contract = new ethers.Contract(contractAddress, OXIDEX_ABI, provider);
+
+      const latestBlock = await provider.getBlockNumber();
+
+      if (lastProcessedBlock === null) {
+        
+        lastProcessedBlock = Math.max(0, latestBlock - 50);
+        console.log(`[Indexer Stateless Sync] Starting event indexing from block #${lastProcessedBlock}`);
+      }
+
+      if (latestBlock > lastProcessedBlock) {
+        const fromBlock = lastProcessedBlock + 1;
+        const toBlock = Math.min(latestBlock, fromBlock + 500); 
+
+        
+        const regEvents = await contract.queryFilter("Registration", fromBlock, toBlock);
+        for (const evt of regEvents) {
+          if (evt.args) {
+            await handleRegistration(evt.args[0], evt.args[1], evt.args[2], evt.args[3], evt);
+          }
+        }
+
+        
+        const commEvents = await contract.queryFilter("CommissionPaid", fromBlock, toBlock);
+        for (const evt of commEvents) {
+          if (evt.args) {
+            await handleCommissionPaid(evt.args[0], evt.args[1], evt.args[2], evt.args[3], evt);
+          }
+        }
+
+        
+        const tokenEvents = await contract.queryFilter("TokensPurchased", fromBlock, toBlock);
+        for (const evt of tokenEvents) {
+          if (evt.args) {
+            await handleTokensPurchased(evt.args[0], evt.args[1], evt.args[2], evt);
+          }
+        }
+
+        lastProcessedBlock = toBlock;
+      }
+    } catch (err) {
+      console.warn(`[Indexer Poll Notice] RPC endpoint notice (${rpcList[activeRpcIndex % rpcList.length]}):`, err.message || err);
+      activeRpcIndex++; 
+    }
+  };
+
+  
+  console.log(`[Indexer] Starting stateless block indexer service...`);
+  pollEvents();
+  setInterval(pollEvents, 12000); 
 };
 
 module.exports = {
