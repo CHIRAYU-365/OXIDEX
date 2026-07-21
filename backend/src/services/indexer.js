@@ -2,11 +2,10 @@ const { ethers } = require("ethers");
 const prisma = require("../utils/prisma");
 const { sendTelegramAlert } = require("./telegramBot");
 
-
 const OXIDEX_ABI = [
   "event Registration(address indexed user, address indexed referrer, uint256 indexed userId, uint256 referrerId)",
   "event CommissionPaid(address indexed from, address indexed to, uint8 level, uint256 amount)",
-  "event TokensPurchased(address indexed buyer, uint256 tokenAmount, uint256 ethSpent)"
+  "event TokensPurchased(address indexed buyer, uint256 tokenAmount, uint256 ethSpent)",
 ];
 
 let isIndexRunning = false;
@@ -17,7 +16,7 @@ class Mutex {
     this._locked = false;
   }
   async lock() {
-    return new Promise(resolve => {
+    return new Promise((resolve) => {
       this._queue.push(resolve);
       this._dispatch();
     });
@@ -57,22 +56,66 @@ class KeyedMutex {
 
 const dbMutex = new KeyedMutex();
 
+const PUBLIC_SEPOLIA_RPCS = [
+  "https://ethereum-sepolia-rpc.publicnode.com",
+  "https://rpc.ankr.com/eth_sepolia",
+  "https://1rpc.io/sepolia",
+  "https://rpc2.sepolia.org",
+];
+
 const startIndexer = (io) => {
   if (isIndexRunning) return;
   isIndexRunning = true;
 
-  const rpcUrl = process.env.RPC_URL || "http://127.0.0.1:8545";
   const contractAddress = process.env.CONTRACT_ADDRESS;
 
   if (!contractAddress) {
     console.error("INDEXER ERROR: CONTRACT_ADDRESS is not defined in env.");
     return;
   }
+
   
-  const provider = new ethers.JsonRpcProvider(rpcUrl, undefined, {
-    batchMaxCount: 1
-  });
-  const contract = new ethers.Contract(contractAddress, OXIDEX_ABI, provider);
+  const configuredRpc = process.env.RPC_URL;
+  const rpcList = configuredRpc && configuredRpc !== "https://sepolia.drpc.org"
+    ? [configuredRpc, ...PUBLIC_SEPOLIA_RPCS]
+    : PUBLIC_SEPOLIA_RPCS;
+
+  let activeProviderIndex = 0;
+  let provider = null;
+  let contract = null;
+
+  const initProviderAndContract = (index) => {
+    const currentRpc = rpcList[index % rpcList.length];
+    console.log(`[Indexer] Connecting to Sepolia RPC endpoint: ${currentRpc}`);
+
+    provider = new ethers.JsonRpcProvider(currentRpc, undefined, {
+      batchMaxCount: 1,
+      pollingInterval: 12000,
+    });
+
+    contract = new ethers.Contract(contractAddress, OXIDEX_ABI, provider);
+    attachListeners();
+  };
+
+  const attachListeners = () => {
+    try {
+      contract.removeAllListeners();
+
+      contract.on("Registration", handleRegistration);
+      contract.on("CommissionPaid", handleCommissionPaid);
+      contract.on("TokensPurchased", handleTokensPurchased);
+
+      provider.on("error", (error) => {
+        console.warn("[Indexer RPC Warning] Provider error encountered. Switching endpoint...", error?.message || error);
+        activeProviderIndex++;
+        setTimeout(() => initProviderAndContract(activeProviderIndex), 5000);
+      });
+    } catch (err) {
+      console.warn("[Indexer Listener Warning] Could not attach contract listeners:", err?.message || err);
+      activeProviderIndex++;
+      setTimeout(() => initProviderAndContract(activeProviderIndex), 5000);
+    }
+  };
 
   const handleRegistration = async (user, referrer, userId, referrerId, event) => {
     await dbMutex.runExclusive("db", async () => {
@@ -126,9 +169,10 @@ const startIndexer = (io) => {
           },
         });
 
-        
         if (typeof sendTelegramAlert === "function") {
-          sendTelegramAlert(`🎉 <b>New Member Registered!</b>\nUser: <code>${userLower}</code>\nReferred by: <code>${referrerLower}</code>`);
+          sendTelegramAlert(
+            `🎉 <b>New Member Registered!</b>\nUser: <code>${userLower}</code>\nReferred by: <code>${referrerLower}</code>`
+          );
         }
       } catch (err) {
         console.error("Error processing Registration event:", err);
@@ -144,7 +188,6 @@ const startIndexer = (io) => {
         const toLower = to.toLowerCase();
         const val = ethers.formatEther(amount);
         const lvl = Number(level);
-        
         const ethVal = amount.toString();
 
         await prisma.$transaction(async (tx) => {
@@ -169,7 +212,7 @@ const startIndexer = (io) => {
 
           await tx.user.updateMany({
             where: { walletAddress: toLower },
-            data: { totalEarnings: { increment: ethVal } }
+            data: { totalEarnings: { increment: ethVal } },
           });
         });
 
@@ -205,10 +248,9 @@ const startIndexer = (io) => {
             },
           });
 
-          
           await tx.user.updateMany({
             where: { walletAddress: buyerLower },
-            data: { oxiTokenBalance: { increment: tokensInEther } }
+            data: { oxiTokenBalance: { increment: tokensInEther } },
           });
         });
 
@@ -228,9 +270,8 @@ const startIndexer = (io) => {
     });
   };
 
-  contract.on("Registration", handleRegistration);
-  contract.on("CommissionPaid", handleCommissionPaid);
-  contract.on("TokensPurchased", handleTokensPurchased);
+  
+  initProviderAndContract(0);
 };
 
 module.exports = {
