@@ -8,13 +8,13 @@ export default function AdminDashboard() {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const statsRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/platform/stats`);
+        const statsRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/platform/stats`);
         const statsData = await statsRes.json();
         if (statsData.success) {
           setStats(statsData.data);
         }
 
-        const usersRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/admin/users`);
+        const usersRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/users`);
         const usersData = await usersRes.json();
         if (usersData.success) {
           setUsers(usersData.data);
@@ -31,7 +31,7 @@ export default function AdminDashboard() {
   const handleToggleBan = async (walletAddress, isCurrentlyBanned) => {
     try {
       const endpoint = isCurrentlyBanned ? 'unban' : 'ban';
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/admin/users/${walletAddress}/${endpoint}`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/users/${walletAddress}/${endpoint}`, {
         method: 'POST',
       });
       const data = await res.json();

@@ -1,7 +1,7 @@
 import React from 'react';
 
 export default function SmartContractView() {
-  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || "0x98A6F0671Bf68f36A1ee414D2A043b228a79df8C";
+  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || "0xe15c36c9867ebC0c72bc8e830dB3323aaC1046D0";
   
   const contractCode = `// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;

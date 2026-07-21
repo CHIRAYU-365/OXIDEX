@@ -9,7 +9,7 @@ export default function CommissionSettings() {
   useEffect(() => {
     const fetchCommissions = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/admin/commissions`);
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/commissions`);
         const data = await res.json();
         if (data.success && data.data.length > 0) {
           setLevels(data.data.map(d => ({ level: d.level, percentage: d.commissionBps / 100 })));
@@ -75,7 +75,7 @@ export default function CommissionSettings() {
       const payload = {
         levels: levels.map(l => ({ level: l.level, commissionBps: Math.floor(l.percentage * 100) }))
       };
-      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/admin/commissions`, {
+      const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/commissions`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)

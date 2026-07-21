@@ -10,7 +10,7 @@ export default function TokenLaunchpad() {
 
   // Mock ABI for launchpad buy
   const buyLaunchpadTokensAbi = ["function buyLaunchpadTokens(address referrer) external payable"];
-  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || "0x98A6F0671Bf68f36A1ee414D2A043b228a79df8C";
+  const contractAddress = import.meta.env.VITE_CONTRACT_ADDRESS || "0xe15c36c9867ebC0c72bc8e830dB3323aaC1046D0";
 
   const handleBuy = async () => {
     if (!amountEth || isNaN(amountEth) || parseFloat(amountEth) <= 0) {

@@ -9,7 +9,7 @@ export default function TransactionHistory() {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/users/${account}/history`);
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/users/${account}/history`);
         const data = await res.json();
         if (data.success) {
           setHistory(data.data);
@@ -24,7 +24,7 @@ export default function TransactionHistory() {
   }, [account]);
 
   const downloadPDF = () => {
-    window.open(`${import.meta.env.VITE_BACKEND_URL || 'http://localhost:8080'}/api/users/${account}/statement/pdf`, '_blank');
+    window.open(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/users/${account}/statement/pdf`, '_blank');
   };
 
   return (

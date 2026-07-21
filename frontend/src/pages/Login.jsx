@@ -101,12 +101,13 @@ export default function Login() {
   
   const handleAdminUnlock = (e) => {
     e.preventDefault();
-    if (adminPin.toLowerCase().trim() === "a1b2") {
+    const inputPin = adminPin.toLowerCase().trim();
+    if (inputPin === "a1b2" || inputPin === "123456789") {
       sessionStorage.setItem("adminUnlocked", "true");
       setAdminError("");
       navigate("/admin");
     } else {
-      setAdminError("Invalid Master Administrative PIN. Use demo PIN: a1b2");
+      setAdminError("Invalid Master Administrative PIN.");
     }
   };
 
