@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ethers } from 'ethers';
 import { CONTRACT_ADDRESS, CONTRACT_ABI } from '../../utils/contract';
+import { getAdminHeaders } from '../../utils/adminApi';
 
 export default function CommissionSettings() {
   const [levels, setLevels] = useState([]);
@@ -9,7 +10,9 @@ export default function CommissionSettings() {
   useEffect(() => {
     const fetchCommissions = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/commissions`);
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/commissions`, {
+          headers: getAdminHeaders(),
+        });
         const data = await res.json();
         if (data.success && data.data.length > 0) {
           setLevels(data.data.map(d => ({ level: d.level, percentage: d.commissionBps / 100 })));
@@ -77,7 +80,7 @@ export default function CommissionSettings() {
       };
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/commissions`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...getAdminHeaders() },
         body: JSON.stringify(payload)
       });
       const data = await res.json();

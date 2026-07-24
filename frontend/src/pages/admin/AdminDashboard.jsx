@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { getAdminHeaders } from '../../utils/adminApi';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ totalUsers: 0, totalVolume: 0 });
@@ -14,7 +15,9 @@ export default function AdminDashboard() {
           setStats(statsData.data);
         }
 
-        const usersRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/users`);
+        const usersRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/users`, {
+          headers: getAdminHeaders(),
+        });
         const usersData = await usersRes.json();
         if (usersData.success) {
           setUsers(usersData.data);
@@ -33,6 +36,7 @@ export default function AdminDashboard() {
       const endpoint = isCurrentlyBanned ? 'unban' : 'ban';
       const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/users/${walletAddress}/${endpoint}`, {
         method: 'POST',
+        headers: getAdminHeaders(),
       });
       const data = await res.json();
       if (data.success) {

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Search, ZoomIn, ZoomOut, RefreshCw, Layers, Server, Globe, Cpu } from 'lucide-react';
+import { getAdminHeaders } from '../../utils/adminApi';
 
 export default function TreeView() {
   const [treeData, setTreeData] = useState(null);
@@ -18,7 +19,9 @@ export default function TreeView() {
   useEffect(() => {
     const fetchTree = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/tree`);
+        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/tree`, {
+          headers: getAdminHeaders(),
+        });
         const data = await res.json();
         if (data.success && data.data.length > 0) {
           setTreeData(buildTreeData(data.data));

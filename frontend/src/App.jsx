@@ -27,6 +27,7 @@ function AdminRoutes() {
     const inputPin = pin.toLowerCase().trim();
     if (inputPin === "a1b2" || inputPin === "123456789") {
       sessionStorage.setItem("adminUnlocked", "true");
+      sessionStorage.setItem("adminPin", inputPin);
       setIsUnlocked(true);
     } else {
       setError("Invalid Administrative PIN");

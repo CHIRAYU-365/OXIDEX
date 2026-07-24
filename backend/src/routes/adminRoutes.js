@@ -9,8 +9,9 @@ const {
   setCommissions,
   getAdminAnalytics,
 } = require("../controllers/adminController");
-const { verifyAdmin } = require("../middleware/authMiddleware");
+const { optionalAuth, verifyAdmin } = require("../middleware/authMiddleware");
 
+router.use(optionalAuth);
 router.use(verifyAdmin);
 
 router.get("/tree", getAdminTree);
