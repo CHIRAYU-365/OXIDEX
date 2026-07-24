@@ -199,11 +199,21 @@ export default function TreeView() {
     setIsDragging(false);
   };
 
-  const handleWheel = (e) => {
-    e.preventDefault();
-    const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
-    setZoom((prev) => Math.min(Math.max(prev * zoomFactor, 0.3), 3.0));
-  };
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const handleWheelNative = (e) => {
+      e.preventDefault();
+      const zoomFactor = e.deltaY < 0 ? 1.1 : 0.9;
+      setZoom((prev) => Math.min(Math.max(prev * zoomFactor, 0.3), 3.0));
+    };
+
+    container.addEventListener('wheel', handleWheelNative, { passive: false });
+    return () => {
+      container.removeEventListener('wheel', handleWheelNative);
+    };
+  }, []);
 
   const resetView = () => {
     setZoom(0.85);
@@ -272,7 +282,6 @@ export default function TreeView() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
-        onWheel={handleWheel}
         className="flex-1 bg-[#090b10] rounded-3xl border border-white/10 shadow-2xl relative overflow-hidden cursor-grab active:cursor-grabbing"
       >
         {}

@@ -14,7 +14,8 @@
     "setup:blockchain": "cd blockchain && npm install && npx hardhat compile",
     "dev": "concurrently \"npm run setup:backend\" \"npm run setup:frontend\" \"npm run setup:blockchain\"",
     "build:frontend": "cd frontend && npm run build",
-    "start:backend": "cd backend && npm start"
+    "start:backend": "cd backend && npm start",
+    "seed": "cd backend && node seed.js"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",

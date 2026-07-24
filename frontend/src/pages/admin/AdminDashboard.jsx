@@ -15,7 +15,7 @@ export default function AdminDashboard() {
           setStats(statsData.data);
         }
 
-        const usersRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/users`, {
+        const usersRes = await fetch(`${import.meta.env.VITE_BACKEND_URL || 'https://oxidex-api.onrender.com'}/api/admin/users?limit=10`, {
           headers: getAdminHeaders(),
         });
         const usersData = await usersRes.json();
@@ -89,7 +89,7 @@ export default function AdminDashboard() {
       )}
 
       <div className="bg-white/5 backdrop-blur-xl p-8 rounded-2xl border border-white/10 shadow-[0_0_15px_rgba(245,158,11,0.05)]">
-        <h2 className="text-2xl font-bold mb-6 text-white">Recent Users (Latest 200)</h2>
+        <h2 className="text-2xl font-bold mb-6 text-white">Recent Users (Latest 10)</h2>
         {loading ? (
           <p className="text-amber-500/60 animate-pulse">Loading users...</p>
         ) : users.length > 0 ? (

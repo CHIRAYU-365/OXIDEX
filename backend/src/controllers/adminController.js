@@ -23,7 +23,7 @@ const getAdminTree = async (req, res) => {
 const getAdminUsersList = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
-    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 50, 1), 200);
+    const limit = Math.min(Math.max(parseInt(req.query.limit, 10) || 10, 1), 200);
     const skip = (page - 1) * limit;
     const search = req.query.search ? req.query.search.trim().toLowerCase() : "";
 
