@@ -67,6 +67,14 @@ const authLimiter = rateLimit({
 app.use("/api/", apiLimiter);
 app.use("/api/auth/", authLimiter);
 
+app.get("/", (req, res) => {
+  res.json({ success: true, name: "OxideX API", status: "healthy", timestamp: Date.now() });
+});
+
+app.head("/", (req, res) => {
+  res.status(200).end();
+});
+
 app.get("/api/health", (req, res) => {
   res.json({ success: true, status: "healthy", timestamp: Date.now() });
 });
